@@ -1,0 +1,156 @@
+<div class="panel panel-default">
+    <div class="panel-heading">{{pageHeader}}</div>
+    <div class="panel-body">
+        <uib-tabset active="active">
+            <uib-tab index="0" heading="App/Integration Service Info">
+                <br>
+                <form id="AppInfoForm" class="form-horizontal" role="form">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="form-group required">
+                                <label class='control-label col-sm-3' for="txtAppName">App / Integration Service Name</label>
+                                <div class="col-sm-6">
+                                    <input id="txtAppName" required class="form-control" ng-model="app.name"></input>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="form-group required">
+                                <label class='control-label col-sm-3'>Description</label>
+                                <div class="col-sm-6">
+                                    <textarea required class="form-control" ng-model="app.description"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="form-group required">
+                                <label class='control-label col-sm-3' for="selOrg">Organization</label>
+                                <div class="col-sm-6">
+                                    <select class="form-control" ng-model='selectedOrg'  ng-options='org for org in stackatoOrg'></select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="form-group required">
+                                <label class='control-label col-sm-3' for="selSpace">Space</label>
+                                <div class="col-sm-6">
+                                    <select class="form-control" ng-model='selectedSpace' ng-options='space for space in stackatoSpace'></select>
+                                </div>
+                            </div>
+                        </div>
+                        <hr />
+                        <button type="button" class="btn btn-info btn-md" ng-click="active = 1">Next</button>
+                    </div>
+                </form>
+            </uib-tab>
+            <uib-tab index="1" heading="DB Connection Info">
+                <br>
+                <form id="DBSearchForm" class="form-horizontal" role="form">
+                    <div id="dbSearchGroup" class="container-fluid" style="margin: 0px;padding: 0px;">
+                        <div class="row">
+                            <div class="col-md-3" style="margin: 0; padding: 0 0 0 15px;">
+                                 <select name="selSearch" class="form-control" ng-model='dbSearchSelected' ng-options='criteria as criteria for criteria in dbSearchOption' style="border-radius: 0 !important; -webkit-border-radius: 0px; -moz-border-radius: 0px;"></select>
+                            </div>
+                            <div class="col-md-6" style="margin: 0px;padding: 0px;">
+                                <input type="text" class="form-control" ng-model="dbSearchText" placeholder="Search for..."
+                                    uib-typeahead="result for result in getDbSearchResult($viewValue)" typeahead-loading="loadingDatabaseDetails" typeahead-no-results="noResults"  
+                                    style="border-radius: 0 !important; -webkit-border-radius: 0px; -moz-border-radius: 0px;" >
+                                    <i ng-show="loadingLocations" class="glyphicon glyphicon-refresh"></i>
+                                <div ng-show="noResults">
+                                <i class="glyphicon glyphicon-remove"></i> No Results Found
+                                </div>
+                            </div>
+                            <!--<div class="col-md-2" style="margin: 0px;padding: 0px;">
+                                <button class="btn btn-default" type="button" style="border-radius: 0 !important; -webkit-border-radius: 0px; -moz-border-radius: 0px;" >Go!</button>
+                            </div>-->
+                        </div>
+                    </div>
+                </form>
+                <hr />
+                <form id="AppInfoForm" class="form-horizontal" role="form">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="form-group">
+                                <label class="control-label col-sm-2">Database Name</label>
+                                <div class="col-sm-6">
+                                    <input readonly class="form-control" ng-model="db.db_name"></input>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="form-group">
+                                <label class="control-label col-sm-2">Database Type</label>
+                                <div class="col-sm-6">
+                                    <input readonly class="form-control" ng-model="app.db_type"></input>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="form-group">
+                                <label class="control-label col-sm-2">Host Name</label>
+                                <div class="col-sm-6">
+                                    <input readonly class="form-control" ng-model="app.dbhostname"></input>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="form-group">
+                                <label class="control-label col-sm-2">Port</label>
+                                <div class="col-sm-6">
+                                    <input readonly class="form-control" ng-model="app.dbport"></input>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="form-group">
+                                <label class="control-label col-sm-2">Schema</label>
+                                <div class="col-sm-6">
+                                    <input readonly class="form-control" ng-model="app.dbschema"></input>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="form-group">
+                                <label class="control-label col-sm-2">User Name</label>
+                                <div class="col-sm-6">
+                                    <input readonly class="form-control" ng-model="app.dbusername"></input>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="form-group">
+                                <label class="control-label col-sm-2">Password</label>
+                                <div class="col-sm-6">
+                                    <input readonly class="form-control" type="password" ng-model="app.dbpassword"></input>
+                                </div>
+                            </div>
+                        </div>
+                        <hr />
+                        <button type="button" class="btn btn-info btn-md" ng-click="active = 2">Next</button>
+                    </div>
+                </form>
+            </uib-tab>
+            <uib-tab index="2" heading="Register Query">
+                <br>
+                <form id="AppInfoForm" class="form-horizontal" role="form">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="form-group required">
+                                <label class="control-label col-sm-1" for="textQuery">Query</label>
+                                <div class="col-sm-10">
+                                    <textarea required id="textQuery" class="form-control" ng-model="app.dbquery"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-default btn-md" ng-click="">Test Query</button>
+                        <hr />
+                        <button type="button" class="btn btn-primary btn-lg" ng-click="">Create App</button>
+                    </div>
+                </form>              
+            </uib-tab>
+            <!--<uib-tab index="$index + 1" ng-repeat="tab in tabs" heading="{{tab.title}}" disable="tab.disabled">
+                {{tab.content}}
+            </uib-tab>-->
+        </uib-tabset>
+    </div>
+</div>

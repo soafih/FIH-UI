@@ -1,1 +1,36 @@
-ml
+<div class="panel panel-default">
+    <div class="panel-heading">{{pageHeader}}</div>
+	<div class="panel-body">
+		<form>
+			<div class="form-group">
+				<label>Name</label>
+				<input class="form-control" ng-model="api.name"></input>
+			</div>
+			<div class="form-group">
+				<label>Description</label>
+				<textarea class="form-control" ng-model="api.description"></textarea>
+			</div>
+			<div class="form-group">
+				<label>Version</label>
+				<input class="form-control" ng-model="api.version"></input>
+			</div>
+			<div class="form-group">
+				<label>References</label>
+				<input class="form-control" ng-model="api.references"></input>
+			</div>
+			<div class="row">
+				<div class="col-lg-offset-3 col-lg-6">
+					<div class="input-group">
+						<span class="input-group-addon" id="basic-addon1">Icon</span>
+						<input type="text" class="form-control" ng-model="api.icon" placeholder="Upload Image..">
+						<span class="input-group-btn">
+							<button class="btn btn-secondary" type="button" ng-click="">Browse</button>
+						</span>
+					</div>
+				</div>
+			</div>
+			<br>
+			<input type="button" class="btn btn-primary btn-lg" value="Save" ng-click="save()"></input>
+		</form>
+	</div>
+</div>

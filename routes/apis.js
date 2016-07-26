@@ -29,6 +29,7 @@ router.get('/name/:name/version/:version', function(req, res) {
     });
 });
 
+/*
 router.post('/', function(req, res){
     var db = req.db;
     var collection = db.get('coll_api');
@@ -39,28 +40,29 @@ router.post('/', function(req, res){
         res.send(app);
     });
 });
-
-router.post('/addapi', function(req, res){
+*/
+router.post('/', function(req, res){
+    var formattedDate = '2016-01-01T00:00:00.000Z';
     var db = req.db;
     var collection = db.get('coll_api');
     collection.insert({
-        name: req.body.apiName,
-        descr: req.body.apiDescr,
-        version: req.body.apiVersion,
-        references: req.body.apiReferences,
-        published_date: req.body.apiPublishedDate,
-        icon: req.body.apiIcon,
-        api_ep: req.body.apiEP,
-        created_by: req.body.apiCreatedBy,
-        created_date: req.body.apiCreatedDate,
-        last_updated_by: req.body.apiLastUpdatedBy,
-        last_updated_date: req.body.apiLastUpdatedDate
+        name: req.body.name,
+        descr: req.body.description,
+        version: req.body.version,
+        references: req.body.references,
+        published_date: formattedDate,
+        icon: req.body.icon,
+        api_ep: '',
+        created_by: 'system',
+        created_date: formattedDate,
+        last_updated_by: 'system',
+        last_updated_date: formattedDate
     }, function(err, api){
         if (err) {
             res.send("There was a problem adding the information to the database.");
         }
         else {
-            res.redirect("apislist");
+            res.json(api);
         }
     });
 });

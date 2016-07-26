@@ -9,10 +9,11 @@ var routes = require('./routes/index');
 var users = require('./routes/users');
 var apis = require('./routes/apis');
 var apps = require('./routes/apps');
+var dbconfig = require('./routes/dbconfig');
 
 // Initialize Monk for establishing connection with MongoDB
 var monk = require('monk');
-var db =  monk('mongodb://63dff18d-4218-40ce-a3e5-8d9f5b864c39:47a5e2f2-ddf2-45c6-9e3b-1d4ea3fca213@10.135.4.49:15001/db');
+var db =  monk('mongodb://5eb31b82-3347-481f-a7f5-f9759fb2583a:22669d9e-531d-4176-bd5c-7844e1add561@10.135.4.49:15001/db');
 
 var app = express();
 
@@ -21,7 +22,7 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
 // uncomment after placing your favicon in /public
-//app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
+app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -38,6 +39,13 @@ app.use('/', routes);
 app.use('/users', users);
 app.use('/fih/apis', apis);
 app.use('/fih/apps', apps);
+app.use('/fih/dbconfig', dbconfig);
+
+app.use(function(req, res, next) {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    next();
+});
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

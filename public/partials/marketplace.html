@@ -1,0 +1,20 @@
+<div class="panel panel-default" style="height: 100%;">
+    <div class="panel-heading">{{pageHeader}}</div>
+    <div class="panel-body">
+        <div class="container">
+            <div class="row">
+                <div class="col-sm-3" ng-repeat='api in apis'>
+                    <div class="panel panel-primary">
+                        <div class="panel-heading">{{api.name}}</div>
+                        <div class="panel-body" style="min-height: 110px;max-height: 200px;">
+                            {{api.descr}}
+                        </div>
+                        <a href="/#/add-app/{{api.name}}">
+                            <div class="panel-footer"><span style="text-align:center; display:block">Add</span></div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,20 @@
+<div class="panel panel-default" style="height: 100%;">
+    <div class="panel-heading">{{pageHeader}}</div>
+    <div class="panel-body">
+        <div class="container">
+            <div class="row">
+                <div class="col-sm-3" ng-repeat='app in apps'>
+                    <div class="panel panel-primary">
+                        <div class="panel-heading">{{app.name}}</div>
+                        <div class="panel-body" style="min-height: 110px;max-height: 200px;">
+                            {{app.descr}}
+                        </div>
+                        <a href="/#/appdetails">
+                            <div class="panel-footer">View Details</div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -20,15 +20,6 @@ router.get('/name/:name', function(req, res) {
     });
 });
 
-router.get('/databases', function(req, res) {
-    var db = req.db;
-    var collection = db.get('coll_app');
-    collection.distinct('api_config.db_config.db_name', function(err, app){
-        if (err) throw err;
-      	res.json(app);
-    });
-});
-
 router.post('/', function(req, res){
     var db = req.db;
     var collection = db.get('coll_app');
@@ -40,43 +31,36 @@ router.post('/', function(req, res){
     });
 });
 
-router.post('/addapp', function(req, res){
+router.post('/addappform', function(req, res){
+    var formattedDate = new Date();
+    console.log(formattedDate);
     var db = req.db;
     var collection = db.get('coll_app');
     collection.insert({
-        name: req.body.appName,
-        api_type: req.body.apiType,
-        api_ver: req.body.apiVersion,
-        descr: req.body.appDescr,
-        version: req.body.appVersion,
-        endpoint: req.body.appEndpoint,
-        status: req.body.appStatus,
-        servicename: req.body.appServiceName,
-        created_by: req.body.appCreatedBy,
-        created_date: req.body.appCreatedDate,
-        last_updated_by: req.body.appLastUpdatedBy,
-        last_updated_date: req.body.appLastUpdatedDate,
-        messages: [{message: req.body.message}],
-        stackato_config: {org: req.body.stackatoOrg,space: req.body.stackatoSpace},
+        name: req.body.name,
+        api_type: 'DAAS',
+        api_ver: '1.0',
+        descr: req.body.descr,
+        version: '1.0',
+        endpoint: 'TBD',
+        status: 'Saved',
+        servicename: req.body.name,
+        created_by: 'System',
+        created_date: formattedDate,
+        last_updated_by: 'System',
+        last_updated_date: formattedDate,
+        messages: [{message: 'First Version'}],
+        stackato_config: {org: req.body.selectedOrg,space: req.body.selectedSpace},
         api_config: {
-            query: req.body.apiQuery, 
-            db_config: {
-                db_type: req.body.apiDbType,
-                host: req.body.apiDbHost,
-                port: req.body.apiDbPort,
-                uname: req.body.apiDbUserName,
-                pwd: req.body.apiDbPassword,
-                conn_string: req.body.apiDbConnString,
-                db_name: req.body.apiDbName,
-                schema: req.body.apiDbSchema
-            }
+            db_name: req.body.db_name,
+            query: req.body.db_query
         }
     }, function(err, app){
         if (err) {
             res.send("There was a problem adding the information to the database.");
         }
         else {
-            res.redirect("appslist");
+            res.redirect("/#/apps");
         }
     });
 });
