@@ -1,0 +1,27 @@
+
+        <small><em>Application Build Progress</em></small>
+        
+        <uib-progressbar ng-class="barState.Class" value="barState.Per" type="{{barState.Type}}">{{barState.Text}}</uib-progressbar>
+        
+        <div ng-show="appCurrentState == 'Saved'">
+            <span style="color: black">State Saved Panel</span>
+        </div>
+        <div ng-show="appCurrentState == 'Queued'">
+            <p><span style="color: darkgrey">Application build job is currently queued..</span><p>
+                <p>Please wait or check application status later via application detail page.<p>
+        </div>
+        <div ng-show="appCurrentState == 'WIP'">
+            <!--<div>Build URL: <a href={{buildUrl}}> {{buildUrl}}</a></div>-->
+            <iframe name="logConsole" id="logConsole" style="height:500px; width:100%" ng-src="{{buildUrl}}">
+                Something wrong...
+            </iframe>
+        </div>
+        <div ng-show="appCurrentState == 'Failed'">
+            <iframe name="logConsole" id="logConsole" style="height:500px; width:100%" ng-src="{{buildUrl}}">
+                Something wrong...
+            </iframe>
+        </div>
+        <div ng-show="appCurrentState == 'Success'">
+            <p><span style="color: green">Application build is successful. <a href="/#/apps">Click here</a> to view application details.</span></p>
+        </div>
+    

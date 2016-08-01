@@ -1,6 +1,33 @@
 var express = require('express');
 var router = express.Router();
 
+/*var oracledb = require('oracledb');
+
+router.post('/testdbconn', function(req, res) {
+    oracledb.getConnection(
+    {
+        user          : "soa_custom",
+        password      : "soa_cust124",
+        connectString : "ffeuswduxdb95.foxinc.com:1521/PRJSOAD"
+    },
+    function(err, connection)
+    {
+        if (err) { console.error(err.message); return; }
+        console.log('Connected to Oracle DB');
+        console.log('Executing query: '+req.body.db_query);
+        connection.execute(
+        //"select * from dual",  // bind value for :id
+        req.body.db_query,
+        [], // Query Parameters
+        function(err, result)
+        {
+            if (err) { console.error("Error in fetching data from OracleDB: "+err.message); throw err; }
+            console.log("Result from OracleDB:"+result.rows);
+            res.send(result);
+        });
+    });
+});
+*/
 router.get('/', function(req, res) {
     var db = req.db;
     var collection = db.get('coll_dbconfig');

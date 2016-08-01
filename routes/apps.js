@@ -20,6 +20,18 @@ router.get('/name/:name', function(req, res) {
     });
 });
 
+router.get('/appobjectid', function(req, res) {
+    var db = req.db;
+    var collection = db.get('coll_app');
+
+    var query = require('url').parse(req.url,true).query;
+    console.log("Fetching app data with object id: "+query.appobjectid);
+    collection.find(query.appobjectid, function(err, app){
+        if (err) throw err;
+      	res.json(app);
+    });
+});
+
 router.post('/', function(req, res){
     var db = req.db;
     var collection = db.get('coll_app');
@@ -28,6 +40,26 @@ router.post('/', function(req, res){
         if (err) throw err;
         res.send(app);
         console.log('Successfully Inserted: '+app.name);
+    });
+});
+
+router.post('/updateStatus', function(req, res) {
+    var appEP = req.body.appEP;
+    var appBuildUrl = req.body.appBuildUrl;
+    var appStatus = req.body.appStatus;
+    var appObjectId = req.body.appObjectId;
+    var appBuildNumber = req.body.appBuildNumber;
+    var appBuildIdentifier = req.body.appBuildIdentifier;
+
+    console.log("Updating app status for objectId: "+appObjectId);
+
+    var db = req.db;
+    var collection = db.get('coll_app');
+    collection.update({_id: appObjectId}, {$set: {endpoint: appEP, build_url: appBuildUrl, status: appStatus, build_number: appBuildNumber, build_identifier: appBuildIdentifier}}, 
+        function(err, response){
+            if (err) throw err;
+            console.log("Successfully updated app status: "+response);
+            res.json(response);
     });
 });
 

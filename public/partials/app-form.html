@@ -1,9 +1,14 @@
-
+<div ng-show="loader.loading">
+    <br>
+    <p>Processing application data...<i class="fa fa-spinner fa-spin"></i></p>
+    
+</div>
 <div class="panel panel-default">
+<div ng-hide="hidePanel">
     <div class="panel-heading">{{pageHeader}}</div>
     <div class="panel-body">
-        <button type="button" class="btn btn-default btn-md" ng-click="activeTab = 1">Next</button>
-        <hr/>
+        <!--<button type="button" class="btn btn-default btn-md" ng-click="activeTab = 1">Next</button>
+        <hr/>-->
         <form id="appInfoForm" name="appInfoForm" class="form-horizontal">
         <uib-tabset active="activeTab">
             <uib-tab index="0" heading="App/Integration Service Info">
@@ -38,6 +43,17 @@
                                 <label class='control-label col-sm-3' for="selSpace">Space</label>
                                 <div class="col-sm-6">
                                     <select class="form-control" name='selectedSpace' ng-model='app.selectedSpace' ng-options='space for space in stackatoSpace'></select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="form-group required">
+                                <label class='control-label col-sm-3' for="selSpace">Expose to Apigee</label>
+                                <div class="col-sm-6">
+                                    <div class="checkbox checkbox-success">
+                                        <input id="checkbox1" type="checkbox" checked ng-model="app.exposeToApigee">
+                                        <label  for="checkbox1" style="font-weight: bold;"> </label>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -91,13 +107,17 @@
                             <div class="form-group required">
                                 <label class="control-label col-sm-1" for="textQuery">Query</label>
                                 <div class="col-sm-10">
-                                    <textarea rows="8" required id="textQuery" class="form-control" ng-model="app.db_query"></textarea>
+                                    <textarea rows="12" required id="textQuery" class="form-control" ng-model="app.db_query"></textarea>
                                 </div>
                             </div>
                         </div>
-                        <input type="button" class="btn btn-default btn-md" value="Test Query" ng-click="testQuery()"></input>
+                        <!--<input type="button" class="btn btn-default btn-md" value="Test Query" ng-click="testQuery()"></input>
+                        <br>
+                        <br>
+                        <label class="control-label col-sm-1" for="textQuery">Result</label>
+                        <input style="color:{{queryResultColor}}" ng-model="queryResult" value="{{queryResult}}">-->
                         <hr />
-                        <input type="button" class="btn btn-primary btn-lg" value="Save" ng-click="createApp()"></input>
+                        <input type="button" class="btn btn-default btn-md" value="Create" ng-click="createApp()"></input>
                     </div>
             </uib-tab>
             <!--<uib-tab index="$index + 1" ng-repeat="tab in tabs" heading="{{tab.title}}" disable="tab.disabled">
@@ -106,4 +126,5 @@
         </uib-tabset>
         </form>
     </div>
+</div>
 </div>

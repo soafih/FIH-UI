@@ -1,17 +1,49 @@
 <div class="panel panel-default" style="height: 100%;">
     <div class="panel-heading">{{pageHeader}}</div>
     <div class="panel-body">
-        <div class="container">
-            <div class="row">
-                <div class="col-sm-3" ng-repeat='app in apps'>
-                    <div class="panel panel-primary">
-                        <div class="panel-heading">{{app.name}}</div>
-                        <div class="panel-body" style="min-height: 110px;max-height: 200px;">
-                            {{app.descr}}
+        <div class="container-fluid">
+            <div ng-controller="ModalAppCtrl">
+                <script type="text/ng-template" id="myModalContent.html">
+                    <div class="modal-header">
+                        <h3 class="modal-title">Application Details</h3>
+                    </div>
+                    <div class="modal-body">
+                        <div class="container-fluid">
+                        <div class="row" ng-repeat="item in appDetails" style="margin-top: 10px">
+                            <div ng-repeat="(key, value) in item">
+                                <label class='control-label col-sm-3'>{{key}}</label>
+                                <label class='control-label col-sm-9' style="font-weight:500">
+                                    <div ng-switch on="key">
+                                        <div ng-switch-when="End Point">
+                                            <a href="{{value}}">{{value}}</a>
+                                        </div>
+                                        <div ng-switch-default>
+                                            {{value}}
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
                         </div>
-                        <a href="/#/appdetails">
-                            <div class="panel-footer">View Details</div>
-                        </a>
+                    </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-default" type="button" ng-click="cancel()">Close</button>
+                    </div>
+                </script>
+            
+                <div class="row">                
+                    <div ng-repeat='app in apps' class="col-lg-3">
+                        <div class="panel panel-primary" style="margin: 25px 25px 25px 25px">
+                            <div class="panel-heading" style="background: {{hcolors[$index%8]}}">
+                                <span class="hspan">{{app.name}}</span>
+                            </div>
+                            <div class="panel-body" style="background: {{bcolors[$index%8]}} none repeat scroll 0% 0%; height: 120px;">
+                                <span class="bspan"><p style="line-height:13px;">{{app.descr}}</p></span>
+                            </div>
+                            <div class="panel-footer" style="background: {{fcolors[$index%8]}}">
+                                <button style="border:0;" type="button" class="btn btn-success btn-transparent" ng-click="open(app.name)">View Details</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
