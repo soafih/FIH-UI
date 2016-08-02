@@ -69,7 +69,9 @@ table.table.table-hover.table-condensed tbody {
   color: white;
   font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
   font-size: 16px;
-  font-weight: bold;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 body > div.container-fluid > div > div.col-sm-3.col-md-2.sidebar > ul > li.active > a {
@@ -91,6 +93,9 @@ div.panel.panel-default.ng-scope div.panel-body div.ng-scope div.panel.panel-pri
   text-align: center;
   border: none;
   border-bottom: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
 }
 
 div.panel-body{
@@ -114,6 +119,8 @@ div.panel.panel-default.ng-scope div.panel-body div.ng-scope div.panel.panel-pri
   vertical-align: middle;
   font-family: sans-serif;
   color: #EFEBE9;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .bspan{
   font-size: 12px;

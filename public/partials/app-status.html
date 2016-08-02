@@ -8,7 +8,7 @@
         </div>
         <div ng-show="appCurrentState == 'Queued'">
             <p><span style="color: darkgrey">Application build job is currently queued..</span><p>
-                <p>Please wait or check application status later via application detail page.<p>
+            <p>Please wait or check application status later via application detail page.<p>
         </div>
         <div ng-show="appCurrentState == 'WIP'">
             <!--<div>Build URL: <a href={{buildUrl}}> {{buildUrl}}</a></div>-->
@@ -22,6 +22,12 @@
             </iframe>
         </div>
         <div ng-show="appCurrentState == 'Success'">
-            <p><span style="color: green">Application build is successful. <a href="/#/apps">Click here</a> to view application details.</span></p>
+            <p><span style="color: green">Application build is successful. </span><a href="/#/apps">Click here</a> to view application details.</p>
+            <button style="border:0; margin-top:10px;" type="button" class="btn btn-success btn-transparent" ng-init="showLogText = 'Show Logs'" ng-click="displaySuccessLogs()">{{showLogText}}</button>
+            <div ng-show="successIFrame">
+                <iframe name="logConsole" id="logConsole" style="height:500px; width:100%" ng-src="{{buildUrl}}">
+                    Something wrong...
+                </iframe>
+            </div>
         </div>
     

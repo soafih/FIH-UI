@@ -152,19 +152,29 @@ fihApp.controller('AppStatusCtrl', ['$scope', '$window', '$routeParams','$sce','
                 Pushed: {Text: "Build Pushed", Per: 90, Type: "default", Class: "progress-striped active"}
             },
             Failed: {
-                QueueFailed: {Text: "Build Queue Failed", Per: 30, Type: "danger", Class: "progress-striped"},
-                CheckoutFailed: {Text: "Build Checkout Failed", Per: 40, Type: "danger", Class: "progress-striped"},
-                BuildFailed: {Text: "Build Failed", Per: 60, Type: "danger", Class: "progress-striped"},
+                QueueFailed: {Text: "Build Queue Failed", Per: 20, Type: "danger", Class: ""},
+                CheckoutFailed: {Text: "Build Checkout Failed", Per: 30, Type: "danger", Class: ""},
+                BuildFailed: {Text: "Build Failed", Per: 50, Type: "danger", Class: ""},
                 PushFailed: {Text: "Push Failed", Per: 80, Type: "danger", Class: ""}
             },
-            Success: {Text: "Success", Per: 100, Type: "success", Class: "progress-striped"}
+            Success: {Text: "Success", Per: 100, Type: "success", Class: ""}
         };
 
         var buildappstatus = $routeParams.buildappstatus;
 
         $scope.appCurrentState = "Saved";
         $scope.barState = $scope.appStateObj[$scope.appCurrentState];
-        
+
+        $scope.successIFrame = false;
+        $scope.displaySuccessLogs = function(){
+            $scope.successIFrame = !$scope.successIFrame;
+            if($scope.successIFrame){
+                showLogText = 'Hide Logs';
+            }
+            else{
+                showLogText = 'Show Logs';
+            }
+        };
         console.log("Build Status Received: "+buildappstatus);
         if(buildappstatus == 'queued'){
             $scope.appCurrentState = "Queued";
@@ -213,22 +223,20 @@ fihApp.controller('AppStatusCtrl', ['$scope', '$window', '$routeParams','$sce','
                         console.log("Received "+appStatus+" For BuildAPI. Stoping page refresh..");
                         $interval.cancel($scope.RefreshIFrame);
                         $scope.barState = $scope.appStateObj[$scope.appCurrentState];
+                        $scope.buildUrl = $sce.trustAsResourceUrl($routeParams.buildurl+'?dummyVar='+ (new Date()).getTime());
                         // TODO: Persist APP state in mongodb
                     }
                     else if(appStatus == "Failed"){
                         console.log("Received "+appStatus+" from BuildAPI. Stoping page refresh..");
                         $interval.cancel($scope.RefreshIFrame);
-                        console.log("res.data.response.stage"+res.data.response.stage);
                         if(res.data.response.stage){
                             $scope.appCurrentStage = res.data.response.stage;
                         }
                         else{
                             $scope.appCurrentStage = "QueueFailed";
                         }
-                        console.log("Failure State: "+$scope.appCurrentState);
-                        console.log("Failure Stage: "+$scope.appCurrentStage);
                         $scope.barState = $scope.appStateObj[$scope.appCurrentState][$scope.appCurrentStage];
-                        console.log("Bar state:"+JSON.stringify($scope.barState));
+                        $scope.buildUrl = $sce.trustAsResourceUrl($routeParams.buildurl+'?dummyVar='+ (new Date()).getTime());
                     }
                     else if(appStatus =="WIP"){
                         console.log("Reloading Page...");
@@ -239,10 +247,6 @@ fihApp.controller('AppStatusCtrl', ['$scope', '$window', '$routeParams','$sce','
                     }
                 });
                 
-                /*if(cancelInterval){
-                    console.log("Stoping Refresh..");
-                    $interval.cancel($scope.RefreshIFrame);
-                }*/
             }, 5000);
         }
         
@@ -256,7 +260,6 @@ fihApp.controller('AddAppCtrl', ['$scope','$window','$http', '$resource', '$loca
         $scope.loader = {
             loading: false,
         };
-
         $scope.hidePanel = false;
 
         $scope.queryResult = '..';
