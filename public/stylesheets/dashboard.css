@@ -7,6 +7,26 @@ body {
   padding-top: 50px;
 }
 
+body h2{
+  font-size: 16px;
+  font-weight: 600;
+}
+
+
+/* Important part */
+.modal-dialog{
+    width: 90%;
+    overflow-y: initial !important
+}
+.modal-body{
+    height: 400px;
+    overflow-y: auto;
+}
+
+.modal-header{
+  margin-top: 30px;
+}
+
 .ng-hide {
   height: 0;
   width: 0;
@@ -22,6 +42,15 @@ body {
 #dbSearchGroup{
   margin: 0px;
   padding: 0px;
+}
+
+body .modal-header{
+  color: 212121;
+}
+.btn-success{
+  font-weight: 600; 
+  font-size: 13px; 
+  font-family: Tahoma;
 }
 
 .breadcrumb > li {
