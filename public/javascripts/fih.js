@@ -169,10 +169,10 @@ fihApp.controller('AppStatusCtrl', ['$scope', '$window', '$routeParams','$sce','
         $scope.displaySuccessLogs = function(){
             $scope.successIFrame = !$scope.successIFrame;
             if($scope.successIFrame){
-                showLogText = 'Hide Logs';
+                $scope.showLogText = 'Hide Logs';
             }
             else{
-                showLogText = 'Show Logs';
+                $scope.showLogText = 'Show Logs';
             }
         };
         console.log("Build Status Received: "+buildappstatus);

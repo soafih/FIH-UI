@@ -39,7 +39,7 @@
     z-index: 999;
     font-family: Tahoma;
     font-size: 18px;
-    overflow: visible;
+    overflow: hidden;
     text-overflow: ellipsis;
     height: 90px;
     margin-left: 0px;
@@ -64,6 +64,7 @@
     background-color: #F0F4C3;
     margin-right: 90px;
     margin-bottom: 120px;
+    margin-top: 45px;
     padding: 0;
     transform: rotate(0deg);
     border-radius: 2em/.9em;
@@ -92,7 +93,7 @@
 .hex-text2 {
     color: #827717;
     text-align: center;
-    vertical-align: middle;
+    vertical-align: top;
     position: relative;
     transform: rotate(0deg);
     z-index: 999;
@@ -102,9 +103,10 @@
     text-overflow: ellipsis;
     width: 160px;
     height: 90px;
-    line-height: 90px;
+    line-height: 30px;
     margin-left: 0px;
-    margin-top: 43px;
+    margin-top: 0px;
+
 }
 
 .hexagon2:hover {
@@ -123,6 +125,7 @@
     background-color: #B0BEC5;
     margin-right: 90px;
     margin-bottom: 120px;
+    margin-top: 45px;
     padding: 0;
     transform: rotate(0deg);
     border-radius: 2em/.9em;
@@ -151,7 +154,7 @@
 .hex-text3 {
     color: #263238;
     text-align: center;
-    vertical-align: middle;
+    vertical-align: top;
     position: relative;
     transform: rotate(0deg);
     z-index: 999;
@@ -161,9 +164,10 @@
     text-overflow: ellipsis;
     width: 160px;
     height: 90px;
-    line-height: 90px;
+    line-height: 30px;
     margin-left: 0px;
-    margin-top: 43px;
+    margin-top: 0px;
+
 }
 
 .hexagon3:hover {
@@ -182,6 +186,7 @@
     background-color: #B3E5FC;
     margin-right: 90px;
     margin-bottom: 120px;
+    margin-top: 45px;
     padding: 0;
     transform: rotate(0deg);
     border-radius: 2em/.9em;
@@ -210,7 +215,7 @@
 .hex-text4 {
     color: #01579B;
     text-align: center;
-    vertical-align: middle;
+    vertical-align: top;
     position: relative;
     transform: rotate(0deg);
     z-index: 999;
@@ -220,9 +225,9 @@
     text-overflow: ellipsis;
     width: 160px;
     height: 90px;
-    line-height: 90px;
+    line-height: 30px;
     margin-left: 0px;
-    margin-top: 43px;
+    margin-top: 0px;
 }
 
 .hexagon4:hover {
@@ -241,6 +246,7 @@
     background-color: #FFCDD2;
     margin-right: 120px;
     margin-bottom: 120px;
+    margin-top: 45px;
     padding: 0;
     transform: rotate(0deg);
     border-radius: 2em/.9em;
@@ -279,7 +285,7 @@
     text-overflow: ellipsis;
     width: 160px;
     height: 90px;
-    line-height: 90px;
+    line-height: 30px;
     margin-left: 0px;
 }
 

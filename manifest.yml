@@ -1,7 +1,7 @@
 applications:
 - name: FoxIntegrationHub
   instances: 1
-  memory: 1028M
+  memory: 256M
   services:
     fihmdb: mongodb
   

@@ -87,6 +87,7 @@ div.panel.panel-default.ng-scope div.panel-body div.ng-scope div.panel {
   height: 200px;
   max-width: 200px;
   width: 200px;
+  border: none;
 }
 
 div.panel.panel-default.ng-scope div.panel-body div.ng-scope div.panel.panel-primary div.panel-heading{
@@ -96,21 +97,25 @@ div.panel.panel-default.ng-scope div.panel-body div.ng-scope div.panel.panel-pri
   overflow: hidden;
   text-overflow: ellipsis;
   width: 100%;
+  border-radius: 1em/.4em;
 }
 
 div.panel-body{
   text-align: justify;
   border: none;
+  border-radius: 1em/.4em;
 }
 
 div.panel.panel-default.ng-scope div.panel-body div.ng-scope div.panel.panel-primary{
   text-align: center;
   border: none;
+  border-radius: 1em/.4em;
 }
-div.panel.panel-default.ng-scope div.panel-body div.ng-scope div.panel.panel-primary a div.panel-footer {
+div.panel.panel-default.ng-scope div.panel-body div.ng-scope div.panel.panel-primary div.panel-footer {
   text-align: center;
   background-color: #ECEFF1;
   border: none;
+  border-radius: 1em/.4em;
 }
 
 .hspan{
@@ -121,14 +126,13 @@ div.panel.panel-default.ng-scope div.panel-body div.ng-scope div.panel.panel-pri
   color: #EFEBE9;
   overflow: hidden;
   text-overflow: ellipsis;
+
 }
 .bspan{
   font-size: 12px;
-  font-weight: 100;
-  font-family: "Avenir Next", Avenir, Arial, sans-serif;
-  color: #263238;  
-  font-style: italic;
-  font-stretch: normal;
+  font-weight: 500;
+  font-family: Tahoma;
+  color: black;
 }
 .fspan{
   font-size: 12px;
@@ -365,9 +369,12 @@ div.panel.panel-default.ng-scope div.panel-body div.ng-scope div.panel.panel-pri
   background-color: #fff;
 }
 .btn-success.btn-transparent {
-  color: #5cb85c;
+  color: #263238;
   background-color: transparent;
   border-color: #5cb85c;
+  font-size: 11px;
+  font-family: Tahoma;
+  font-weight: 600;
 }
 .btn-success.btn-transparent:focus, .btn-success.btn-transparent.focus {
   color: #5cb85c;
