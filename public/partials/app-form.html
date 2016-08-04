@@ -37,14 +37,7 @@
                 </script>
         </div>
     <div class="panel-heading">{{pageHeader}}</div>
-    <div class="panel-body">
-        <div class="container-fluid">
-            <div class="row">
-                <button type="button" ng-disabled="nextBtnDisabled" class="btn btn-default btn-sm" ng-click="activeTab = nextActiveTab">Next</button>
-                <button type="button" ng-disabled="previousBtnDisabled" class="btn btn-default btn-sm pull-right" ng-click="activeTab = previousActiveTab">Previous</button>
-            </div>
-        </div>
-        <hr/>
+    <div class="panel-body" style="min-height: 400px; max-height: 400px;">
         <form id="appInfoForm" name="appInfoForm" class="form-horizontal">
         <uib-tabset active="activeTab">
             <uib-tab index="0" heading="App/Integration Service Info" select="changeActiveTab(0)">
@@ -62,7 +55,7 @@
                             <div class="form-group required">
                                 <label class='control-label col-sm-3'>Description</label>
                                 <div class="col-sm-6">
-                                    <textarea style="font-size: 12px; font-family:Tahoma" required class="form-control" ng-model="app.descr"></textarea>
+                                    <textarea rows="4" style="font-size: 12px; font-family:Tahoma" required class="form-control" ng-model="app.descr"></textarea>
                                 </div>
                             </div>
                         </div>
@@ -148,7 +141,7 @@
                             </div>
                         </div>
                         <input data-toggle="tooltip" data-placement="top" title="Test Query!" type="button" class="btn btn-default btn-sm" value="Test Query" ng-click="testQuery()"></input>
-                        <input data-toggle="tooltip" data-placement="top" title="Change Query!" type="button" class="btn btn-default btn-sm" value="Reset" ng-click="resetQuery()"></input>
+                        <input style="margin-left: 20px;" data-toggle="tooltip" data-placement="top" title="Change Query!" type="button" class="btn btn-default btn-sm" value="Reset" ng-click="resetQuery()"></input>
                         <br>
                         
                         <!--<div class="row">
@@ -167,7 +160,12 @@
                     </div>
             </uib-tab>
         </uib-tabset>
+        
         </form>
+    </div>
+    <div class="panel-footer" style="margin-top: 20px; background-color: transparent">
+            <button type="button" ng-disabled="nextBtnDisabled" class="btn btn-default btn-sm" ng-click="activeTab = nextActiveTab">Next</button>
+            <button type="button" ng-disabled="previousBtnDisabled" class="btn btn-default btn-sm pull-right" ng-click="activeTab = previousActiveTab">Previous</button>
     </div>
 </div>
 </div>
