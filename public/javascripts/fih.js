@@ -1,4 +1,5 @@
 var fihApp = angular.module('fihApp', ['ngAnimate','ui.bootstrap','ngResource', 'ngRoute','ngTable']);
+fihApp.constant("DAASAPI_URL","http://daasapi.stackato-poc.foxinc.com/");
 
 fihApp.config(['$routeProvider', function($routeProvider){
     $routeProvider
@@ -71,8 +72,7 @@ fihApp.factory('databaseListFactory', function($http) {
     return factoryResult;
 });
 
-fihApp.controller('MarketPlaceCtrl', ['$scope', '$resource', '$location', 
-    function($scope, $resource, $location){
+fihApp.controller('MarketPlaceCtrl', function($scope, $resource, $location){
         $scope.pageHeader = "API Markeplace";
         $scope.isActive = function(route) {
             return route === $location.path();
@@ -91,24 +91,21 @@ fihApp.controller('MarketPlaceCtrl', ['$scope', '$resource', '$location',
         Apis.query(function(apis){
             $scope.apis = apis;
         });
-    }]);
+    });
 
-fihApp.controller('DashboardCtrl', ['$scope', '$resource', '$location', 
-    function($scope, $resource, $location){
+fihApp.controller('DashboardCtrl', function($scope, $resource, $location){
         $scope.pageHeader = "Dashboard";
         
-    }]);
+    });
 
-fihApp.controller('SidebarCtrl', ['$scope', '$resource', '$location', 
-    function($scope, $resource, $location){
+fihApp.controller('SidebarCtrl', function($scope, $resource, $location){
         $scope.isActive = function(route) {
             return route === $location.path();
         };
 
-    }]);
+    });
 
-fihApp.controller('AppsCtrl', ['$scope', '$resource','$location', 
-    function($scope, $resource, $location){
+fihApp.controller('AppsCtrl', function($scope, $resource, $location){
         $scope.pageHeader = "Applications / Integration Services";
         $scope.isActive = function(route) {
             return route === $location.path();
@@ -124,10 +121,9 @@ fihApp.controller('AppsCtrl', ['$scope', '$resource','$location',
         Apps.query(function(apps){
             $scope.apps = apps;
         });
-    }]);
+    });
 
-fihApp.controller('AddApiCtrl', ['$scope', '$resource', '$location',
-    function($scope, $resource, $location){
+fihApp.controller('AddApiCtrl', function($scope, $resource, $location){
         $scope.pageHeader = "API Configuration";
         $scope.save = function(){
             var Apis = $resource('/fih/apis');
@@ -135,10 +131,9 @@ fihApp.controller('AddApiCtrl', ['$scope', '$resource', '$location',
                 $location.path('/');
             });
         };
-    }]);
+    });
 
-fihApp.controller('AppStatusCtrl', ['$scope', '$window', '$routeParams','$sce','$interval', '$http', '$location',
-    function($scope, $window, $routeParams, $sce, $interval, $http, $location){
+fihApp.controller('AppStatusCtrl', function($scope, $window, $routeParams, $sce, $interval, $http, $location, DAASAPI_URL){
         
         $scope.pageHeader = "Application Deployment Status";
         
@@ -179,7 +174,7 @@ fihApp.controller('AppStatusCtrl', ['$scope', '$window', '$routeParams','$sce','
         if(buildappstatus == 'queued'){
             $scope.appCurrentState = "Queued";
             $scope.barState = $scope.appStateObj[$scope.appCurrentState];
-            var queueStatusUrl = 'http://daasapi.10.135.4.49.xip.io/FIH/service/DAASAPI/JenkinUtility/GetBuildNumber?buildIdentifier='+$routeParams.buildidentifier;
+            var queueStatusUrl = DAASAPI_URL + '/FIH/service/DAASAPI/JenkinUtility/GetBuildNumber?buildIdentifier='+$routeParams.buildidentifier;
             $scope.RefreshQueueStatus = $interval(function () {
                 
                 $http.get(queueStatusUrl).then(function (res) {
@@ -187,7 +182,7 @@ fihApp.controller('AppStatusCtrl', ['$scope', '$window', '$routeParams','$sce','
                     buildNumber = res.data.response.buildNumber;
                     console.log("Build Number:"+buildNumber);
                     if(buildNumber > 0){
-                        redirectUrl ='/#/appstatus?buildappstatus=wip&buildno='+buildNumber+'&buildurl='+encodeURIComponent('http://jenkins-06hw6.10.135.4.49.xip.io/job/DAASBuild/'+buildNumber+'/consoleText');
+                        redirectUrl ='/#/appstatus?buildappstatus=wip&buildno='+buildNumber+'&buildurl='+encodeURIComponent('http://jenkins-06hw6.10.135.4.49.nip.io/job/DAASBuild/'+buildNumber+'/consoleText');
                         console.log("URL to redirect: "+redirectUrl);
                         $interval.cancel($scope.RefreshQueueStatus);
                         //$location.path(redirectUrl);
@@ -211,7 +206,7 @@ fihApp.controller('AppStatusCtrl', ['$scope', '$window', '$routeParams','$sce','
             console.log("Application Build URL: "+logUrl);
             $scope.buildUrl = $sce.trustAsResourceUrl(logUrl);
             var cancelInterval = false;
-            var statusUrl = 'http://daasapi.10.135.4.49.xip.io/FIH/service/DAASAPI/JenkinUtility/GetStatus?buildNumber='+$routeParams.buildno;
+            var statusUrl = DAASAPI_URL + '/FIH/service/DAASAPI/JenkinUtility/GetStatus?buildNumber='+$routeParams.buildno;
             
             $scope.RefreshIFrame = $interval(function () {
                 
@@ -250,75 +245,121 @@ fihApp.controller('AppStatusCtrl', ['$scope', '$window', '$routeParams','$sce','
             }, 5000);
         }
         
-    }]);
+    });
 
 
-fihApp.controller('ModalQueryInstanceCtrl', function ($scope, $uibModalInstance, testQueryResult) {
+fihApp.controller('ModalQueryInstanceCtrl', function ($scope, $rootScope, $uibModalInstance, testQueryResult) {
 
-  $scope.testQueryResult = testQueryResult;
-  
-  $scope.selected = {
-  };
+    $scope.testQueryResult = testQueryResult;
 
-  $scope.ok = function () {
-    $uibModalInstance.close($scope.selected.item);
-  };
+    /*$scope.ok = function () {
+        $uibModalInstance.close($scope.selected.item);
+    };*/
 
-  $scope.cancel = function () {
-    $uibModalInstance.dismiss('cancel');
-  };
+    $scope.cancel = function () {
+        $uibModalInstance.dismiss('cancel');
+    };
 });
 
-fihApp.controller('AddAppCtrl', ['$scope','$window','$http','$resource', '$location', '$uibModal', '$filter','$routeParams', 'NgTableParams','databaseList',
-    function($scope, $window, $http, $resource, $location, $uibModal, $filter,$routeParams, NgTableParams, databaseList){
+fihApp.controller('AddAppCtrl', function($scope, DAASAPI_URL, $rootScope, $window, $http, $resource, $location, $uibModal, $filter,$routeParams, NgTableParams, databaseList){
         
         $scope.pageHeader = "Application / Integration Service Configuration";
-        
+        $scope.previousBtnDisabled = true;
+        $scope.changeActiveTab = function(selectedTab){
+            switch(selectedTab){
+                case 0:
+                    $scope.nextActiveTab = 1;
+                    $scope.previousBtnDisabled = true;
+                    $scope.nextBtnDisabled = false;
+                    break;
+                case 1:
+                    $scope.nextActiveTab = 2;
+                    $scope.previousActiveTab = 0;
+                    $scope.previousBtnDisabled = false;
+                    $scope.nextBtnDisabled = false;
+                    break;
+                case 2:
+                    $scope.previousActiveTab = 1;
+                    $scope.previousBtnDisabled = false;
+                    $scope.nextBtnDisabled = true;
+                    break;
+            }
+        };
         $scope.loader = {
             loading: false,
         };
         $scope.hidePanel = false;
+        $scope.disableCreateBtn = true;
+        $scope.disableQueryText = false;
+
+        $scope.resetQuery =  function(){
+            $scope.app.db_query = null;
+            $scope.disableCreateBtn = true;
+            $scope.disableQueryText = false;
+        };
 
         $scope.testQuery = function(){
-            console.log("Calling Test Query service..");
-            var testQueryRequest = {
-                    "query":$scope.app.db_query,
-                    "databaseInfo":{
-                        "databaseType":$scope.app.dbconfig.db_type,
+            console.log("Calling Test Query service.."+JSON.stringify($scope.app.dbconfig));
+            if ($scope.app.dbconfig.db_name) {
+                var testQueryRequest = {
+                    "query": $scope.app.db_query,
+                    "databaseInfo": {
+                        "databaseType": $scope.app.dbconfig.db_type,
                         "hostName": $scope.app.dbconfig.host,
                         "port": $scope.app.dbconfig.port,
-                        "databaseName":$scope.app.dbconfig.db_name,
-                        "schema":$scope.app.dbconfig.schema,
-                        "user":$scope.app.dbconfig.uname,
-                        "password":$scope.app.dbconfig.pwd
+                        "databaseName": $scope.app.dbconfig.db_name,
+                        "schema": $scope.app.dbconfig.schema,
+                        "user": $scope.app.dbconfig.uname,
+                        "password": $scope.app.dbconfig.pwd
                     }
                 };
 
-                var headerConfig = {headers:  {
+                var headerConfig = {
+                    headers: {
                         'Content-Type': 'application/json',
                         'Accept': 'application/json;odata=verbose'
                     }
                 };
-                
-                console.log("Calling Test Query service with request: "+JSON.stringify(testQueryRequest));
+
+                console.log("Calling Test Query service with request: " + JSON.stringify(testQueryRequest));
                 $scope.queryResultColor = '';
-                $scope.testQueryResult = []; 
-                $http.post('http://daasapi.10.135.4.49.nip.io/FIH/service/DAASAPI/DBUtility/ValidateQuery',testQueryRequest, headerConfig, {dataType: "jsonp"})
-                    .success(function(response, status, headers, config){
-                        console.log("Successfully invoked BuildAPI with response: "+JSON.stringify(response));
-                        $scope.queryResult = response.status;
-                        $scope.queryResultColor = "green";
-                        $scope.testQueryResult = response.DataCollection.Data;
-                    }, function(error){
-                        console.log("Error in fetching data from OracleDB: "+JSON.stringify(error));
-                        $scope.queryResult = error.response.status;
-                        $scope.queryResultColor = "red";
-                });
+                $scope.testQueryResult = [];
+                $http.post(DAASAPI_URL + '/FIH/service/DAASAPI/DBUtility/ValidateQuery', testQueryRequest, headerConfig, { dataType: "jsonp" })
+                    .success(function (response, status, headers, config) {
+                        console.log("Successfully invoked BuildAPI with response: " + JSON.stringify(response));
+                        if (response.response.status == "Success") {
+                            $scope.queryResult = response.status;
+                            $scope.queryResultColor = "green";
+                            $scope.testQueryResult = response.DataCollection.Data;
+                            $scope.disableCreateBtn = false;
+                            $scope.showQueryLabel = false;
+                            //$scope.disableQueryText = true;
+                            $scope.openResultModal();
+                        }
+                        else {
+                            $scope.queryResponse = response.response.errorDetails;
+                            $scope.disableCreateBtn = true;
+                            $scope.showQueryLabel = true;
+                            $scope.disableQueryText = false;
+                        }
+                    }, function (error) {
+                        console.log("Failed to connect to DataSource Service: " + JSON.stringify(error));
+                        $scope.queryResponse = "Error in connection with Datasource Service.";
+                        $scope.disableCreateBtn = true;
+                        $scope.showQueryLabel = true;
+                        $scope.disableQueryText = false;
+                    });
+
+            }
+            else {
+                $window.alert("Please select database from Database Info Tab..");
+                $scope.activeTab = 1;
+            }
         };
 
         
         $scope.animationsEnabled = false;
-        $scope.open = function (queryResult) {
+        $scope.openResultModal = function () {
             var modalInstance = $uibModal.open({
                 animation: $scope.animationsEnabled,
                 templateUrl: 'myModalContent.html',
@@ -327,8 +368,7 @@ fihApp.controller('AddAppCtrl', ['$scope','$window','$http','$resource', '$locat
                 resolve: {
                     testQueryResult: function () {
                         console.log("scope.testQueryResult: "+JSON.stringify($scope.testQueryResult));
-                        console.log("queryResult: "+JSON.stringify(queryResult));
-                        return queryResult;
+                        return $scope.testQueryResult;
                     }
                 }
             });
@@ -344,11 +384,16 @@ fihApp.controller('AddAppCtrl', ['$scope','$window','$http','$resource', '$locat
         $scope.app = {};
         $scope.app.dbconfig= {};
         $scope.apitype = $routeParams.apitype;
+        
+        $rootScope.$on("CallCreateAppFunction", function () {
+            $scope.createApp();
+        });
+        
         $scope.createApp = function(){
             
             $scope.loader.loading = true;
             $scope.hidePanel = true;
-
+            $scope.app.name = $scope.app.name.replace("_", "-");
             var formattedDate = new Date();
             var appPostRequest = {
                 name: $scope.app.name,
@@ -404,9 +449,9 @@ fihApp.controller('AddAppCtrl', ['$scope','$window','$http','$resource', '$locat
                     },
                     "connectionAttr":
                     {
-                        "maxActive":"50",
-                        "maxIdle":"30",
-                        "maxWait":"10000"
+                        "maxActive":$scope.app.dbconfig.conn_attributes.max_active,
+                        "maxIdle":$scope.app.dbconfig.conn_attributes.max_idle,
+                        "maxWait":$scope.app.dbconfig.conn_attributes.max_wait
                     }
                 };
 
@@ -417,7 +462,7 @@ fihApp.controller('AddAppCtrl', ['$scope','$window','$http','$resource', '$locat
                 };
                 
                 console.log("Build API Request: "+JSON.stringify(buildAppRequest));
-                $http.post('http://daasapi.10.135.4.49.xip.io/FIH/service/DAASAPI/BuildApp',buildAppRequest, headerConfig, {dataType: "jsonp"})
+                $http.post(DAASAPI_URL + '/FIH/service/DAASAPI/BuildApp',buildAppRequest, headerConfig, {dataType: "jsonp"})
                 .success(function(response, status, headers, config){
                     console.log("Successfully invoked BuildAPI with response: "+JSON.stringify(response));
                     console.log("Build App status: "+ response.response.status);
@@ -485,7 +530,7 @@ fihApp.controller('AddAppCtrl', ['$scope','$window','$http','$resource', '$locat
         $scope.stackatoOrg = ["SOA"];
         $scope.app.selectedOrg = $scope.stackatoOrg[0];
 
-        $scope.stackatoSpace = ["SOA", "fih"];
+        $scope.stackatoSpace = ["FIH-DEV", "FIH"];
         $scope.app.selectedSpace = $scope.stackatoSpace[0];
 
         /*$scope.getDbSearchResult = function(val) {
@@ -514,7 +559,42 @@ fihApp.controller('AddAppCtrl', ['$scope','$window','$http','$resource', '$locat
                 //$scope.data = $scope.data.slice((params.page() - 1) * params.count(), params.page() * params.count());
             }
         });
-    }]);
+
+        // at the bottom of your controller
+        var init = function () {
+            var headerConfig = {headers:  {
+                    'Authorization': 'Basic Y2Y6',
+                    'Access-Control-Allow-Origin': '*'
+                }
+            };
+
+            var inputOAuth =  {
+                grant_type: "password",
+                username: "shadab",
+                password: "welcome1",
+            };
+            
+            console.log("Calling oAuth: "+JSON.stringify(inputOAuth));
+            $http.post('http://aok.10.135.4.49.nip.io/uaa/oauth/token',inputOAuth, headerConfig, { dataType: "jsonp" })
+            .success(function(response, status, headers, config){
+                console.log("oAuth Response: "+JSON.stringify(response));
+                
+                var accessToken = response.access_token;
+                var headerConfig = {headers:  {
+                    'Authorization': 'Bearer '+accessToken
+                    }
+                };
+                $http.get("http://api.10.135.4.49.nip.io/v2/spaces", headerConfig).then(function (res) {
+                    console.log("Response from stackato for spaces: "+JSON.stringify(res));
+                });
+            })
+            .error(function(data, status, headers, config){
+                
+            });
+        };
+        // and fire it after definition
+        init();
+    });
 
 fihApp.controller('ModalAppCtrl', function ($scope, $uibModal, $filter) {
   
