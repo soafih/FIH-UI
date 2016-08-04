@@ -26,8 +26,9 @@ fihApp.config(['$routeProvider', function($routeProvider){
             controller: 'AppsCtrl',
             activetab: 'Applications'
         })
-        .when('/appdetails', {
+        .when('/appdetails/:appname', {
             templateUrl: 'partials/app-details.html',
+            controller: 'AppDetailsCtrl'
         })
         .when('/add-api', {
             templateUrl: 'partials/api-form.html',
@@ -97,6 +98,40 @@ fihApp.controller('DashboardCtrl', function($scope, $resource, $location){
         $scope.pageHeader = "Dashboard";
         
     });
+fihApp.controller('AppDetailsCtrl', function($scope, $routeParams, $resource){
+        $scope.applicationName = $routeParams.appname;
+    
+        var init = function(){
+            var AppService = $resource('/fih/apps/name/'+$scope.applicationName);
+            AppService.get(function(appDetails){
+                console.log("Fetched app details: "+JSON.stringify(appDetails));
+                $scope.appDetails = appDetails;
+                $scope.appSummary = [
+                    {"API Type" : appDetails.api_type},
+                    {"API Version" : appDetails.api_ver},
+                    {"End Point": appDetails.endpoint},
+                    {"Status" : appDetails.status},
+                    {"Created" : appDetails.created_date},
+                    {"Last Updated" : appDetails.last_updated_date}
+                ];
+                var DBService = $resource('/fih/dbconfig/name/'+appDetails.api_config.db_name);
+                DBService.get(function(dbconfig){
+                    console.log("Fetched database details: "+JSON.stringify(dbconfig));
+                    $scope.dbDetails = [
+                        {"Name" : dbconfig.db_name},
+                        {"Type" : dbconfig.db_type},
+                        {"Host": dbconfig.host},
+                        {"Port" : dbconfig.port},
+                        {"User" : dbconfig.uname},
+                        {"Schema" : dbconfig.schema}
+                    ];
+                });
+            });
+        };
+
+        init();
+    });
+    
 
 fihApp.controller('SidebarCtrl', function($scope, $resource, $location){
         $scope.isActive = function(route) {
@@ -156,6 +191,7 @@ fihApp.controller('AppStatusCtrl', function($scope, $window, $routeParams, $sce,
         };
 
         var buildappstatus = $routeParams.buildappstatus;
+        $scope.appName = $routeParams.appname;
 
         $scope.appCurrentState = "Saved";
         $scope.barState = $scope.appStateObj[$scope.appCurrentState];
@@ -182,7 +218,7 @@ fihApp.controller('AppStatusCtrl', function($scope, $window, $routeParams, $sce,
                     buildNumber = res.data.response.buildNumber;
                     console.log("Build Number:"+buildNumber);
                     if(buildNumber > 0){
-                        redirectUrl ='/#/appstatus?buildappstatus=wip&buildno='+buildNumber+'&buildurl='+encodeURIComponent('http://jenkins-06hw6.10.135.4.49.nip.io/job/DAASBuild/'+buildNumber+'/consoleText');
+                        redirectUrl ='/#/appstatus?appname='+$scope.appName+'&buildappstatus=wip&buildno='+buildNumber+'&buildurl='+encodeURIComponent('http://jenkins-06hw6.10.135.4.49.nip.io/job/DAASBuild/'+buildNumber+'/consoleText');
                         console.log("URL to redirect: "+redirectUrl);
                         $interval.cancel($scope.RefreshQueueStatus);
                         //$location.path(redirectUrl);
@@ -385,10 +421,6 @@ fihApp.controller('AddAppCtrl', function($scope, DAASAPI_URL, $rootScope, $windo
         $scope.app.dbconfig= {};
         $scope.apitype = $routeParams.apitype;
         
-        $rootScope.$on("CallCreateAppFunction", function () {
-            $scope.createApp();
-        });
-        
         $scope.createApp = function(){
             
             $scope.loader.loading = true;
@@ -427,7 +459,7 @@ fihApp.controller('AddAppCtrl', function($scope, DAASAPI_URL, $rootScope, $windo
             });
 
             if(appCurrentState == 'SaveFailed'){
-                var redirectUrl ='/#/appstatus?buildappstatus=savefailed';
+                var redirectUrl ='/#/appstatus?appname='+$scope.app.name+'&buildappstatus=savefailed';
                 console.log("Failed to save application details in database. Redirect to: "+redirectUrl);
                 $window.location.href = redirectUrl;
             }
@@ -488,7 +520,7 @@ fihApp.controller('AddAppCtrl', function($scope, DAASAPI_URL, $rootScope, $windo
                         case "Queued":
                             AppUpdate.save(updateObj, function(res){
                                 console.log("Successfully updated App status: "+JSON.stringify(res));
-                                redirectUrl ='/#/appstatus?buildappstatus=queued&buildidentifier='+updateObj.appBuildIdentifier;
+                                redirectUrl ='/#/appstatus?appname='+$scope.app.name+'&buildappstatus=queued&buildidentifier='+updateObj.appBuildIdentifier;
                                 console.log("URL to redirect: "+redirectUrl);
                                 $window.location.href = redirectUrl;
                             },
@@ -501,7 +533,7 @@ fihApp.controller('AddAppCtrl', function($scope, DAASAPI_URL, $rootScope, $windo
                         case "WIP":
                             AppUpdate.save(updateObj, function(res){
                                 console.log("Successfully updated App status: "+JSON.stringify(res));
-                                redirectUrl ='/#/appstatus?buildappstatus=wip&buildno='+updateObj.appBuildNumber+'&buildurl='+encodeURIComponent(updateObj.appBuildUrl);
+                                redirectUrl ='/#/appstatus?appname='+$scope.app.name+'&buildappstatus=wip&buildno='+updateObj.appBuildNumber+'&buildurl='+encodeURIComponent(updateObj.appBuildUrl);
                                 console.log("URL to redirect: "+redirectUrl);
                                 $window.location.href = redirectUrl;
                             },
@@ -522,7 +554,7 @@ fihApp.controller('AddAppCtrl', function($scope, DAASAPI_URL, $rootScope, $windo
                 $scope.loader.loading = false;
                 console.log(JSON.stringify("Recieved Error From Build API: "+JSON.stringify(error)));
                 appStatus = 'Failed';
-                var urlpath ='/#/appstatus?buildappstatus=failed&reason='+error;
+                var urlpath ='/#/appstatus?appname='+$scope.app.name+'&buildappstatus=failed&reason='+error;
                 $window.location.href = urlpath;
             }
         };
@@ -624,7 +656,6 @@ fihApp.controller('ModalAppCtrl', function ($scope, $uibModal, $filter) {
             templateUrl: 'myModalContent.html',
             controller: 'ModalInstanceCtrl',
             appName: appName,
-            size:'lg',
             resolve: {
                 appDetails: function () {
                     return $scope.appDetails;
@@ -633,7 +664,7 @@ fihApp.controller('ModalAppCtrl', function ($scope, $uibModal, $filter) {
         });
 
         modalInstance.result.then(function (selectedItem) {
-        $scope.selected = selectedItem;
+            $scope.selected = selectedItem;
         }, function () {
             console.log('Modal dismissed at: ' + new Date());
         });

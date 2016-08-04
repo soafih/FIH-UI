@@ -44,7 +44,8 @@ router.get('/name/:name', function(req, res) {
     var collection = db.get('coll_dbconfig');
     collection.find({name: req.params.name}, function(err, database){
         if (err) throw err;
-      	res.json(database);
+        console.log(req.params.name+ " | Fetched database details: "+database);
+      	res.json(database[0]);
     });
 });
 

@@ -8,11 +8,40 @@ body {
 }
 
 body h2{
-  font-size: 16px;
+  font-size: 24px;
   font-weight: 600;
+  color: #263238;
+  font-family: Tahoma;
 }
 
-body
+.panel-body.description{
+  font-size: 13px;
+  font-family: Tahoma;
+  height: 70px;
+  overflow-x: hidden;
+  overflow-y: hidden;
+  text-overflow: ellipsis;
+}
+
+body h3{
+  font-size: 24px;
+  font-weight: 600;
+  color: #263238;
+  font-family: Tahoma;
+  margin-top: 7px;
+}
+
+body h4{
+  font-size: 16px;
+  font-weight: 600;
+  color: #455A64;
+  font-family: Tahoma;
+  margin-top: 0px;
+}
+
+.btn.btn-info.btn-md.col-md-1.pull-right {
+  margin-right: 10px;
+}
 
 /* Important part */
 .modal-dialog{
@@ -120,7 +149,7 @@ div.panel.panel-default.ng-scope div.panel-body div.ng-scope div.panel {
   border: none;
 }
 
-div.panel.panel-default.ng-scope div.panel-body div.ng-scope div.panel.panel-primary div.panel-heading{
+div.panel.panel-primary div.panel-heading{
   text-align: center;
   border: none;
   border-bottom: none;
@@ -136,12 +165,12 @@ div.panel-body{
   border-radius: 1em/.4em;
 }
 
-div.panel.panel-default.ng-scope div.panel-body div.ng-scope div.panel.panel-primary{
+div.panel.panel-primary{
   text-align: center;
   border: none;
   border-radius: 1em/.4em;
 }
-div.panel.panel-default.ng-scope div.panel-body div.ng-scope div.panel.panel-primary div.panel-footer {
+div.panel.panel-primary div.panel-footer {
   text-align: center;
   background-color: #ECEFF1;
   border: none;

@@ -16,6 +16,7 @@ router.get('/name/:name', function(req, res) {
     var collection = db.get('coll_app');
     collection.findOne({name: req.params.name }, function(err, app){
         if (err) throw err;
+        console.log("Fetched details for app: "+app);
       	res.json(app);
     });
 });

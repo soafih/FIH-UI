@@ -1,3 +1,94 @@
-<img src="images/work_in_progress.png" alt="Work in Progress">
-
-<h3>Sorry, Please visit again...</h3>
+<div class="tab-content">
+    <div class="app-header">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-2"><h3>{{applicationName}}</h3></div>
+                <button class="btn btn-danger btn-md col-md-1 pull-right">Delete</button>
+                <button class="btn btn-info btn-md col-md-1 pull-right">Restart</button>
+                <button class="btn btn-info btn-md col-md-1 pull-right">Redeploy</button>
+            </div>
+        </div>
+    </div>
+    <div class="app-content">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="panel panel-default" style="margin-top: 20px; border-radius: 0em/.0em;">
+                        <div class="panel-body description">{{appDetails.descr}}
+                            <div ng-show="false">
+                                <textarea ng-disabled="true" class='col-md-12'></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="appdetails">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h4>Summary</h4>
+                            </div>
+                            <div class="panel-body">
+                                <div class="row" ng-repeat="item in appSummary" style="margin-top: 10px">
+                                    <div ng-repeat="(key, value) in item">
+                                        <label class='control-label col-sm-3'>{{key}}</label>
+                                        <label class='control-label col-sm-9' style="font-weight:500">
+                                            <div ng-switch on="key">
+                                                <div ng-switch-when="End Point">
+                                                    <a href="{{value}}">{{value}}</a>
+                                                </div>
+                                                <div ng-switch-default>
+                                                    {{value}}
+                                                </div>
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="appdetails">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h4>Stackato Config</h4>
+                            </div>
+                            <div class="panel-body">
+                                <div class="row" style="margin-top: 10px">
+                                    <label class='control-label col-md-4'>Space</label>
+                                    <label class='control-label col-md-6' style="font-weight:500">{{appDetails.stackato_config.space}}</label>
+                                </div>
+                                <div class="row" style="margin-top: 10px">
+                                    <label class='control-label col-md-4'>Organization</label>
+                                    <label class='control-label col-md-6' style="font-weight:500">{{appDetails.stackato_config.org}}</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="panel panel-default panel-details">
+                            <div class="panel-heading">
+                                <h4>Database Info</h4>
+                            </div>
+                            <div class="panel-body">
+                                <div class="row" ng-repeat="item in dbDetails" style="margin-top: 10px">
+                                    <div ng-repeat="(key, value) in item">
+                                        <label class='control-label col-sm-3'>{{key}}</label>
+                                        <label class='control-label col-sm-9' style="font-weight:500">
+                                            <div ng-switch on="key">
+                                                <div ng-switch-when="End Point">
+                                                    <a href="{{value}}">{{value}}</a>
+                                                </div>
+                                                <div ng-switch-default>
+                                                    {{value}}
+                                                </div>
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -3,7 +3,7 @@
     <p>Processing application data...<i class="fa fa-spinner fa-spin"></i></p>
     
 </div>
-<div class="panel panel-default">
+<div>
 <div ng-hide="hidePanel">
     <div class="container-fluid">
                 <script type="text/ng-template" id="myModalContent.html">
@@ -36,8 +36,9 @@
                         </div>
                 </script>
         </div>
-    <div class="panel-heading">{{pageHeader}}</div>
-    <div class="panel-body" style="min-height: 400px; max-height: 400px;">
+    <div><h2>{{pageHeader}}</h2></div>
+    <hr/>
+    <div style="min-height: 400px; max-height: 400px;">
         <form id="appInfoForm" name="appInfoForm" class="form-horizontal">
         <uib-tabset active="activeTab">
             <uib-tab index="0" heading="App/Integration Service Info" select="changeActiveTab(0)">
@@ -140,7 +141,7 @@
                                 </div>
                             </div>
                         </div>
-                        <input data-toggle="tooltip" data-placement="top" title="Test Query!" type="button" class="btn btn-default btn-sm" value="Test Query" ng-click="testQuery()"></input>
+                        <input tooltip-placement="top" uib-tooltip="Test Query" type="button" class="btn btn-default btn-sm" value="Test Query" ng-click="testQuery()"></input>
                         <input style="margin-left: 20px;" data-toggle="tooltip" data-placement="top" title="Change Query!" type="button" class="btn btn-default btn-sm" value="Reset" ng-click="resetQuery()"></input>
                         <br>
                         
