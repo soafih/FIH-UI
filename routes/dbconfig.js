@@ -42,7 +42,7 @@ router.get('/', function(req, res) {
 router.get('/name/:name', function(req, res) {
     var db = req.db;
     var collection = db.get('coll_dbconfig');
-    collection.find({name: req.params.name}, function(err, database){
+    collection.find({db_name: req.params.name}, function(err, database){
         if (err) throw err;
         console.log(req.params.name+ " | Fetched database details: "+database);
       	res.json(database[0]);

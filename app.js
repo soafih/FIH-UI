@@ -10,6 +10,7 @@ var users = require('./routes/users');
 var apis = require('./routes/apis');
 var apps = require('./routes/apps');
 var dbconfig = require('./routes/dbconfig');
+var stackatoapis = require('./routes/stackatoapis');
 
 // Initialize Monk for establishing connection with MongoDB
 var monk = require('monk');
@@ -41,6 +42,7 @@ app.use('/users', users);
 app.use('/fih/apis', apis);
 app.use('/fih/apps', apps);
 app.use('/fih/dbconfig', dbconfig);
+app.use('/fih/stackatoapis', stackatoapis);
 
 app.use(function(req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");

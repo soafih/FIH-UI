@@ -38,7 +38,7 @@
         </div>
     <div><h2>{{pageHeader}}</h2></div>
     <hr/>
-    <div style="min-height: 400px; max-height: 400px;">
+    <div style="min-height: 420px; max-height: 420px;">
         <form id="appInfoForm" name="appInfoForm" class="form-horizontal">
         <uib-tabset active="activeTab">
             <uib-tab index="0" heading="App/Integration Service Info" select="changeActiveTab(0)">
@@ -64,7 +64,7 @@
                             <div class="form-group required">
                                 <label class='control-label col-sm-3' for="selOrg">Organization</label>
                                 <div class="col-sm-6">
-                                    <select class="form-control" name='selectedOrg' ng-model='app.selectedOrg' ng-options='org for org in stackatoOrg'></select>
+                                    <select required class="form-control" name='selectedOrg' ng-model='app.selectedOrg' ng-options='org for org in stackatoOrg'></select>
                                 </div>
                             </div>
                         </div>
@@ -72,16 +72,16 @@
                             <div class="form-group required">
                                 <label class='control-label col-sm-3' for="selSpace">Space</label>
                                 <div class="col-sm-6">
-                                    <select class="form-control" name='selectedSpace' ng-model='app.selectedSpace' ng-options='space for space in stackatoSpace'></select>
+                                    <select required class="form-control" name='selectedSpace' ng-model='app.selectedSpace' ng-options='space for space in stackatoSpace'></select>
                                 </div>
                             </div>
                         </div>
                         <div class="row">
-                            <div class="form-group required">
+                            <div class="form-group">
                                 <label class='control-label col-sm-3' for="selSpace">Expose to Apigee</label>
                                 <div class="col-sm-6">
                                     <div class="checkbox checkbox-success">
-                                        <input id="checkbox1" type="checkbox" checked ng-model="app.exposeToApigee">
+                                        <input ng-init="app.exposeToApigee = false" id="checkbox1" type="checkbox" checked ng-model="app.exposeToApigee">
                                         <label  for="checkbox1" style="font-weight: bold;"> </label>
                                     </div>
                                 </div>
@@ -134,8 +134,25 @@
                 <br>
                     <div class="container-fluid">
                         <div class="row">
+                            <div class="form-group">
+                                <label class='control-label col-sm-2'>DB Max Active Conn</label>
+                                <div class="col-sm-1">
+                                    <input id="txtMaxActive" class="form-control" ng-model="app.dbconfig.max_active" placeholder="50"></input>
+                                </div>
+                                <label class='control-label col-sm-2'>DB Max Idle Conn</label>
+                                <div class="col-sm-1">
+                                    <input id="txtMaxIdle" class="form-control" ng-model="app.dbconfig.max_idle" placeholder="30"></input>
+                                </div>
+                                <label class='control-label col-sm-2'>DB Max Wait Conn</label>
+                                <div class="col-sm-2">
+                                    <input id="txtMaxWait" class="form-control" ng-model="app.dbconfig.max_wait" placeholder="10000"></input>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
                             <div class="form-group required">
-                                <label class="control-label col-sm-1" for="textQuery">Query</label>
+                                <label class="control-label col-sm-1">Query</label>
                                 <div class="col-sm-10">
                                     <textarea ng-disabled="disableQueryText" rows="11" style="font-size: 12px; font-family:Tahoma" required id="textQuery" class="form-control" ng-model="app.db_query"></textarea>
                                 </div>

@@ -1,5 +1,5 @@
-var fihApp = angular.module('fihApp', ['ngAnimate','ui.bootstrap','ngResource', 'ngRoute','ngTable']);
-fihApp.constant("DAASAPI_URL","http://daasapi.stackato-poc.foxinc.com/");
+var fihApp = angular.module('fihApp', ['ngAnimate','ui.bootstrap','ngResource','ngRoute','ngTable']);
+fihApp.constant("DAASAPI_URL","http://daasapi.stackato-poc.foxinc.com");
 
 fihApp.config(['$routeProvider', function($routeProvider){
     $routeProvider
@@ -109,12 +109,24 @@ fihApp.controller('AppDetailsCtrl', function($scope, $routeParams, $resource){
                 $scope.appSummary = [
                     {"API Type" : appDetails.api_type},
                     {"API Version" : appDetails.api_ver},
-                    {"End Point": appDetails.endpoint},
                     {"Status" : appDetails.status},
+                    {"Stage" : appDetails.stage},
                     {"Created" : appDetails.created_date},
-                    {"Last Updated" : appDetails.last_updated_date}
+                    {"Created By" : appDetails.created_by},
+                    {"Last Updated" : appDetails.last_updated_date},
+                    {"Last Updated By" : appDetails.last_updated_by}
                 ];
-                var DBService = $resource('/fih/dbconfig/name/'+appDetails.api_config.db_name);
+
+                $scope.implDetails = [
+                    {"Endpoint" : appDetails.endpoint},
+                    {"ExposeToApigee" : appDetails.expose_to_apigee},
+                    {"Query" : appDetails.db_config.query},
+                    {"Max Active" : appDetails.db_config.max_active},
+                    {"Max Idle" : appDetails.db_config.max_idle},
+                    {"Max Wait" : appDetails.db_config.max_wait},
+                ];
+
+                var DBService = $resource('/fih/dbconfig/name/'+appDetails.db_config.db_name);
                 DBService.get(function(dbconfig){
                     console.log("Fetched database details: "+JSON.stringify(dbconfig));
                     $scope.dbDetails = [
@@ -168,7 +180,7 @@ fihApp.controller('AddApiCtrl', function($scope, $resource, $location){
         };
     });
 
-fihApp.controller('AppStatusCtrl', function($scope, $window, $routeParams, $sce, $interval, $http, $location, DAASAPI_URL){
+fihApp.controller('AppStatusCtrl', function($scope, $resource, $window, $routeParams, $sce, $interval, $http, $location, DAASAPI_URL){
         
         $scope.pageHeader = "Application Deployment Status";
         
@@ -192,6 +204,7 @@ fihApp.controller('AppStatusCtrl', function($scope, $window, $routeParams, $sce,
 
         var buildappstatus = $routeParams.buildappstatus;
         $scope.appName = $routeParams.appname;
+        var appObjectId= $routeParams.appId;
 
         $scope.appCurrentState = "Saved";
         $scope.barState = $scope.appStateObj[$scope.appCurrentState];
@@ -207,18 +220,36 @@ fihApp.controller('AppStatusCtrl', function($scope, $window, $routeParams, $sce,
             }
         };
         console.log("Build Status Received: "+buildappstatus);
+        var AppUpdate = $resource('/fih/apps/updateStatus');
         if(buildappstatus == 'queued'){
             $scope.appCurrentState = "Queued";
             $scope.barState = $scope.appStateObj[$scope.appCurrentState];
             var queueStatusUrl = DAASAPI_URL + '/FIH/service/DAASAPI/JenkinUtility/GetBuildNumber?buildIdentifier='+$routeParams.buildidentifier;
+            
             $scope.RefreshQueueStatus = $interval(function () {
-                
+
                 $http.get(queueStatusUrl).then(function (res) {
                     var buildNumber = 0;
                     buildNumber = res.data.response.buildNumber;
                     console.log("Build Number:"+buildNumber);
                     if(buildNumber > 0){
-                        redirectUrl ='/#/appstatus?appname='+$scope.appName+'&buildappstatus=wip&buildno='+buildNumber+'&buildurl='+encodeURIComponent('http://jenkins-06hw6.10.135.4.49.nip.io/job/DAASBuild/'+buildNumber+'/consoleText');
+                        var logURL = 'http://jenkins-06hw6.10.135.4.49.nip.io/job/DAASBuild/'+buildNumber+'/consoleText';
+                        var updateObj = {
+                            appObjectId : appObjectId,
+                            status : 'WIP',
+                            stage: 'Triggered',
+                            build_number: buildNumber,
+                            build_url: logURL
+                        };
+                        
+                        AppUpdate.save(updateObj, function(res){
+                            console.log("Updated status: "+JSON.stringify(res));
+                        },
+                        function(error){
+                            console.log("Failed in updating app status: "+JSON.stringify(error));
+                        });
+
+                        redirectUrl ='/#/appstatus?appname='+$scope.appName+'&buildappstatus=wip&buildno='+buildNumber+'&buildurl='+encodeURIComponent(logURL);
                         console.log("URL to redirect: "+redirectUrl);
                         $interval.cancel($scope.RefreshQueueStatus);
                         //$location.path(redirectUrl);
@@ -248,14 +279,26 @@ fihApp.controller('AppStatusCtrl', function($scope, $window, $routeParams, $sce,
                 
                 $http.get(statusUrl).then(function (res) {
                     var appStatus = res.data.response.status.trim();
+                    var appStage = res.data.response.stage.trim();
                     $scope.appCurrentState = appStatus;
-
+                        
                     if(appStatus == "Success"){
                         console.log("Received "+appStatus+" For BuildAPI. Stoping page refresh..");
                         $interval.cancel($scope.RefreshIFrame);
                         $scope.barState = $scope.appStateObj[$scope.appCurrentState];
                         $scope.buildUrl = $sce.trustAsResourceUrl($routeParams.buildurl+'?dummyVar='+ (new Date()).getTime());
-                        // TODO: Persist APP state in mongodb
+                        
+                        var updateObj = {
+                            appObjectId : appObjectId,
+                            status : appStatus,
+                            stage: appStage,
+                        };
+                        AppUpdate.save(updateObj, function(res){
+                            console.log("Updated status: "+JSON.stringify(res));
+                        },
+                        function(error){
+                            console.log("Failed in updating app status: "+JSON.stringify(error));
+                        });
                     }
                     else if(appStatus == "Failed"){
                         console.log("Received "+appStatus+" from BuildAPI. Stoping page refresh..");
@@ -268,13 +311,35 @@ fihApp.controller('AppStatusCtrl', function($scope, $window, $routeParams, $sce,
                         }
                         $scope.barState = $scope.appStateObj[$scope.appCurrentState][$scope.appCurrentStage];
                         $scope.buildUrl = $sce.trustAsResourceUrl($routeParams.buildurl+'?dummyVar='+ (new Date()).getTime());
+
+                        var updateObj = {
+                            appObjectId : appObjectId,
+                            status : appStatus,
+                            stage: appStage,
+                        };
+                        AppUpdate.save(updateObj, function(res){
+                            console.log("Updated status: "+JSON.stringify(res));
+                        },
+                        function(error){
+                            console.log("Failed in updating app status: "+JSON.stringify(error));
+                        });
                     }
                     else if(appStatus =="WIP"){
                         console.log("Reloading Page...");
-                        var appStage = res.data.response.stage;
                         $scope.barState = $scope.appStateObj[$scope.appCurrentState][appStage];
                         $scope.buildUrl = $sce.trustAsResourceUrl($routeParams.buildurl+'?dummyVar='+ (new Date()).getTime());
-                        //$window.location.reload(true);
+
+                        var updateObj = {
+                            appObjectId : appObjectId,
+                            status : appStatus,
+                            stage: appStage,
+                        };
+                        AppUpdate.save(updateObj, function(res){
+                            console.log("Updated status: "+JSON.stringify(res));
+                        },
+                        function(error){
+                            console.log("Failed in updating app status: "+JSON.stringify(error));
+                        });
                     }
                 });
                 
@@ -336,6 +401,7 @@ fihApp.controller('AddAppCtrl', function($scope, DAASAPI_URL, $rootScope, $windo
 
         $scope.testQuery = function(){
             console.log("Calling Test Query service.."+JSON.stringify($scope.app.dbconfig));
+            $scope.queryResponse = '';
             if ($scope.app.dbconfig.db_name) {
                 var testQueryRequest = {
                     "query": $scope.app.db_query,
@@ -364,9 +430,9 @@ fihApp.controller('AddAppCtrl', function($scope, DAASAPI_URL, $rootScope, $windo
                     .success(function (response, status, headers, config) {
                         console.log("Successfully invoked BuildAPI with response: " + JSON.stringify(response));
                         if (response.response.status == "Success") {
-                            $scope.queryResult = response.status;
+                            $scope.queryResult = response.response.status;
                             $scope.queryResultColor = "green";
-                            $scope.testQueryResult = response.DataCollection.Data;
+                            $scope.testQueryResult = response.response.DataCollection.Data;
                             $scope.disableCreateBtn = false;
                             $scope.showQueryLabel = false;
                             //$scope.disableQueryText = true;
@@ -416,7 +482,6 @@ fihApp.controller('AddAppCtrl', function($scope, DAASAPI_URL, $rootScope, $windo
             });
         };
 
-
         $scope.app = {};
         $scope.app.dbconfig= {};
         $scope.apitype = $routeParams.apitype;
@@ -427,24 +492,30 @@ fihApp.controller('AddAppCtrl', function($scope, DAASAPI_URL, $rootScope, $windo
             $scope.hidePanel = true;
             $scope.app.name = $scope.app.name.replace("_", "-");
             var formattedDate = new Date();
+            var maxActive =  ($scope.app.dbconfig.max_active === undefined ? '50' : $scope.app.dbconfig.max_active);
+            var maxIdle= ($scope.app.dbconfig.max_idle === undefined ? '30' : $scope.app.dbconfig.max_idle);
+            var maxWait= ($scope.app.dbconfig.max_wait === undefined ? '10000' : $scope.app.dbconfig.max_wait);
             var appPostRequest = {
                 name: $scope.app.name,
                 api_type: $scope.apitype,
                 api_ver: '1.0',
                 descr: $scope.app.descr,
                 version: '1.0',
-                //endpoint: '',
                 status: 'Saved',
                 servicename: $scope.app.name,
+                expose_to_apigee: $scope.app.exposeToApigee,
                 created_by: 'System',
                 created_date: formattedDate,
                 last_updated_by: 'System',
                 last_updated_date: formattedDate,
                 messages: [{message: 'First Version'}],
                 stackato_config: {org: $scope.app.selectedOrg,space: $scope.app.selectedSpace},
-                api_config: {
+                db_config: {
                     db_name: $scope.app.dbconfig.db_name,
-                    query: $scope.app.db_query
+                    query: $scope.app.db_query,
+                    max_active: maxActive,
+                    max_idle: maxIdle,
+                    max_wait: maxWait
                 }
             };
 
@@ -459,7 +530,7 @@ fihApp.controller('AddAppCtrl', function($scope, DAASAPI_URL, $rootScope, $windo
             });
 
             if(appCurrentState == 'SaveFailed'){
-                var redirectUrl ='/#/appstatus?appname='+$scope.app.name+'&buildappstatus=savefailed';
+                var redirectUrl ='/#/appstatus?appname='+$scope.app.name+'&appId='+appObjectId+'&buildappstatus=savefailed';
                 console.log("Failed to save application details in database. Redirect to: "+redirectUrl);
                 $window.location.href = redirectUrl;
             }
@@ -481,9 +552,9 @@ fihApp.controller('AddAppCtrl', function($scope, DAASAPI_URL, $rootScope, $windo
                     },
                     "connectionAttr":
                     {
-                        "maxActive":$scope.app.dbconfig.conn_attributes.max_active,
-                        "maxIdle":$scope.app.dbconfig.conn_attributes.max_idle,
-                        "maxWait":$scope.app.dbconfig.conn_attributes.max_wait
+                        "maxActive": maxActive,
+                        "maxIdle": maxIdle,
+                        "maxWait": maxWait
                     }
                 };
 
@@ -502,12 +573,14 @@ fihApp.controller('AddAppCtrl', function($scope, DAASAPI_URL, $rootScope, $windo
                     var buildApiResponseStatus = response.response.status; 
                     var updateObj = {
                         appObjectId : appObjectId,
-                        appEP : response.response.app_ep,
-                        appBuildUrl : response.response.logURL,
-                        appStatus : buildApiResponseStatus,
-                        appBuildNumber: response.response.buildNumber,
-                        appBuildIdentifier: response.response.buildIdentifier
+                        endpoint : response.response.app_ep,
+                        build_url : response.response.logURL,
+                        status : buildApiResponseStatus,
+                        stage : response.response.stage,
+                        build_number: response.response.buildNumber,
+                        build_identifier: response.response.buildIdentifier
                     };
+                    
                     console.log("Updating app status with request: "+JSON.stringify(updateObj));
 
                     var AppUpdate = $resource('/fih/apps/updateStatus');
@@ -520,7 +593,7 @@ fihApp.controller('AddAppCtrl', function($scope, DAASAPI_URL, $rootScope, $windo
                         case "Queued":
                             AppUpdate.save(updateObj, function(res){
                                 console.log("Successfully updated App status: "+JSON.stringify(res));
-                                redirectUrl ='/#/appstatus?appname='+$scope.app.name+'&buildappstatus=queued&buildidentifier='+updateObj.appBuildIdentifier;
+                                redirectUrl ='/#/appstatus?appname='+$scope.app.name+'&appId='+appObjectId+'&buildappstatus=queued&buildidentifier='+updateObj.build_identifier;
                                 console.log("URL to redirect: "+redirectUrl);
                                 $window.location.href = redirectUrl;
                             },
@@ -533,7 +606,7 @@ fihApp.controller('AddAppCtrl', function($scope, DAASAPI_URL, $rootScope, $windo
                         case "WIP":
                             AppUpdate.save(updateObj, function(res){
                                 console.log("Successfully updated App status: "+JSON.stringify(res));
-                                redirectUrl ='/#/appstatus?appname='+$scope.app.name+'&buildappstatus=wip&buildno='+updateObj.appBuildNumber+'&buildurl='+encodeURIComponent(updateObj.appBuildUrl);
+                                redirectUrl ='/#/appstatus?appname='+$scope.app.name+'&appId='+appObjectId+'&buildappstatus=wip&buildno='+updateObj.build_number+'&buildurl='+encodeURIComponent(updateObj.build_url);
                                 console.log("URL to redirect: "+redirectUrl);
                                 $window.location.href = redirectUrl;
                             },
@@ -554,16 +627,21 @@ fihApp.controller('AddAppCtrl', function($scope, DAASAPI_URL, $rootScope, $windo
                 $scope.loader.loading = false;
                 console.log(JSON.stringify("Recieved Error From Build API: "+JSON.stringify(error)));
                 appStatus = 'Failed';
-                var urlpath ='/#/appstatus?appname='+$scope.app.name+'&buildappstatus=failed&reason='+error;
-                $window.location.href = urlpath;
+                var updateObj = {
+                    appObjectId : appObjectId,
+                    status : appStatus,
+                };
+                var AppUpdate = $resource('/fih/apps/updateStatus');
+                AppUpdate.save(updateObj, function(res){
+                    var redirectUrl ='/#/appstatus?appname='+$scope.app.name+'&appId='+appObjectId+'&buildappstatus=failed&reason='+error;
+                    console.log("URL to redirect: "+redirectUrl);
+                    $window.location.href = redirectUrl;
+                },
+                function(error){
+                    console.log("Failed in updating app status: "+JSON.stringify(error));
+                });
             }
         };
-
-        $scope.stackatoOrg = ["SOA"];
-        $scope.app.selectedOrg = $scope.stackatoOrg[0];
-
-        $scope.stackatoSpace = ["FIH-DEV", "FIH"];
-        $scope.app.selectedSpace = $scope.stackatoSpace[0];
 
         /*$scope.getDbSearchResult = function(val) {
            
@@ -594,44 +672,34 @@ fihApp.controller('AddAppCtrl', function($scope, DAASAPI_URL, $rootScope, $windo
 
         // at the bottom of your controller
         var init = function () {
-            var headerConfig = {headers:  {
-                    'Authorization': 'Basic Y2Y6',
-                    'Access-Control-Allow-Origin': '*'
-                }
-            };
-
-            var inputOAuth =  {
-                grant_type: "password",
-                username: "shadab",
-                password: "welcome1",
-            };
             
-            console.log("Calling oAuth: "+JSON.stringify(inputOAuth));
-            $http.post('http://aok.10.135.4.49.nip.io/uaa/oauth/token',inputOAuth, headerConfig, { dataType: "jsonp" })
-            .success(function(response, status, headers, config){
-                console.log("oAuth Response: "+JSON.stringify(response));
+            var OrgApis = $resource('/fih/stackatoapis/orgs');
+            OrgApis.query(function(apis){
+                console.log("apis: "+apis);
+                $scope.stackatoOrg = apis;
+                $scope.app.selectedOrg = $scope.stackatoOrg[0];
                 
-                var accessToken = response.access_token;
-                var headerConfig = {headers:  {
-                    'Authorization': 'Bearer '+accessToken
-                    }
-                };
-                $http.get("http://api.10.135.4.49.nip.io/v2/spaces", headerConfig).then(function (res) {
-                    console.log("Response from stackato for spaces: "+JSON.stringify(res));
-                });
-            })
-            .error(function(data, status, headers, config){
-                
+            });
+
+            var SpaceApis = $resource('/fih/stackatoapis/spaces');
+            SpaceApis.query(function(spaces){
+                console.log("apis: "+spaces);
+                $scope.stackatoSpace = spaces;
+                $scope.app.selectedSpace = $scope.stackatoSpace[0];
             });
         };
         // and fire it after definition
         init();
+        
     });
 
-fihApp.controller('ModalAppCtrl', function ($scope, $uibModal, $filter) {
+fihApp.controller('ModalAppCtrl', function ($scope, $uibModal, $filter, $window) {
   
     $scope.animationsEnabled = true;
     $scope.appDetails = [];
+    $scope.viewDetails = function(appName){
+        $window.location.href = "/#/appdetails/"+appName;
+    };
     $scope.open = function (appName) {
         
         var choosenApp = $filter('filter')($scope.apps, {name: appName}, true)[0];
