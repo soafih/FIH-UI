@@ -98,9 +98,84 @@ fihApp.controller('DashboardCtrl', function($scope, $resource, $location){
         $scope.pageHeader = "Dashboard";
         
     });
-fihApp.controller('AppDetailsCtrl', function($scope, $routeParams, $resource){
+fihApp.controller('AppDetailsCtrl', function($scope, $routeParams, $resource, $filter){
         $scope.applicationName = $routeParams.appname;
-    
+        $scope.showLabelAppDescr = true;
+        
+        var AppUpdate = $resource('/fih/apps/updateStatus');
+
+        $scope.editImplDetails = function(){
+            $scope.showEditableImplFields = true;
+            $scope.showSavedMessage = false;
+            $scope.editMessage = "";
+            $scope.txtUpdatedQuery = $scope.appDetails.db_config.query;
+        };
+
+        $scope.saveImplDetails = function(){
+            $scope.showEditableImplFields = false;
+            console.log("Updating query "+$scope.txtUpdatedQuery+" for "+$scope.appDetails._id);
+            var updateObj = {
+                appObjectId : $scope.appDetails._id,
+                expose_to_apigee : $scope.appDetails.expose_to_apigee,
+                'db_config.query': $scope.txtUpdatedQuery,
+                'db_config.max_active': $scope.appDetails.dbconfig.max_active,
+                'db_config.max_wait': $scope.appDetails.dbconfig.max_wait,
+                'db_config.max_idle': $scope.appDetails.dbconfig.max_idle,
+                last_updated_by: 'System',
+                last_updated_date: new Date()
+            };
+            AppUpdate.save(updateObj, function(res){
+                console.log($scope.appDetails._id + "Updated status: "+JSON.stringify(res));
+                $scope.showSavedMessage = true;
+                $scope.editMessage = "Success";
+                $scope.msgColor = "green";
+                $scope.appDetails.db_config.query= $scope.txtUpdatedQuery; 
+            },
+            function(error){
+                console.log("Failed in updating app query: "+JSON.stringify(error));
+                $scope.showSavedMessage = true;
+                $scope.editMessage = "Failed";
+                $scope.msgColor = "red";
+            });
+        };
+
+        $scope.cancelImplDetails = function(){
+            $scope.showEditableImplFields = false;
+            $scope.showSavedMessage = false;
+            $scope.editMessage = "";
+        };
+
+        $scope.editAppDescr = function(){
+            $scope.showLabelAppDescr = false;
+            $scope.showTextAppDescr = true;
+            $scope.updatedAppDesc = $scope.appDetails.descr;
+        };
+
+        $scope.saveAppDescr = function(){
+            $scope.showLabelAppDescr = true;
+            $scope.showTextAppDescr = false;
+            
+            var updateObj = {
+                appObjectId : $scope.appDetails._id,
+                descr: $scope.updatedAppDesc,
+                last_updated_by: 'System',
+                last_updated_date: new Date()
+            };
+            AppUpdate.save(updateObj, function(res){
+                console.log($scope.appDetails._id + " Updated status: "+JSON.stringify(res));
+                $scope.appDetails.descr = $scope.updatedAppDesc;
+            },
+            function(error){
+                console.log("Failed in updating app description: "+JSON.stringify(error));
+            });
+        };
+
+        $scope.cancelAppDescr = function(){
+            $scope.showLabelAppDescr = true;
+            $scope.showTextAppDescr = false;
+            $scope.updatedAppDesc = $scope.appDetails.descr;
+        };
+
         var init = function(){
             var AppService = $resource('/fih/apps/name/'+$scope.applicationName);
             AppService.get(function(appDetails){
@@ -111,21 +186,12 @@ fihApp.controller('AppDetailsCtrl', function($scope, $routeParams, $resource){
                     {"API Version" : appDetails.api_ver},
                     {"Status" : appDetails.status},
                     {"Stage" : appDetails.stage},
-                    {"Created" : appDetails.created_date},
+                    {"Created" : $filter('date')(appDetails.created_date, "yyyy-MM-dd HH:mm:ss")},
                     {"Created By" : appDetails.created_by},
-                    {"Last Updated" : appDetails.last_updated_date},
+                    {"Last Updated" : $filter('date')(appDetails.last_updated_date, "yyyy-MM-dd HH:mm:ss")},
                     {"Last Updated By" : appDetails.last_updated_by}
                 ];
-
-                $scope.implDetails = [
-                    {"Endpoint" : appDetails.endpoint},
-                    {"ExposeToApigee" : appDetails.expose_to_apigee},
-                    {"Query" : appDetails.db_config.query},
-                    {"Max Active" : appDetails.db_config.max_active},
-                    {"Max Idle" : appDetails.db_config.max_idle},
-                    {"Max Wait" : appDetails.db_config.max_wait},
-                ];
-
+                
                 var DBService = $resource('/fih/dbconfig/name/'+appDetails.db_config.db_name);
                 DBService.get(function(dbconfig){
                     console.log("Fetched database details: "+JSON.stringify(dbconfig));

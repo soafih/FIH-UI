@@ -3,9 +3,9 @@
         <div class="container-fluid">
             <div class="row">
                 <div class="col-md-2"><h3>{{applicationName}}</h3></div>
-                <button class="btn btn-danger btn-md col-md-1 pull-right">Delete</button>
-                <button class="btn btn-info btn-md col-md-1 pull-right">Restart</button>
-                <button class="btn btn-info btn-md col-md-1 pull-right">Redeploy</button>
+                <button ng-disabled="true" class="btn btn-danger btn-md col-md-1 pull-right">Delete</button>
+                <button ng-disabled="true" class="btn btn-info btn-md col-md-1 pull-right">Restart</button>
+                <button ng-disabled="true" class="btn btn-info btn-md col-md-1 pull-right">Redeploy</button>
             </div>
         </div>
     </div>
@@ -14,14 +14,25 @@
             <div class="row">
                 <div class="col-md-12">
                     <div class="panel panel-default" style="margin: 20px 0 0px 0; border-radius: 0em/.0em;">
-                        <div class="panel-body description">{{appDetails.descr}}
-                            <div ng-show="false">
-                                <textarea ng-disabled="true" class='col-md-12'></textarea>
+                        <div class="panel-body description">
+                            <div ng-show="showLabelAppDescr">{{appDetails.descr}}
+                                <button type="button" ng-click="editAppDescr()" class="btn btn-default btn-sm pull-right">
+                                    <span class="glyphicon glyphicon-edit"></span> Edit
+                                </button>
+                            </div>
+                            <div ng-show="showTextAppDescr">
+                                <textarea class='col-md-11' ng-model="updatedAppDesc"></textarea>
+                                <button type="button" ng-click="saveAppDescr()" style="margin: 0 0 5px 10px" class="btn btn-success btn-xs">
+                                    <span class="glyphicon glyphicon-floppy-save"></span> Save
+                                </button>
+                                <button type="button" ng-click="cancelAppDescr()" style="margin: 0 0 5px 10px"  class="btn btn-default btn-xs">
+                                    <span class="glyphicon glyphicon-floppy-remove"></span> Cancel
+                                </button>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-6">
+                <div class="col-md-7">
                     <div class="appdetails">
                         <div class="panel panel-default">
                             <div class="panel-heading">
@@ -52,32 +63,66 @@
                         <div class="panel panel-default">
                             <div class="panel-heading">
                                 <h4 class="panel-title">
-                                    <a class="accordion-toggle" ng-click="isImplCollapsed = !isImplCollapsed">Implementation Details</a>
+                                    <div ng-show="!showEditableImplFields">
+                                        <a class="accordion-toggle" ng-click="isImplCollapsed = !isImplCollapsed">Implementation Details</a>
+                                        <button type="button" ng-click="editImplDetails()" class="btn btn-default btn-sm">
+                                            <span class="glyphicon glyphicon-edit"></span> Edit
+                                        </button>
+                                        <div style="display: inline;" ng-show="showSavedMessage"><font color="{{msgColor}}"> {{editMessage}}</font></div>
+                                    </div>
+                                    <div ng-show="showEditableImplFields">
+                                        <a class="accordion-toggle" ng-click="isImplCollapsed = !isImplCollapsed">Implementation Details</a>
+                                        <button type="button" ng-click="saveImplDetails()" style="margin: 0 5px 0 0" class="btn btn-success btn-xs">
+                                            <span class="glyphicon glyphicon-floppy-save"></span> Save
+                                        </button>
+                                        <button type="button" ng-click="cancelImplDetails()" style="margin: 0 5px 0 0" class="btn btn-default btn-xs">
+                                            <span class="glyphicon glyphicon-floppy-remove"></span> Cancel
+                                        </button>
+                                    </div>
                                 </h4>
+                                
                             </div>
                             <div uib-collapse="isImplCollapsed">
                                 <div class="panel-body">
-                                    <div class="row" ng-repeat="item in implDetails" style="margin-top: 10px">
-                                        <div ng-repeat="(key, value) in item">
-                                            <label class='control-label col-sm-3'>{{key}}</label>
-                                            <label class='control-label col-sm-9' style="font-weight:500">
-                                                <div ng-switch on="key">
-                                                    <div ng-switch-when="Endpoint">
-                                                        <a href="{{value}}">{{value}}</a>
-                                                    </div>
-                                                    <div ng-switch-default>
-                                                        {{value}}
-                                                    </div>
-                                                </div>
-                                            </label>
+                                    <div class="row" style="margin-top: 10px">
+                                        <label class='control-label col-md-3'>Endpoint</label>
+                                        <label class='control-label col-md-9' style="font-weight:500"><a href={{appDetails.endpoint}}>{{appDetails.endpoint}}</a></label>
+                                    </div>
+                                    <div class="row">
+                                        <div class="form-group">
+                                            <label class='control-label col-md-3' style="padding-top: 10px">ExposeToApigee</label>
+                                            <div class="checkbox checkbox-success col-md-6" style="margin-left:10px">
+                                                <input ng-init="disableApigeeChk=true" ng-disabled="!showEditableImplFields" id="checkbox1" type="checkbox" ng-checked="appDetails.expose_to_apigee" ng-model="appDetails.expose_to_apigee">
+                                                <label for="checkbox1"></label>
+                                            </div>
                                         </div>
+                                    </div>
+                                    <div class="row" style="margin-top: 10px; padding-right: 5px;">
+                                        <label class='control-label col-md-3'>Query</label>
+                                        <label ng-show="!showEditableImplFields" class='control-label col-md-9' style="font-weight:500">{{appDetails.db_config.query}}</label>
+                                        <textarea ng-show="showEditableImplFields" style="font-size:12px; font-family: Tahoma; font-weight:500" class='control-label col-md-9' ng-model="txtUpdatedQuery" rows="10">{{appDetails.db_config.query}}</textarea>
+                                    </div>
+                                    <div class="row" style="margin-top: 10px">
+                                        <label class='control-label col-md-3'>Max Active</label>
+                                        <label ng-show="!showEditableImplFields" class='control-label col-md-2' style="font-weight:500">{{appDetails.db_config.max_active}}</label>
+                                        <input ng-show="showEditableImplFields" class="control-labe col-md-2" ng-model="app.dbconfig.max_active" placeholder="{{appDetails.db_config.max_active}}"></input>
+                                    </div>
+                                    <div class="row" style="margin-top: 10px">
+                                        <label class='control-label col-md-3'>Max Idle</label>
+                                        <label ng-show="!showEditableImplFields" class='control-label col-md-2' style="font-weight:500">{{appDetails.db_config.max_idle}}</label>
+                                        <input ng-show="showEditableImplFields" class="control-labe col-md-2" ng-model="app.dbconfig.max_idle" placeholder="{{appDetails.db_config.max_idle}}"></input>
+                                    </div>
+                                    <div class="row" style="margin-top: 10px">
+                                        <label class='control-label col-md-3'>Max Wait Time</label>
+                                        <label ng-show="!showEditableImplFields" class='control-label col-md-2' style="font-weight:500">{{appDetails.db_config.max_wait}}</label>
+                                        <input ng-show="showEditableImplFields" class="control-labe col-md-2" ng-model="app.dbconfig.max_wait" placeholder="{{appDetails.db_config.max_wait}}"></input>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-6">
+                <div class="col-md-5">
                     <div class="appdetails">
                         <div class="panel panel-default">
                             <div class="panel-heading">

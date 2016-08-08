@@ -14,15 +14,6 @@ body h2{
   font-family: Tahoma;
 }
 
-.panel-body.description{
-  font-size: 13px;
-  font-family: Tahoma;
-  height: 70px;
-  overflow-x: hidden;
-  overflow-y: hidden;
-  text-overflow: ellipsis;
-}
-
 body h3{
   font-size: 24px;
   font-weight: 600;
@@ -39,11 +30,27 @@ body h4{
   margin-top: 0px;
 }
 
+.control-label{
+  font-size: 13px;
+  font-weight: 600;
+  color: black;
+  font-family: Tahoma;
+}
+
 .appdetails{
   font-size: 12px;
   font-weight: 600;
   padding-top: 30px;
   padding-right: -10px;
+}
+
+.panel-body.description{
+  font-size: 13px;
+  font-family: Tahoma;
+  height: 80px;
+  overflow-x: hidden;
+  overflow-y: hidden;
+  text-overflow: ellipsis;
 }
 
 .panel-title{
