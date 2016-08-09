@@ -5,6 +5,7 @@
 /* Move down content because we have a fixed navbar that is 50px tall */
 body {
   padding-top: 50px;
+  font-family: Tahoma;
 }
 
 body h2{
@@ -26,7 +27,6 @@ body h4{
   font-size: 15px;
   font-weight: 600;
   color: #455A64;
-  font-family: Tahoma;
   margin-top: 0px;
 }
 
@@ -34,8 +34,23 @@ body h4{
   font-size: 13px;
   font-weight: 600;
   color: black;
-  font-family: Tahoma;
 }
+
+.control-label.dbconn{
+  font-size: 12px;
+  font-weight: 600;
+  margin-right: 0px;
+  padding-right: 0px;
+  color: black;
+} 
+
+.dbconninput{
+  margin-left: 5px;
+  padding-left: 0px;
+  margin-right: 50px;
+}
+
+html.ng-scope body div.container-fluid div.row div.col-sm-9.col-sm-offset-3.col-md-10.col-md-offset-2.main div.ng-scope div.ng-scope div div form#appInfoForm.form-horizontal.ng-pristine.ng-invalid.ng-invalid-required div.ng-isolate-scope div.tab-content div.tab-pane.ng-scope.active div.container-fluid.ng-scope div.row div.form-group div.col-sm-1
 
 .appdetails{
   font-size: 12px;
@@ -73,11 +88,11 @@ body h4{
   margin-right: 10px;
 }
 
-/* Important part */
 .modal-dialog{
     width: 90%;
     overflow-y: initial !important
 }
+
 .modal-body{
     height: 400px;
     overflow-y: auto;
@@ -85,6 +100,10 @@ body h4{
 
 .modal-header{
   margin-top: 30px;
+}
+
+body .modal-header{
+  color: 212121;
 }
 
 .ng-hide {
@@ -104,9 +123,6 @@ body h4{
   padding: 0px;
 }
 
-body .modal-header{
-  color: 212121;
-}
 .btn-success{
   font-weight: 600; 
   font-size: 13px; 

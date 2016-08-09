@@ -1,11 +1,21 @@
 <div class="tab-content">
+    <script type="text/ng-template" id="deleteDialog.html">
+    
+            <h3 class="modal-title">Would you like to delete the application</h3>
+            
+            <p>All application data will be deleted. This action cannot be undone</p>
+            <div class="modal-footer">
+                <button class="btn btn-danger" type="button" ng-click="ok()">Delete</button>
+                <button class="btn btn-default" type="button" ng-click="cancel()">Cancel</button>
+            </div>
+    </script>
     <div class="app-header">
         <div class="container-fluid">
             <div class="row">
-                <div class="col-md-2"><h3>{{applicationName}}</h3></div>
-                <button ng-disabled="true" class="btn btn-danger btn-md col-md-1 pull-right">Delete</button>
+                <div class="col-md-7"><h3>{{applicationName}}</h3></div>
+                <button class="btn btn-danger btn-md col-md-1 pull-right" ng-click="openDeleteDialog()">Delete</button>
                 <button ng-disabled="true" class="btn btn-info btn-md col-md-1 pull-right">Restart</button>
-                <button ng-disabled="true" class="btn btn-info btn-md col-md-1 pull-right">Redeploy</button>
+                <button class="btn btn-info btn-md col-md-1 pull-right" ng-click="restartApp()">Redeploy</button>
             </div>
         </div>
     </div>
@@ -13,7 +23,7 @@
         <div class="container-fluid">
             <div class="row">
                 <div class="col-md-12">
-                    <div class="panel panel-default" style="margin: 20px 0 0px 0; border-radius: 0em/.0em;">
+                    <div class="panel panel-default" style="margin: 20px 0 10px 0; border-radius: 0em/.0em;">
                         <div class="panel-body description">
                             <div ng-show="showLabelAppDescr">{{appDetails.descr}}
                                 <button type="button" ng-click="editAppDescr()" class="btn btn-default btn-sm pull-right">
@@ -105,17 +115,17 @@
                                     <div class="row" style="margin-top: 10px">
                                         <label class='control-label col-md-3'>Max Active</label>
                                         <label ng-show="!showEditableImplFields" class='control-label col-md-2' style="font-weight:500">{{appDetails.db_config.max_active}}</label>
-                                        <input ng-show="showEditableImplFields" class="control-labe col-md-2" ng-model="app.dbconfig.max_active" placeholder="{{appDetails.db_config.max_active}}"></input>
+                                        <input ng-show="showEditableImplFields" class="control-labe col-md-2" ng-model="txtMaxActive" placeholder="{{appDetails.db_config.max_active}}"></input>
                                     </div>
                                     <div class="row" style="margin-top: 10px">
                                         <label class='control-label col-md-3'>Max Idle</label>
                                         <label ng-show="!showEditableImplFields" class='control-label col-md-2' style="font-weight:500">{{appDetails.db_config.max_idle}}</label>
-                                        <input ng-show="showEditableImplFields" class="control-labe col-md-2" ng-model="app.dbconfig.max_idle" placeholder="{{appDetails.db_config.max_idle}}"></input>
+                                        <input ng-show="showEditableImplFields" class="control-labe col-md-2" ng-model="txtMaxIdle" placeholder="{{appDetails.db_config.max_idle}}"></input>
                                     </div>
                                     <div class="row" style="margin-top: 10px">
                                         <label class='control-label col-md-3'>Max Wait Time</label>
                                         <label ng-show="!showEditableImplFields" class='control-label col-md-2' style="font-weight:500">{{appDetails.db_config.max_wait}}</label>
-                                        <input ng-show="showEditableImplFields" class="control-labe col-md-2" ng-model="app.dbconfig.max_wait" placeholder="{{appDetails.db_config.max_wait}}"></input>
+                                        <input ng-show="showEditableImplFields" class="control-labe col-md-2" ng-model="txtMaxWait" placeholder="{{appDetails.db_config.max_wait}}"></input>
                                     </div>
                                 </div>
                             </div>

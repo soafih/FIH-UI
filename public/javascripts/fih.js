@@ -16,11 +16,6 @@ fihApp.config(['$routeProvider', function($routeProvider){
         .when('/help', {
             templateUrl: 'partials/help.html',
         })
-        .when('/#/apps', {
-            templateUrl: 'partials/apps.html',
-            controller: 'AppsCtrl',
-            activetab: 'Applications'
-        })
         .when('/apps', {
             templateUrl: 'partials/apps.html',
             controller: 'AppsCtrl',
@@ -35,10 +30,6 @@ fihApp.config(['$routeProvider', function($routeProvider){
             controller: 'AddApiCtrl'
         })
         .when('/appstatus', {
-            templateUrl: 'partials/app-status.html',
-            controller: 'AppStatusCtrl',
-        })
-        .when('/#/appstatus', {
             templateUrl: 'partials/app-status.html',
             controller: 'AppStatusCtrl',
         })
@@ -98,7 +89,7 @@ fihApp.controller('DashboardCtrl', function($scope, $resource, $location){
         $scope.pageHeader = "Dashboard";
         
     });
-fihApp.controller('AppDetailsCtrl', function($scope, $routeParams, $resource, $filter){
+fihApp.controller('AppDetailsCtrl', function($scope, $routeParams, $resource, $location, $filter, $uibModal, $window, $http, DAASAPI_URL){
         $scope.applicationName = $routeParams.appname;
         $scope.showLabelAppDescr = true;
         
@@ -109,6 +100,9 @@ fihApp.controller('AppDetailsCtrl', function($scope, $routeParams, $resource, $f
             $scope.showSavedMessage = false;
             $scope.editMessage = "";
             $scope.txtUpdatedQuery = $scope.appDetails.db_config.query;
+            $scope.txtMaxWait = $scope.appDetails.db_config.max_wait;
+            $scope.txtMaxIdle = $scope.appDetails.db_config.max_idle;
+            $scope.txtMaxActive = $scope.appDetails.db_config.max_active;
         };
 
         $scope.saveImplDetails = function(){
@@ -118,18 +112,21 @@ fihApp.controller('AppDetailsCtrl', function($scope, $routeParams, $resource, $f
                 appObjectId : $scope.appDetails._id,
                 expose_to_apigee : $scope.appDetails.expose_to_apigee,
                 'db_config.query': $scope.txtUpdatedQuery,
-                'db_config.max_active': $scope.appDetails.dbconfig.max_active,
-                'db_config.max_wait': $scope.appDetails.dbconfig.max_wait,
-                'db_config.max_idle': $scope.appDetails.dbconfig.max_idle,
+                'db_config.max_active': $scope.txtMaxActive,
+                'db_config.max_wait': $scope.txtMaxWait,
+                'db_config.max_idle': $scope.txtMaxIdle,
                 last_updated_by: 'System',
                 last_updated_date: new Date()
             };
             AppUpdate.save(updateObj, function(res){
                 console.log($scope.appDetails._id + "Updated status: "+JSON.stringify(res));
                 $scope.showSavedMessage = true;
-                $scope.editMessage = "Success";
-                $scope.msgColor = "green";
+                $scope.editMessage = "Updated, Redeploy Application.";
+                $scope.msgColor = "#f0ad4e";
                 $scope.appDetails.db_config.query= $scope.txtUpdatedQuery; 
+                $scope.appDetails.db_config.max_wait = $scope.txtMaxWait;
+                $scope.appDetails.db_config.max_idle = $scope.txtMaxIdle;
+                $scope.appDetails.db_config.max_active = $scope.txtMaxActive;
             },
             function(error){
                 console.log("Failed in updating app query: "+JSON.stringify(error));
@@ -176,6 +173,149 @@ fihApp.controller('AppDetailsCtrl', function($scope, $routeParams, $resource, $f
             $scope.updatedAppDesc = $scope.appDetails.descr;
         };
 
+        $scope.openDeleteDialog = function(){
+            var modalInstance = $uibModal.open({
+                animation: $scope.animationsEnabled,
+                templateUrl: 'deleteDialog.html',
+                controller: 'AppDeleteModalInstanceCtrl',
+                size: 'sm'
+            });
+            
+            modalInstance.result.then(function () {
+                console.log('Modal selected at: ' + new Date());
+                $scope.deleteApp();
+            }, function () {
+                console.log('Modal dismissed at: ' + new Date());
+            });
+        };
+
+        $scope.restartApp = function(){
+            var appObjectId = $scope.appDetails._id;
+            var buildAppRequest = {
+                "organization": $scope.appDetails.stackato_config.org,
+                "space": $scope.appDetails.stackato_config.space,
+                "applicationName": $scope.appDetails.name,
+                "query": $scope.appDetails.db_config.query,
+                "databaseInfo":
+                {
+                    "databaseType": $scope.databaseInfo.db_type,
+                    "hostName": $scope.databaseInfo.host,
+                    "port": $scope.databaseInfo.port,
+                    "databaseName": $scope.databaseInfo.db_name,
+                    "schema": $scope.databaseInfo.schema,
+                    "user": $scope.databaseInfo.uname,
+                    "password": $scope.databaseInfo.pwd
+                },
+                "connectionAttr":
+                {
+                    "maxActive": $scope.appDetails.db_config.max_active,
+                    "maxIdle": $scope.appDetails.db_config.max_idle,
+                    "maxWait": $scope.appDetails.db_config.max_wait
+                }
+            };
+
+            var headerConfig = {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json;odata=verbose'
+                }
+            };
+
+            console.log("Build API Request: " + JSON.stringify(buildAppRequest));
+            $http.post(DAASAPI_URL + '/FIH/service/DAASAPI/BuildApp', buildAppRequest, headerConfig, { dataType: "jsonp" })
+                .success(function (response, status, headers, config) {
+                    console.log("Successfully invoked BuildAPI with response: " + JSON.stringify(response));
+                    console.log("Build App status: " + response.response.status);
+
+                    var buildApiResponseStatus = response.response.status;
+                    var updateObj = {
+                        appObjectId: appObjectId,
+                        endpoint: response.response.app_ep,
+                        build_url: response.response.logURL,
+                        status: buildApiResponseStatus,
+                        stage: response.response.stage,
+                        build_number: response.response.buildNumber,
+                        build_identifier: response.response.buildIdentifier
+                    };
+
+                    console.log("Updating app status with request: " + JSON.stringify(updateObj));
+
+                    var AppUpdate = $resource('/fih/apps/updateStatus');
+                    var redirectUrl = '';
+                    switch (buildApiResponseStatus) {
+                        case "Failed":
+                            handleAppBuildFailure();
+                            break;
+
+                        case "Queued":
+                            AppUpdate.save(updateObj, function (res) {
+                                console.log("Successfully updated App status: " + JSON.stringify(res));
+                                redirectUrl = '/#/appstatus?appname=' + $scope.appDetails.name + '&appId=' + appObjectId + '&buildappstatus=queued&buildidentifier=' + updateObj.build_identifier;
+                                console.log("URL to redirect: " + redirectUrl);
+                                $window.location.href = redirectUrl;
+                            },
+                                function (error) {
+                                    handleAppBuildFailure(error);
+                                });
+
+                            break;
+
+                        case "WIP":
+                            AppUpdate.save(updateObj, function (res) {
+                                console.log("Successfully updated App status: " + JSON.stringify(res));
+                                redirectUrl = '/#/appstatus?appname=' + $scope.appDetails.name + '&appId=' + appObjectId + '&buildappstatus=wip&buildno=' + updateObj.build_number + '&buildurl=' + encodeURIComponent(updateObj.build_url);
+                                console.log("URL to redirect: " + redirectUrl);
+                                $window.location.href = redirectUrl;
+                            },
+                                function (error) {
+                                    handleAppBuildFailure(error);
+                                });
+
+                            break;
+                    }
+
+                })
+                .error(function (data, status, headers, config) {
+                    handleAppBuildFailure();
+                });
+
+
+            function handleAppBuildFailure(error) {
+                console.log(JSON.stringify("Recieved Error From Build API: " + JSON.stringify(error)));
+                appStatus = 'Failed';
+                var updateObj = {
+                    appObjectId: appObjectId,
+                    status: appStatus,
+                };
+                var AppUpdate = $resource('/fih/apps/updateStatus');
+                AppUpdate.save(updateObj, function (res) {
+                    var redirectUrl = '/#/appstatus?appname=' + $scope.appDetails.name + '&appId=' + appObjectId + '&buildappstatus=failed&reason=' + error;
+                    console.log("URL to redirect: " + redirectUrl);
+                    $window.location.href = redirectUrl;
+                },
+                    function (error) {
+                        console.log("Failed in updating app status: " + JSON.stringify(error));
+                    });
+            }
+        };
+
+        $scope.deleteApp = function(){
+            var StackatoService =$resource('/fih/stackatoapis/apps/'+$scope.appGUID);
+            StackatoService.delete(function(res){
+                var appDeleteStatus = JSON.stringify(res);
+                console.log(res+" Stackato App Delete Status: "+appDeleteStatus);
+                console.log("Response Status Code:"+res.statusCode);
+                if(res){
+                    var AppService = $resource('/fih/apps/name/'+$scope.applicationName);
+                    AppService.delete(function(res){
+                        console.log("Deleted App: "+res);
+                        console.log("Deleted App: "+JSON.stringify(res));
+                        $location.path('/#/');
+                    });
+                }
+            });
+        };
+
         var init = function(){
             var AppService = $resource('/fih/apps/name/'+$scope.applicationName);
             AppService.get(function(appDetails){
@@ -195,6 +335,7 @@ fihApp.controller('AppDetailsCtrl', function($scope, $routeParams, $resource, $f
                 var DBService = $resource('/fih/dbconfig/name/'+appDetails.db_config.db_name);
                 DBService.get(function(dbconfig){
                     console.log("Fetched database details: "+JSON.stringify(dbconfig));
+                    $scope.databaseInfo = dbconfig;
                     $scope.dbDetails = [
                         {"Name" : dbconfig.db_name},
                         {"Type" : dbconfig.db_type},
@@ -205,11 +346,27 @@ fihApp.controller('AppDetailsCtrl', function($scope, $routeParams, $resource, $f
                     ];
                 });
             });
+
+            var StackatoService =$resource('/fih/stackatoapis/apps/'+$scope.applicationName);
+            StackatoService.get(function(app){
+                console.log("APP GUID: "+app.guid);
+                $scope.appGUID = app.guid;
+            });
         };
 
         init();
     });
     
+fihApp.controller('AppDeleteModalInstanceCtrl', function ($scope, $uibModalInstance) {
+
+  $scope.ok = function () {
+    $uibModalInstance.close();
+  };
+
+  $scope.cancel = function () {
+    $uibModalInstance.dismiss('cancel');
+  };
+});
 
 fihApp.controller('SidebarCtrl', function($scope, $resource, $location){
         $scope.isActive = function(route) {
@@ -524,7 +681,6 @@ fihApp.controller('AddAppCtrl', function($scope, DAASAPI_URL, $rootScope, $windo
                 $scope.activeTab = 1;
             }
         };
-
         
         $scope.animationsEnabled = false;
         $scope.openResultModal = function () {
@@ -806,9 +962,8 @@ fihApp.controller('ModalAppCtrl', function ($scope, $uibModal, $filter, $window)
 
 });
 
-// Please note that $uibModalInstance represents a modal window (instance) dependency.
+// Note that $uibModalInstance represents a modal window (instance) dependency.
 // It is not the same as the $uibModal service used above.
-
 fihApp.controller('ModalInstanceCtrl', function ($scope, $uibModalInstance, appDetails) {
 
   $scope.appDetails = appDetails;

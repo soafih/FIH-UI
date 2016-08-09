@@ -157,7 +157,7 @@ router.delete('/name/:name', function(req, res){
     var collection = db.get('coll_app');
     collection.remove({ name: req.params.name }, function(err, app){
         if (err) throw err;
-        res.json(app);
+        res.send(app);
     });
 });
 

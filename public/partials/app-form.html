@@ -38,7 +38,7 @@
         </div>
     <div><h2>{{pageHeader}}</h2></div>
     <hr/>
-    <div style="min-height: 440px; max-height: 440px;">
+    <div style="min-height: 400px; max-height: 400px;">
         <form id="appInfoForm" name="appInfoForm" class="form-horizontal">
         <uib-tabset active="activeTab">
             <uib-tab index="0" heading="App/Integration Service Info" select="changeActiveTab(0)">
@@ -135,16 +135,16 @@
                     <div class="container-fluid">
                         <div class="row">
                             <div class="form-group">
-                                <label class='control-label col-sm-2'>DB Max Active Conn</label>
-                                <div class="col-sm-1">
+                                <label class='control-label dbconn col-sm-2'>DB Max Active Connection</label>
+                                <div class="dbconninput col-sm-1">
                                     <input id="txtMaxActive" class="form-control" ng-model="app.dbconfig.max_active" placeholder="50"></input>
                                 </div>
-                                <label class='control-label col-sm-2'>DB Max Idle Conn</label>
-                                <div class="col-sm-1">
+                                <label class='control-label dbconn col-sm-2'>DB Max Idle Connection</label>
+                                <div class="dbconninput col-sm-1">
                                     <input id="txtMaxIdle" class="form-control" ng-model="app.dbconfig.max_idle" placeholder="30"></input>
                                 </div>
-                                <label class='control-label col-sm-2'>DB Max Wait Conn</label>
-                                <div class="col-sm-2">
+                                <label class='control-label dbconn col-sm-2'>DB Max Wait Time</label>
+                                <div class="dbconninput col-sm-2">
                                     <input id="txtMaxWait" class="form-control" ng-model="app.dbconfig.max_wait" placeholder="10000"></input>
                                 </div>
                             </div>
@@ -158,9 +158,11 @@
                                 </div>
                             </div>
                         </div>
-                        <input tooltip-placement="top" uib-tooltip="Test Query" type="button" class="btn btn-default btn-sm" value="Test Query" ng-click="testQuery()"></input>
+                        <input style="margin-left: 73px;" tooltip-placement="top" uib-tooltip="Test Query" type="button" class="btn btn-default btn-sm" value="Test Query" ng-click="testQuery()"></input>
                         <input style="margin-left: 20px;" data-toggle="tooltip" data-placement="top" title="Change Query!" type="button" class="btn btn-default btn-sm" value="Reset" ng-click="resetQuery()"></input>
+                        <input style="margin-left: 20px;" data-toggle="tooltip" data-placement="top" title="Enabled on testing query successfully!" ng-disabled="disableCreateBtn" type="button" class="btn btn-success btn-md" value="Create" ng-click="createApp()"></input>
                         <br>
+                        <label ng-show="showQueryLabel" style="color: red" class="control-label col-md-12">Failed: <span style="font-size: 12px; font-weight: 600;">{{queryResponse}}</span></label>
                         
                         <!--<div class="row">
                             <div class="form-group">
@@ -172,9 +174,7 @@
                                 </div>
                             </div>
                         </div>-->
-                        <label ng-show="showQueryLabel" style="color: red" class="control-label col-md-12">Failed: <span style="font-size: 12px; font-weight: 600;">{{queryResponse}}</span></label>
-                        <hr />
-                        <input data-toggle="tooltip" data-placement="top" title="Enabled on testing query successfully!" ng-disabled="disableCreateBtn" type="button" class="btn btn-success btn-md" value="Create" ng-click="createApp()"></input>
+                        
                     </div>
             </uib-tab>
         </uib-tabset>
@@ -182,8 +182,8 @@
         </form>
     </div>
     <div class="panel-footer" style="margin-top: 20px; background-color: transparent">
-            <button type="button" ng-disabled="nextBtnDisabled" class="btn btn-default btn-sm" ng-click="activeTab = nextActiveTab">Next</button>
-            <button type="button" ng-disabled="previousBtnDisabled" class="btn btn-default btn-sm pull-right" ng-click="activeTab = previousActiveTab">Previous</button>
+            <button type="button" ng-disabled="previousBtnDisabled" class="btn btn-default btn-sm" ng-click="activeTab = previousActiveTab">Previous</button>
+            <button type="button" ng-disabled="nextBtnDisabled" class="btn btn-default btn-sm pull-right" ng-click="activeTab = nextActiveTab">Next</button>
     </div>
 </div>
 </div>
