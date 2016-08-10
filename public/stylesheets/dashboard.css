@@ -88,9 +88,17 @@ html.ng-scope body div.container-fluid div.row div.col-sm-9.col-sm-offset-3.col-
   margin-right: 10px;
 }
 
-.modal-dialog{
-    width: 90%;
+.modal-dialog.modal-md{
+    width:480px;
     overflow-y: initial !important
+}
+.modal-dialog.modal-lg{
+  width:90%;
+  overflow-y: initial !important
+}
+
+.modal-dialog.modal-lg .modal-header{
+  margin-top: 10px;
 }
 
 .modal-body{

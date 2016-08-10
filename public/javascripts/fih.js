@@ -33,6 +33,10 @@ fihApp.config(['$routeProvider', function($routeProvider){
             templateUrl: 'partials/app-status.html',
             controller: 'AppStatusCtrl',
         })
+        .when('/login', {
+            templateUrl: 'partials/login.html',
+            controller: 'LoginCtrl',
+        })
         .when('/add-app/:apitype', {
             templateUrl: 'partials/app-form.html',
             controller: 'AddAppCtrl',
@@ -83,6 +87,11 @@ fihApp.controller('MarketPlaceCtrl', function($scope, $resource, $location){
         Apis.query(function(apis){
             $scope.apis = apis;
         });
+    });
+
+fihApp.controller('LoginCtrl', function($scope, $resource, $location, $http){
+        $scope.pageHeader = "Login";
+        
     });
 
 fihApp.controller('DashboardCtrl', function($scope, $resource, $location){
@@ -173,23 +182,35 @@ fihApp.controller('AppDetailsCtrl', function($scope, $routeParams, $resource, $l
             $scope.updatedAppDesc = $scope.appDetails.descr;
         };
 
-        $scope.openDeleteDialog = function(){
+        $scope.openDialog = function(action){
+            console.log("Action being performed:"+action);
+            
             var modalInstance = $uibModal.open({
                 animation: $scope.animationsEnabled,
-                templateUrl: 'deleteDialog.html',
-                controller: 'AppDeleteModalInstanceCtrl',
-                size: 'sm'
+                templateUrl: 'modalDialog.html',
+                controller: 'AppDetailModalInstanceCtrl',
+                size: 'md',
+                resolve: {
+                    action: function () {
+                        return action;
+                    }
+                }
             });
-            
+
             modalInstance.result.then(function () {
-                console.log('Modal selected at: ' + new Date());
-                $scope.deleteApp();
+                console.log('Modal Action selected: ' + action);
+                if(action === 'delete'){
+                    $scope.deleteApp();
+                }
+                else if (action === 'redeploy'){
+                    $scope.redeployApp();
+                }
             }, function () {
-                console.log('Modal dismissed at: ' + new Date());
+                console.log('Modal Action dismissed: ' + action);
             });
         };
 
-        $scope.restartApp = function(){
+        $scope.redeployApp = function(){
             var appObjectId = $scope.appDetails._id;
             var buildAppRequest = {
                 "organization": $scope.appDetails.stackato_config.org,
@@ -357,15 +378,26 @@ fihApp.controller('AppDetailsCtrl', function($scope, $routeParams, $resource, $l
         init();
     });
     
-fihApp.controller('AppDeleteModalInstanceCtrl', function ($scope, $uibModalInstance) {
+fihApp.controller('AppDetailModalInstanceCtrl', function ($scope, $uibModalInstance, action) {
+    console.log('Action Ctrl:' + action);
+    if (action === 'delete') {
+        $scope.modalTitle = 'Delete Application';
+        $scope.modalMessage = 'All application data will be deleted. This action cannot be undone!';
+        $scope.ModalActionBtnText = 'Delete';
+    }
+    else if (action === 'redeploy') {
+        $scope.modalTitle = 'Redeploy Application';
+        $scope.modalMessage = 'Application redeployment request will be triggered!';
+        $scope.ModalActionBtnText = 'Redeploy';
+    }
 
-  $scope.ok = function () {
-    $uibModalInstance.close();
-  };
+    $scope.ok = function () {
+        $uibModalInstance.close();
+    };
 
-  $scope.cancel = function () {
-    $uibModalInstance.dismiss('cancel');
-  };
+    $scope.cancel = function () {
+        $uibModalInstance.dismiss('cancel');
+    };
 });
 
 fihApp.controller('SidebarCtrl', function($scope, $resource, $location){
