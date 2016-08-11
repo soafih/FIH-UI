@@ -84,8 +84,14 @@ html.ng-scope body div.container-fluid div.row div.col-sm-9.col-sm-offset-3.col-
     content: "\e080";    /* adjust as needed, taken from bootstrap.css */
 }
 
+div.modal-footer button.btn.btn-info{
+  background-color: #546E7A;
+  color: #ECEFF1;
+}
 .btn.btn-info.btn-md.col-md-1.pull-right {
   margin-right: 10px;
+  background-color: #455A64;
+  color: #ECEFF1;
 }
 
 .modal-dialog.modal-md{

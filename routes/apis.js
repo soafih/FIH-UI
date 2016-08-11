@@ -7,6 +7,7 @@ router.get('/', function(req, res) {
     var collection = db.get('coll_api');
     collection.find({}, function(err, apis){
         if (err) throw err;
+        res.status(200);
       	res.json(apis);
     });
 });

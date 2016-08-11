@@ -8,6 +8,8 @@ var defaultTTL = 86399;
 
 var host = 'aok.stackato-poc.foxinc.com';
 var hostApi = 'api.stackato-poc.foxinc.com';
+var username = 'shadabhasana';
+var password = 'Desifox@1234';
 
 router.get('/spaces', function (req, res) {
     var cacheValue = stackatoCache.get("spaces");
@@ -73,6 +75,30 @@ router.delete('/apps/:appguid', function (req, res) {
         deleteApplication(response, appGuid, function (response) {
             res.send(response);
         });
+    });
+});
+
+router.post('/login', function(req, res) {
+    console.log("Login request for: "+req.body.username);
+    var username = req.body.username;
+    var password = req.body.password;
+
+    authenticateUser(username, password, function(response){
+        console.log("Login response from stackato:"+response);
+        var authStatus ={};
+        if(response){
+            authStatus = {
+                status: 'success',
+                accessToken: response
+            };
+        }
+        else{
+            authStatus = {
+                status: 'failed',
+                error: response
+            };
+        }
+        res.json(authStatus);
     });
 });
 
@@ -145,7 +171,6 @@ function getAllOrganizations(accessToken, callback) {
     });
 }
 
-
 function getStackatoAccessToken(callback) {
 
     var cacheValue = stackatoCache.get("accessToken");
@@ -186,6 +211,37 @@ function getStackatoAccessToken(callback) {
     }
 }
 
+function authenticateUser(username, password, callback) {
+
+    var inputOAuth = {
+        "grant_type": "password",
+        "username": username,
+        "password": password
+    };
+
+    var dataString = querystring.stringify(inputOAuth);
+
+    var headers = {};
+    var method = 'POST';
+    headers = {
+        'Authorization': 'Basic Y2Y6',
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Content-Length': Buffer.byteLength(dataString)
+    };
+
+    performRequest(host, '/uaa/oauth/token', 'POST', dataString, headers, function (data) {
+        console.log("oAuth Response: " + JSON.stringify(data));
+        if (data.error) {
+            console.log("Error getting Stackato oAuth session");
+            callback(undefined);
+        }
+        else {
+            var accessToken = data.access_token;
+            callback(accessToken);
+        }
+    });
+}
+
 function performRequest(host, endpoint, method, dataString, headers, success) {
 
     if (method == 'GET') {
@@ -205,11 +261,28 @@ function performRequest(host, endpoint, method, dataString, headers, success) {
     var req = https.request(options, function (res) {
         res.setEncoding('utf-8');
         console.log("Response Status Code: "+res.statusCode);
+        
+        if (('' + req.statusCode).match(/^2\d\d$/)) {
+            // Request handled, happy
+        } else if (('' + req.statusCode).match(/^5\d\d$/)){
+            console.log("Received unexpected error while calling Stackato resource");
+        }
+
         if(res.statusCode == 204){
             success('Success');
         }
-        else{
+        else {
             var responseString = '';
+            req.on('error', function(err) {
+                console.log("Received error while calling Stackato resource: "+endpoint);
+            });
+
+            req.on('timeout', function () {
+                // It will emit 'error' message as well (with ECONNRESET code).
+                console.log('Received timeout while calling Stackato resource');
+                req.abort();
+            });
+
             res.on('data', function (data) {
                 responseString += data;
             });

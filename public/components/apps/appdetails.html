@@ -1,22 +1,28 @@
+<div  id="appheader"></div>
+<div ng-show="loader.loading">
+    <p>{{spinnerData}}<i class="fa fa-spinner fa-spin"></i></p>
+</div>
 <div class="tab-content">
     <script type="text/ng-template" id="modalDialog.html">
         <div class="modal-dialog modal-sm" style="width:450px">
-                <div class=modal-dialog style="width: 400px">
-                    <h3 class="modal-title">{{modalTitle}}</h3>
-                    <div style="margin: 20px 0 20px;"><p>{{modalMessage}}</p></div>
-                    <div class="modal-footer">
-                        <button class="btn btn-danger" type="button" ng-click="ok()">{{ModalActionBtnText}}</button>
-                        <button class="btn btn-default" type="button" ng-click="cancel()">Cancel</button>
-                    </div>
+            <div class=modal-dialog style="width: 400px">
+                <h3 class="modal-title">{{modalTitle}}</h3>
+                <div style="margin: 20px 0 20px;"><p>{{modalMessage}}</p></div>
+                <div class="modal-footer">
+                    <button class="btn {{modalActionBtnType}}" type="button" ng-click="ok()">{{modalActionBtnText}}</button>
+                    <button class="btn btn-default" type="button" ng-click="cancel()">Cancel</button>
                 </div>
+            </div>
         </div>
     </script>
+    
     <div class="app-header">
         <div class="container-fluid">
             <div class="row">
+                <div uib-alert style="height: 25px; border: none; margin:0 0 10px 10px; padding:0 0 0 10px;" dismiss-on-timeout="20000" ng-repeat="alert in alerts" ng-class="'alert-' + (alert.type || 'danger')" close="closeAlert($index)">{{alert.msg}}</div>
                 <div class="col-md-7"><h3>{{applicationName}}</h3></div>
                 <button class="btn btn-danger btn-md col-md-1 pull-right" ng-click="openDialog('delete')">Delete</button>
-                <button ng-disabled="true" class="btn btn-info btn-md col-md-1 pull-right">Restart</button>
+                <button disabled class="btn btn-info btn-md col-md-1 pull-right" ng-click="">Restart</button>
                 <button class="btn btn-info btn-md col-md-1 pull-right" ng-click="openDialog('redeploy')">Redeploy</button>
             </div>
         </div>
