@@ -1,0 +1,59 @@
+<div class="tab-content">
+    <div class="app-header">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-2">
+                    <h3>{{apiName}}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="app-content">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="panel panel-default" style="margin: 20px 0 10px 0; border-radius: 0em/.0em;">
+                        <div class="panel-body description">{{apiDetails.descr}}
+                            <div ng-show="false">
+                                <textarea ng-disabled="true" class='col-md-12'></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div/>
+                <div class="col-md-12">
+                    <div class="appdetails">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h4 class="panel-title">
+                                    <a class="accordion-toggle" ng-click="isSummmaryCollapsed = !isSummmaryCollapsed">Summary</a>
+                                </h4>
+                            </div>
+                            <div uib-collapse="isSummmaryCollapsed">
+                                <div class="panel-body">
+                                    <div class="column" ng-repeat="item in apiSummary" style="margin-top: 10px">
+                                        <div ng-repeat="(key, value) in item">
+                                            <div class="col-md-6">
+                                                <label class='control-label col-md-3'>{{key}}</label>
+                                                <label class='control-label col-md-3' style="font-weight:500">
+                                                <div ng-switch on="key">
+                                                    <div ng-switch-when="Endpoint">
+                                                        <a href="{{value}}">{{value}}</a>
+                                                    </div>
+                                                    <div ng-switch-default>
+                                                        {{value}}
+                                                    </div>
+                                                </div>
+                                             </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
