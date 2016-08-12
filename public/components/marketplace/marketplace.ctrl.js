@@ -17,4 +17,13 @@ fihApp.controller('MarketPlaceCtrl', function ($scope, $resource, $location) {
     Apis.query(function (apis) {
         $scope.apis = apis;
     });
+    
+});
+
+
+fihApp.controller('ModalApiCtrl', function ($scope, $window) {
+
+    $scope.viewDetails = function (apiName) {
+        $window.location.href = "/#/apidetails/" + apiName;
+    };
 });

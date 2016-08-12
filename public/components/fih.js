@@ -1,5 +1,5 @@
 var fihApp = angular.module('fihApp', ['ngAnimate','ui.bootstrap','ngResource','ngRoute','ngTable']);
-fihApp.constant("DAASAPI_URL","https://daasapi.stackato-poc.foxinc.com");
+fihApp.constant("DAASAPI_URL","https://daasapi.soadev.stackato-poc.foxinc.com");
 
 fihApp.config(['$routeProvider', function($routeProvider){
     $routeProvider
@@ -12,6 +12,10 @@ fihApp.config(['$routeProvider', function($routeProvider){
             templateUrl: 'components/dashboard/dashboard.html',
             controller: 'DashboardCtrl',
             activetab: 'Dashboard'
+        })
+        .when('/apidetails/:apiname', {
+            templateUrl: 'components/apis/apidetails.html',
+            controller: 'ApiDetailsCtrl'
         })
         .when('/help', {
             templateUrl: 'components/help/help.html',
