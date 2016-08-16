@@ -34,8 +34,8 @@
                                     <div class="column" ng-repeat="item in apiSummary" style="margin-top: 10px">
                                         <div ng-repeat="(key, value) in item">
                                             <div class="col-md-6">
-                                                <label class='control-label col-md-3'>{{key}}</label>
-                                                <label class='control-label col-md-3' style="font-weight:500">
+                                                <label class='control-label col-md-4'>{{key}}</label>
+                                                <label class='control-label col-md-5' style="font-weight:500">
                                                 <div ng-switch on="key">
                                                     <div ng-switch-when="Endpoint">
                                                         <a href="{{value}}">{{value}}</a>
