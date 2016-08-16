@@ -9,7 +9,7 @@ var defaultTTL = 86399;
 var host = 'aok.stackato-poc.foxinc.com';
 var hostApi = 'api.stackato-poc.foxinc.com';
 var username = 'shadabhasana';
-var password = 'Desifox@1234';
+var password = 'Kyarakho@1205';
 
 router.get('/spaces', function (req, res) {
     var cacheValue = stackatoCache.get("spaces");
@@ -52,6 +52,28 @@ router.get('/apps', function (req, res) {
         });
     });
 });
+
+router.get('/headertest', function (req, res) {
+    var cookies = parseCookies(req);
+    console.log('Cookies: ', req.cookies);
+    console.log("Request cookies: "+JSON.stringify(cookies));
+    console.log("request.headers: "+req.headers);
+    console.log("Request Headers: "+JSON.stringify(req.headers));
+    console.log("Response Headers: "+JSON.stringify(res.headers));
+});
+
+function parseCookies (request) {
+    var list = {},
+        rc = request.headers.cookie;
+        console.log(rc);
+    rc && rc.split(';').forEach(function( cookie ) {
+        var parts = cookie.split('=');
+        list[parts.shift().trim()] = decodeURI(parts.join('='));
+    });
+
+    return list;
+}
+
 
 router.get('/apps/:appname', function (req, res) {
     var appName = req.params.appname;
@@ -288,7 +310,7 @@ function performRequest(host, endpoint, method, dataString, headers, success) {
             });
 
             res.on('end', function () {
-                console.log("responseString: " + responseString);
+                //console.log("responseString: " + responseString);
                 var responseObject = {};
                 if(responseString !== ''){
                     responseObject = JSON.parse(responseString);

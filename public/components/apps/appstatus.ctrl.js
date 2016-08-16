@@ -96,8 +96,8 @@ fihApp.controller('AppStatusCtrl', function($scope, $resource, $window, $routePa
         $scope.RefreshIFrame = $interval(function () {
             
             $http.get(statusUrl).then(function (res) {
-                var appStatus = res.data.response.status.trim();
-                var appStage = res.data.response.stage.trim();
+                var appStatus = res.data.response.status;
+                var appStage = res.data.response.stage;
                 $scope.appCurrentState = appStatus;
                     
                 if(appStatus == "Success"){

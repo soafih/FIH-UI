@@ -30,7 +30,7 @@ fihApp.controller('ModalQueryInstanceCtrl', function ($scope, $rootScope, $uibMo
     };
 });
 
-fihApp.controller('AddAppCtrl', function($scope, DAASAPI_URL, $rootScope, $window, $http, $resource, $location, $uibModal, $filter,$routeParams, NgTableParams, databaseList){
+fihApp.controller('AddAppCtrl', function($scope, DAASAPI_URL, DOMAIN_URL, $rootScope, $window, $http, $resource, $location, $uibModal, $filter,$routeParams, NgTableParams, databaseList){
         
     $scope.pageHeader = "Application / Integration Service Configuration";
     $scope.previousBtnDisabled = true;
@@ -177,6 +177,7 @@ fihApp.controller('AddAppCtrl', function($scope, DAASAPI_URL, $rootScope, $windo
             status: 'Saved',
             servicename: $scope.app.name,
             expose_to_apigee: $scope.app.exposeToApigee,
+            domain: DOMAIN_URL,
             created_by: 'System',
             created_date: formattedDate,
             last_updated_by: 'System',
@@ -211,6 +212,7 @@ fihApp.controller('AddAppCtrl', function($scope, DAASAPI_URL, $rootScope, $windo
             var buildAppRequest = {
                 "organization":$scope.app.selectedOrg,
                 "space":$scope.app.selectedSpace,
+                "domain": DOMAIN_URL,
                 "applicationName":$scope.app.name,
                 "query":$scope.app.db_query,
                 "databaseInfo":

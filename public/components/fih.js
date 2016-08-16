@@ -1,5 +1,6 @@
-var fihApp = angular.module('fihApp', ['ngAnimate','ui.bootstrap','ngResource','ngRoute','ngTable']);
-fihApp.constant("DAASAPI_URL","https://daasapi.stackato-poc.foxinc.com");
+var fihApp = angular.module('fihApp', ['ngAnimate','ui.bootstrap','ngResource','ngRoute','ngTable', 'ngCookies']);
+fihApp.constant("DAASAPI_URL","https://daasapi.soaqa.stackato-poc.foxinc.com/");
+fihApp.constant("DOMAIN_URL","soaqa.stackato-poc.foxinc.com");
 
 fihApp.config(['$routeProvider', function($routeProvider){
     $routeProvider
@@ -15,6 +16,11 @@ fihApp.config(['$routeProvider', function($routeProvider){
         })
         .when('/help', {
             templateUrl: 'components/help/help.html',
+            controller: 'HelpCtrl',
+        })
+        .when('/test', {
+            templateUrl: 'components/test.html',
+            controller: 'TestCtrl',
         })
         .when('/apps', {
             templateUrl: 'components/apps/apps.html',
