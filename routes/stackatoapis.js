@@ -8,8 +8,6 @@ var defaultTTL = 86399;
 
 var host = 'aok.stackato-poc.foxinc.com';
 var hostApi = 'api.stackato-poc.foxinc.com';
-var username = 'shadabhasana';
-var password = 'Kyarakho@1205';
 
 router.get('/spaces', function (req, res) {
     var cacheValue = stackatoCache.get("spaces");
