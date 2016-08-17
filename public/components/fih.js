@@ -1,8 +1,7 @@
-var fihApp = angular.module('fihApp', ['ngAnimate','ui.bootstrap','ngResource','ngRoute','ngTable', 'ngCookies']);
-fihApp.constant("DAASAPI_URL","https://daasapi.soaqa.stackato-poc.foxinc.com/");
-fihApp.constant("DOMAIN_URL","soaqa.stackato-poc.foxinc.com");
+var fihApp = angular.module('fihApp', ['ngAnimate','ui.bootstrap','ngResource','ngRoute','ngTable', 'ngCookies', 'angular-storage']);
+fihApp.constant("DOMAIN_URL","soadev.stackato-poc.foxinc.com");
 
-fihApp.config(['$routeProvider', function($routeProvider){
+fihApp.config(['$routeProvider','$httpProvider', function($routeProvider, $httpProvider){
     $routeProvider
         .when('/', {
             templateUrl: 'components/marketplace/marketplace.html',
@@ -55,7 +54,46 @@ fihApp.config(['$routeProvider', function($routeProvider){
         .otherwise({
             redirectTo: '/'
         });
+
+    $httpProvider.interceptors.push('APIInterceptor');
 }]);
+
+fihApp.service('UserService', function (store) {
+    var service = this,
+        currentUser = null;
+
+    service.setCurrentUser = function (user) {
+        currentUser = user;
+        store.set('user', user);
+        return currentUser;
+    };
+
+    service.getCurrentUser = function () {
+        if (!currentUser) {
+            currentUser = store.get('user');
+        }
+        return currentUser;
+    };
+
+});
+
+fihApp.service('APIInterceptor', function ($rootScope, UserService) {
+    var service = this;
+    service.request = function (config) {
+        var currentUser = UserService.getCurrentUser(),
+            access_token = currentUser ? currentUser.access_token : null;
+        if (access_token) {
+            config.headers.authorization = access_token;
+        }
+        return config;
+    };
+    service.responseError = function (response) {
+        if (response.status === 401) {
+            $rootScope.$broadcast('unauthorized');
+        }
+        return response;
+    };
+});
 
 fihApp.controller('SidebarCtrl', function($scope, $resource, $location){
     $scope.isActive = function(route) {
