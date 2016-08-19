@@ -1,5 +1,5 @@
 doctype html
-html(ng-app='fihApp')
+html(ng-app='fihApp' ng-controller="MainCtrl")
   head
     meta(charset='utf-8')
     meta(http-equiv='X-UA-Compatible', content='IE=edge')
@@ -52,11 +52,13 @@ html(ng-app='fihApp')
         .navbar-collapse.collapse
           ul.nav.navbar-nav.navbar-right
             li
-              a(href='/#/login') Log In
-            li
               a(href='mailto:SOAEnterpriseTeam@fox.com?Subject=Fox%20Integration%20Hub%20Feedback' target='_top') Contact Us
             li
               a(href='/#/help') Help
+            li(ng-if="!currentUser")
+              a(href='/#/login') Log In
+            li(ng-if="currentUser" ng-click="")
+              a(href='/#/') Logout
           form.navbar-form.navbar-right
             input.form-control(type='text', placeholder='Search...')
     .container-fluid

@@ -10,7 +10,6 @@ var defaultTTL = 86399;
 var host = 'aok.stackato-poc.foxinc.com';
 var hostApi = 'api.stackato-poc.foxinc.com';
 
-
 router.get('/spaces', function (req, res) {
     /*var cacheValue = stackatoCache.get("spaces");
     if ( cacheValue === undefined ){
@@ -28,23 +27,23 @@ router.get('/spaces', function (req, res) {
 });
 
 router.get('/orgs', function (req, res) {
-   var cacheValue = stackatoCache.get( "orgs" );
-    if ( cacheValue === undefined ){
+    var cacheValue = stackatoCache.get("orgs");
+    if (cacheValue === undefined) {
         console.log("Retrieving orgs from stackato..");
         async.waterfall([
             getStackatoAccessTokenAsync,
             getAllOrganizations,
             getOrgDetails
         ], function (err, result) {
-            console.log("###### Sending response back: "+JSON.stringify(result));
+            console.log("###### Sending response back: " + JSON.stringify(result));
             stackatoCache.set("orgs", result, defaultTTL);
             res.json(result);
         });
     }
-    else{
+    else {
         console.log("Retrieved orgs from cache..");
         res.json(cacheValue);
-    } 
+    }
 });
 
 function getAllOrganizations(accessToken, callback) {
@@ -193,6 +192,7 @@ router.post('/login', function(req, res) {
             req.session.isAuthenticated = true;
             authStatus = {
                 status: 'success',
+                username: username,
                 accessToken: response
             };
         }

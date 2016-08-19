@@ -5,3 +5,6 @@
 
 <p>{{cookieValue}}</p>
 
+<button ng-if="main.currentUser" class="btn btn-default navbar-btn" 
+                ng-click="main.logout()">Logout <strong>{{main.currentUser.username}}</strong></button>
+
