@@ -1,5 +1,5 @@
 
-fihApp.controller('AppDetailsCtrl', function($scope, $routeParams, $timeout, $resource, $location, $anchorScroll, $filter, $uibModal, $window, $http, DAASAPI_URL){
+fihApp.controller('AppDetailsCtrl', function($scope, $routeParams, $timeout, $resource, $location, $anchorScroll, $filter, $uibModal, $window, $http){
         $scope.applicationName = $routeParams.appname;
         $scope.showLabelAppDescr = true;
         
@@ -144,6 +144,7 @@ fihApp.controller('AppDetailsCtrl', function($scope, $routeParams, $timeout, $re
             var buildAppRequest = {
                 "organization": $scope.appDetails.stackato_config.org,
                 "space": $scope.appDetails.stackato_config.space,
+                "domain": $scope.appDetails.stackato_config.domain,
                 "applicationName": $scope.appDetails.name,
                 "query": $scope.appDetails.db_config.query,
                 "databaseInfo":
@@ -172,7 +173,7 @@ fihApp.controller('AppDetailsCtrl', function($scope, $routeParams, $timeout, $re
             };
 
             console.log("Build API Request: " + JSON.stringify(buildAppRequest));
-            $http.post(DAASAPI_URL + '/FIH/service/DAASAPI/BuildApp', buildAppRequest, headerConfig, { dataType: "jsonp" })
+            $http.post($scope.apiDetails.api_ep + '/FIH/service/DAASAPI/BuildApp', buildAppRequest, headerConfig, { dataType: "jsonp" })
                 .success(function (response, status, headers, config) {
                     console.log("Successfully invoked BuildAPI with response: " + JSON.stringify(response));
                     console.log("Build App status: " + response.response.status);
@@ -202,7 +203,7 @@ fihApp.controller('AppDetailsCtrl', function($scope, $routeParams, $timeout, $re
                             AppUpdate.save(updateObj, function (res) {
                                 $scope.loader.loading = false;
                                 console.log("Successfully updated App status: " + JSON.stringify(res));
-                                redirectUrl = '/#/appstatus?appname=' + $scope.appDetails.name + '&appId=' + appObjectId + '&buildappstatus=queued&buildidentifier=' + updateObj.build_identifier;
+                                redirectUrl = '/#/appstatus?apitype='+$scope.appDetails.api_type+'&appname=' + $scope.appDetails.name + '&appId=' + appObjectId + '&buildappstatus=queued&buildidentifier=' + updateObj.build_identifier;
                                 console.log("URL to redirect: " + redirectUrl);
                                 $window.location.href = redirectUrl;
                             },
@@ -216,7 +217,7 @@ fihApp.controller('AppDetailsCtrl', function($scope, $routeParams, $timeout, $re
                             AppUpdate.save(updateObj, function (res) {
                                 $scope.loader.loading = false;
                                 console.log("Successfully updated App status: " + JSON.stringify(res));
-                                redirectUrl = '/#/appstatus?appname=' + $scope.appDetails.name + '&appId=' + appObjectId + '&buildappstatus=wip&buildno=' + updateObj.build_number + '&buildurl=' + encodeURIComponent(updateObj.build_url);
+                                redirectUrl = '/#/appstatus?apitype='+$scope.appDetails.api_type+'&appname=' + $scope.appDetails.name + '&appId=' + appObjectId + '&buildappstatus=wip&buildno=' + updateObj.build_number + '&buildurl=' + encodeURIComponent(updateObj.build_url);
                                 console.log("URL to redirect: " + redirectUrl);
                                 $window.location.href = redirectUrl;
                             },
@@ -243,7 +244,7 @@ fihApp.controller('AppDetailsCtrl', function($scope, $routeParams, $timeout, $re
                 };
                 var AppUpdate = $resource('/fih/apps/updateStatus');
                 AppUpdate.save(updateObj, function (res) {
-                    var redirectUrl = '/#/appstatus?appname=' + $scope.appDetails.name + '&appId=' + appObjectId + '&buildappstatus=failed&reason=' + error;
+                    var redirectUrl = '/#/appstatus?apitype='+$scope.appDetails.api_type+'&appname=' + $scope.appDetails.name + '&appId=' + appObjectId + '&buildappstatus=failed&reason=' + error;
                     console.log("URL to redirect: " + redirectUrl);
                     $window.location.href = redirectUrl;
                 },
@@ -262,24 +263,37 @@ fihApp.controller('AppDetailsCtrl', function($scope, $routeParams, $timeout, $re
                 console.log(res+" Stackato App Delete Status: "+appDeleteStatus);
                 console.log("Response Status Code:"+res.statusCode);
                 if(res){
-                    $scope.spinnerData ="Clearing backend data.. ";
                     var AppService = $resource('/fih/apps/name/'+$scope.applicationName);
                     AppService.delete(function(res){
                         console.log("Deleted App: "+res);
                         $scope.loader.loading = false;
                         $window.alert("Application deleted successfully..!!");
-                        $location.path('/#/');
+                        $location.path('/#/apps');
                     });
                 }
                 else{
+                    $scope.loader.loading = false;
                     $window.alert("Error in deleting application.!!");
                 }
             });
         };
 
         var init = function(){
+            
+            var StackatoService =$resource('/fih/stackatoapis/apps/'+$scope.applicationName);
+            StackatoService.get(function(app){
+                console.log("APP GUID: "+app.guid);
+                $scope.appGUID = app.guid;
+            });
+
             var AppService = $resource('/fih/apps/name/'+$scope.applicationName);
             AppService.get(function(appDetails){
+
+                var Apis = $resource('/fih/apis/name/'+appDetails.api_type);
+                Apis.get(function(api){
+                    $scope.apiDetails = api;
+                });
+
                 console.log("Fetched app details: "+JSON.stringify(appDetails));
                 $scope.appDetails = appDetails;
                 $scope.appSummary = [
@@ -312,13 +326,10 @@ fihApp.controller('AppDetailsCtrl', function($scope, $routeParams, $timeout, $re
                     console.log('Dirty App');
                     $scope.addAlert('App changes pending. Redeploy to reflect changes!');
                 }
-            });
 
-            var StackatoService =$resource('/fih/stackatoapis/apps/'+$scope.applicationName);
-            StackatoService.get(function(app){
-                console.log("APP GUID: "+app.guid);
-                $scope.appGUID = app.guid;
+
             });
+            
         };
 
         init();

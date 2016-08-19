@@ -1,7 +1,7 @@
-var fihApp = angular.module('fihApp', ['ngAnimate','ui.bootstrap','ngResource','ngRoute','ngTable']);
-fihApp.constant("DAASAPI_URL","https://daasapi.soadev.stackato-poc.foxinc.com");
+var fihApp = angular.module('fihApp', ['ngAnimate','ui.bootstrap','ngResource','ngRoute','ngTable', 'ngCookies', 'angular-storage']);
+fihApp.constant("DOMAIN_URL","soadev.stackato-poc.foxinc.com");
 
-fihApp.config(['$routeProvider', function($routeProvider){
+fihApp.config(['$routeProvider','$httpProvider', function($routeProvider, $httpProvider){
     $routeProvider
         .when('/', {
             templateUrl: 'components/marketplace/marketplace.html',
@@ -19,7 +19,9 @@ fihApp.config(['$routeProvider', function($routeProvider){
         })
         .when('/help', {
             templateUrl: 'components/help/help.html',
+            controller: 'HelpCtrl',
         })
+
         .when('/apps', {
             templateUrl: 'components/apps/apps.html',
             controller: 'AppsCtrl',
@@ -53,7 +55,9 @@ fihApp.config(['$routeProvider', function($routeProvider){
         .otherwise({
             redirectTo: '/'
         });
+
 }]);
+
 
 fihApp.controller('SidebarCtrl', function($scope, $resource, $location){
     $scope.isActive = function(route) {

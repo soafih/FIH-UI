@@ -17,7 +17,7 @@ fihApp.factory('databaseListFactory', function($http) {
 });
 
 
-fihApp.controller('ModalQueryInstanceCtrl', function ($scope, $rootScope, $uibModalInstance, testQueryResult) {
+fihApp.controller('ModalQueryInstanceCtrl', function ($scope, $uibModalInstance, testQueryResult) {
 
     $scope.testQueryResult = testQueryResult;
 
@@ -30,7 +30,7 @@ fihApp.controller('ModalQueryInstanceCtrl', function ($scope, $rootScope, $uibMo
     };
 });
 
-fihApp.controller('AddAppCtrl', function($scope, DAASAPI_URL, $rootScope, $window, $http, $resource, $location, $uibModal, $filter,$routeParams, NgTableParams, databaseList){
+fihApp.controller('AddAppCtrl', function($scope, DOMAIN_URL, $window, $http, $resource, $location, $uibModal, $filter, $routeParams, NgTableParams, databaseList){
         
     $scope.pageHeader = "Application / Integration Service Configuration";
     $scope.previousBtnDisabled = true;
@@ -97,7 +97,7 @@ fihApp.controller('AddAppCtrl', function($scope, DAASAPI_URL, $rootScope, $windo
             console.log("Calling Test Query service with request: " + JSON.stringify(testQueryRequest));
             $scope.queryResultColor = '';
             $scope.testQueryResult = [];
-            $http.post(DAASAPI_URL + '/FIH/service/DAASAPI/DBUtility/ValidateQuery', testQueryRequest, headerConfig, { dataType: "jsonp" })
+            $http.post($scope.apiDetails.api_ep + '/FIH/service/DAASAPI/DBUtility/ValidateQuery', testQueryRequest, headerConfig, { dataType: "jsonp" })
                 .success(function (response, status, headers, config) {
                     console.log("Successfully invoked BuildAPI with response: " + JSON.stringify(response));
                     if (response.response.status == "Success") {
@@ -182,7 +182,11 @@ fihApp.controller('AddAppCtrl', function($scope, DAASAPI_URL, $rootScope, $windo
             last_updated_by: 'System',
             last_updated_date: formattedDate,
             messages: [{message: 'First Version'}],
-            stackato_config: {org: $scope.app.selectedOrg,space: $scope.app.selectedSpace},
+            stackato_config: { 
+                org: $scope.app.selectedOrg.name, 
+                space: $scope.app.selectedSpace, 
+                domain: DOMAIN_URL
+            },
             db_config: {
                 db_name: $scope.app.dbconfig.db_name,
                 query: $scope.app.db_query,
@@ -203,14 +207,15 @@ fihApp.controller('AddAppCtrl', function($scope, DAASAPI_URL, $rootScope, $windo
         });
 
         if(appCurrentState == 'SaveFailed'){
-            var redirectUrl ='/#/appstatus?appname='+$scope.app.name+'&appId='+appObjectId+'&buildappstatus=savefailed';
+            var redirectUrl ='/#/appstatus?apitype='+$scope.apitype+'&appname='+$scope.app.name+'&appId='+appObjectId+'&buildappstatus=savefailed';
             console.log("Failed to save application details in database. Redirect to: "+redirectUrl);
             $window.location.href = redirectUrl;
         }
         else{
             var buildAppRequest = {
-                "organization":$scope.app.selectedOrg,
+                "organization":$scope.app.selectedOrg.name,
                 "space":$scope.app.selectedSpace,
+                "domain": DOMAIN_URL,
                 "applicationName":$scope.app.name,
                 "query":$scope.app.db_query,
                 "databaseInfo":
@@ -238,7 +243,7 @@ fihApp.controller('AddAppCtrl', function($scope, DAASAPI_URL, $rootScope, $windo
             };
             
             console.log("Build API Request: "+JSON.stringify(buildAppRequest));
-            $http.post(DAASAPI_URL + '/FIH/service/DAASAPI/BuildApp',buildAppRequest, headerConfig, {dataType: "jsonp"})
+            $http.post($scope.apiDetails.api_ep + '/FIH/service/DAASAPI/BuildApp',buildAppRequest, headerConfig, {dataType: "jsonp"})
             .success(function(response, status, headers, config){
                 console.log("Successfully invoked BuildAPI with response: "+JSON.stringify(response));
                 console.log("Build App status: "+ response.response.status);
@@ -266,7 +271,7 @@ fihApp.controller('AddAppCtrl', function($scope, DAASAPI_URL, $rootScope, $windo
                     case "Queued":
                         AppUpdate.save(updateObj, function(res){
                             console.log("Successfully updated App status: "+JSON.stringify(res));
-                            redirectUrl ='/#/appstatus?appname='+$scope.app.name+'&appId='+appObjectId+'&buildappstatus=queued&buildidentifier='+updateObj.build_identifier;
+                            redirectUrl ='/#/appstatus?apitype='+$scope.apitype+'&appname='+$scope.app.name+'&appId='+appObjectId+'&buildappstatus=queued&buildidentifier='+updateObj.build_identifier;
                             console.log("URL to redirect: "+redirectUrl);
                             $window.location.href = redirectUrl;
                         },
@@ -279,7 +284,7 @@ fihApp.controller('AddAppCtrl', function($scope, DAASAPI_URL, $rootScope, $windo
                     case "WIP":
                         AppUpdate.save(updateObj, function(res){
                             console.log("Successfully updated App status: "+JSON.stringify(res));
-                            redirectUrl ='/#/appstatus?appname='+$scope.app.name+'&appId='+appObjectId+'&buildappstatus=wip&buildno='+updateObj.build_number+'&buildurl='+encodeURIComponent(updateObj.build_url);
+                            redirectUrl ='/#/appstatus?apitype='+$scope.apitype+'&appname='+$scope.app.name+'&appId='+appObjectId+'&buildappstatus=wip&buildno='+updateObj.build_number+'&buildurl='+encodeURIComponent(updateObj.build_url);
                             console.log("URL to redirect: "+redirectUrl);
                             $window.location.href = redirectUrl;
                         },
@@ -306,7 +311,7 @@ fihApp.controller('AddAppCtrl', function($scope, DAASAPI_URL, $rootScope, $windo
             };
             var AppUpdate = $resource('/fih/apps/updateStatus');
             AppUpdate.save(updateObj, function(res){
-                var redirectUrl ='/#/appstatus?appname='+$scope.app.name+'&appId='+appObjectId+'&buildappstatus=failed&reason='+error;
+                var redirectUrl ='/#/appstatus?apitype='+$scope.apitype+'&appname='+$scope.app.name+'&appId='+appObjectId+'&buildappstatus=failed&reason='+error;
                 console.log("URL to redirect: "+redirectUrl);
                 $window.location.href = redirectUrl;
             },
@@ -315,21 +320,6 @@ fihApp.controller('AddAppCtrl', function($scope, DAASAPI_URL, $rootScope, $windo
             });
         }
     };
-
-    /*$scope.getDbSearchResult = function(val) {
-    
-            return $http.get('/fih/dbconfig/dbname', {
-            params: {
-                dbname: val
-            }
-            }).then(function(response){
-                return response.data.map(function(item){
-                    return item.db_name;
-                });
-            });
-        
-    };
-    */
     
     $scope.databases = databaseList.data;
 
@@ -343,24 +333,42 @@ fihApp.controller('AddAppCtrl', function($scope, DAASAPI_URL, $rootScope, $windo
         }
     });
 
+    $scope.orgChange = function(){
+        console.log("Selected Org: "+$scope.app.selectedOrg.name);
+        var key = $scope.stackatoOrgs.indexOf($scope.app.selectedOrg);
+        $scope.stackatoSpace = $scope.stackatoOrgs[key].spaces;
+        $scope.app.selectedSpace = $scope.stackatoSpace[0];
+    };
     // at the bottom of your controller
     var init = function () {
         $scope.spinnerData = "Loading page data..";
         $scope.loader.loading = true;
         var OrgApis = $resource('/fih/stackatoapis/orgs');
-        OrgApis.query(function(apis){
-            console.log("apis: "+apis);
-            $scope.stackatoOrg = apis;
-            $scope.app.selectedOrg = $scope.stackatoOrg[0];
-        });
-
-        var SpaceApis = $resource('/fih/stackatoapis/spaces');
-        SpaceApis.query(function(spaces){
-            console.log("apis: "+spaces);
-            $scope.stackatoSpace = spaces;
+        OrgApis.query(function(orgs){
+            console.log("orgs: "+JSON.stringify(orgs));
+            $scope.stackatoOrgs = orgs;
+            $scope.stackatoOrg = orgs;
+            $scope.app.selectedOrg = orgs[0];
+            console.log("Selected Org:"+$scope.app.selectedOrg);
+            $scope.stackatoSpace = $scope.stackatoOrgs[0].spaces;
             $scope.app.selectedSpace = $scope.stackatoSpace[0];
             $scope.loader.loading = false;
         });
+
+        /*var SpaceApis = $resource('/fih/stackatoapis/spaces');
+        SpaceApis.query(function(spaces){
+            console.log("spaces: "+spaces);
+            $scope.stackatoSpace = spaces;
+            $scope.app.selectedSpace = $scope.stackatoSpace[0];
+            $scope.loader.loading = false;
+        });*/
+
+        var Apis = $resource('/fih/apis/name/'+$scope.apitype);
+        Apis.get(function(api){
+            console.log("APIs Details: "+JSON.stringify(api));
+            $scope.apiDetails = api;
+        });
+         
     };
     // and fire it after definition
     init();

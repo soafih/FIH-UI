@@ -17,7 +17,8 @@ html(ng-app='fihApp')
     script(src='https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.7/angular-resource.js')
     script(src='https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.7/angular-route.js')
     script(src='https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular-animate.js')
-    
+    script(src='https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.7/angular-cookies.js')
+    script(src='https://cdn.rawgit.com/auth0/angular-storage/master/dist/angular-storage.js')
     script(src='https://cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/2.0.0/ui-bootstrap-tpls.min.js')
     // HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries
     //if lt IE 9
@@ -34,6 +35,7 @@ html(ng-app='fihApp')
     script(src='/components/apps/addapp.ctrl.js')
     script(src='/components/apps/apps.ctrl.js')
     script(src='/components/apis/addapi.ctrl.js')
+    script(src='/components/help/help.ctrl.js')
     script(src='/components/apis/apidetails.ctrl.js')
   body
     .navbar.navbar-inverse.navbar-fixed-top(role='navigation')
@@ -49,8 +51,6 @@ html(ng-app='fihApp')
           a.navbar-brand(href='/#/') Fox Integration Hub
         .navbar-collapse.collapse
           ul.nav.navbar-nav.navbar-right
-            li
-              a(href='/#/login') Log In
             li
               a(href='mailto:SOAEnterpriseTeam@fox.com?Subject=Fox%20Integration%20Hub%20Feedback' target='_top') Contact Us
             li
