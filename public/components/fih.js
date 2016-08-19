@@ -1,5 +1,4 @@
 var fihApp = angular.module('fihApp', ['ngAnimate','ui.bootstrap','ngResource','ngRoute','ngTable', 'ngCookies', 'angular-storage']);
-fihApp.constant("DOMAIN_URL","soadev.stackato-poc.foxinc.com");
 
 fihApp.config(['$routeProvider','$httpProvider', function($routeProvider, $httpProvider){
     $routeProvider

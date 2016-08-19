@@ -58,7 +58,7 @@ fihApp.controller('AppStatusCtrl', function($scope, $resource, $window, $routePa
                 buildNumber = res.data.response.buildNumber;
                 console.log("Build Number:"+buildNumber);
                 if(buildNumber > 0){
-                    var logURL = 'http://jenkins-06hw6.10.135.4.49.nip.io/job/DAASBuild/'+buildNumber+'/consoleText';
+                    var logURL = res.data.response.logURL;
                     var updateObj = {
                         appObjectId : appObjectId,
                         status : 'WIP',
