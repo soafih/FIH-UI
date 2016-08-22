@@ -30,7 +30,7 @@ fihApp.controller('ModalQueryInstanceCtrl', function ($scope, $uibModalInstance,
     };
 });
 
-fihApp.controller('AddAppCtrl', function($scope, DOMAIN_URL, $window, $http, $resource, $location, $uibModal, $filter, $routeParams, NgTableParams, databaseList){
+fihApp.controller('AddAppCtrl', function($scope, $window, $http, $resource, $location, $uibModal, $filter, $routeParams, NgTableParams, databaseList){
         
     $scope.pageHeader = "Application / Integration Service Configuration";
     $scope.previousBtnDisabled = true;
@@ -160,6 +160,7 @@ fihApp.controller('AddAppCtrl', function($scope, DOMAIN_URL, $window, $http, $re
     $scope.apitype = $routeParams.apitype;
     
     $scope.createApp = function(){
+        console.log("Domain selected:"+$scope.app.selectedOrg.domain);
         $scope.spinnerData = "Processing application data.. ";
         $scope.loader.loading = true;
         $scope.hidePanel = true;
@@ -185,7 +186,7 @@ fihApp.controller('AddAppCtrl', function($scope, DOMAIN_URL, $window, $http, $re
             stackato_config: { 
                 org: $scope.app.selectedOrg.name, 
                 space: $scope.app.selectedSpace, 
-                domain: DOMAIN_URL
+                domain: $scope.app.selectedOrg.domain
             },
             db_config: {
                 db_name: $scope.app.dbconfig.db_name,
@@ -215,7 +216,7 @@ fihApp.controller('AddAppCtrl', function($scope, DOMAIN_URL, $window, $http, $re
             var buildAppRequest = {
                 "organization":$scope.app.selectedOrg.name,
                 "space":$scope.app.selectedSpace,
-                "domain": DOMAIN_URL,
+                "domain": $scope.app.selectedOrg.domain,
                 "applicationName":$scope.app.name,
                 "query":$scope.app.db_query,
                 "databaseInfo":
