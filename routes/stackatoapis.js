@@ -9,6 +9,8 @@ var defaultTTL = 86399;
 
 var host = 'aok.stackato-poc.foxinc.com';
 var hostApi = 'api.stackato-poc.foxinc.com';
+var username = process.env.FIH_SVC_USER;
+var password = process.env.FIH_SVC_PASSWORD;
 
 router.get('/spaces', function (req, res) {
     /*var cacheValue = stackatoCache.get("spaces");
@@ -136,9 +138,7 @@ router.get('/headertest', function (req, res) {
     console.log("Username: "+req.session.username);
     console.log('Cookies: ', req.cookies);
     console.log("Request cookies: "+JSON.stringify(cookies));
-    console.log("request.headers: "+req.headers);
     console.log("Request Headers: "+JSON.stringify(req.headers));
-    console.log("Response Headers: "+JSON.stringify(res.headers));
     res.json(req.cookies);
 });
 
@@ -190,6 +190,7 @@ router.post('/login', function(req, res) {
         var authStatus ={};
         if(response){
             req.session.isAuthenticated = true;
+            req.session.accessToken = response;
             authStatus = {
                 status: 'success',
                 username: username,
@@ -198,6 +199,7 @@ router.post('/login', function(req, res) {
         }
         else{
             req.session.isAuthenticated = false;
+            req.session.accessToken = null;
             authStatus = {
                 status: 'failed',
                 error: response

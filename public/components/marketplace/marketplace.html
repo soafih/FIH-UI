@@ -15,10 +15,11 @@
             <div class="{{hexstyle[$index%5]}}">
                     <div class="{{hextextstyle[$index%5]}}">{{api.name}} v{{api.version}}<span class="hex-text-descr">{{api.descr}}</span>
                     </div>
-                    
-                    <a href="/#/add-app/{{api.name}}">
-                        <div class="hex-add-link">Add App</div>
-                    </a>
+                    <div ng-show="showBtnAddApp">
+                        <a href="/#/add-app/{{api.name}}">
+                            <div class="hex-add-link">Add App</div>
+                        </a>
+                    </div>
                 </div>
         </div>
     </div>

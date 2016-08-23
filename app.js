@@ -19,6 +19,7 @@ var monk = require('monk');
 //var db =  monk('mongodb://5eb31b82-3347-481f-a7f5-f9759fb2583a:22669d9e-531d-4176-bd5c-7844e1add561@10.135.4.49:15001/db');
 var db = monk(process.env.MONGODB_URL);
 console.log("MongoDB URL: "+process.env.MONGODB_URL);
+console.log("Node Env: " +process.env.NODE_ENV);
 var app = express();
 
 // view engine setup
@@ -26,16 +27,7 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
 app.use(cookieParser());
-app.use(function(req,res,next){
-    //res.header("Access-Control-Allow-Origin", "*");
-    //res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-    //console.log("Cookies: " + req.headers.cookie);
-    //console.log("Request Header: "+JSON.stringify(req.headers));
-    //console.log("Response Header: "+JSON.stringify(res.headers));
-
-    req.db = db;
-    next();
-});
+app.use(session({secret: 'dummySecureKey'}));
 
 // uncomment after placing your favicon in /public
 app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
@@ -44,10 +36,32 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use(session({secret: 'secureKey'}));
-
 // Make our db accessible to our router
+app.use(function(req,res,next){
+    req.db = db;
+    next();
+});
 
+/*
+app.use(function(req,res,next){
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    console.log("Cookies: " + req.headers.cookie);
+    console.log("Request Header: "+JSON.stringify(req.headers));
+    console.log("Response Header: "+JSON.stringify(res.headers));
+
+    next();
+});
+
+app.use('/', function(req,res,next){
+    
+    console.log("Username: "+req.session.username);
+    console.log("IsAuthenticated: "+req.session.isAuthenticated);
+    console.log("Access Token: "+req.session.accessToken);
+    
+    next();
+});
+*/
 
 app.use('/', routes);
 app.use('/users', users);

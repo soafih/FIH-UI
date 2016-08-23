@@ -55,9 +55,9 @@ html(ng-app='fihApp' ng-controller="MainCtrl")
               a(href='mailto:SOAEnterpriseTeam@fox.com?Subject=Fox%20Integration%20Hub%20Feedback' target='_top') Contact Us
             li
               a(href='/#/help') Help
-            li(ng-if="!currentUser")
+            //li(ng-if="!currentUser")
               a(href='/#/login') Log In
-            li(ng-if="currentUser" ng-click="")
+            //li(ng-if="currentUser" ng-click="")
               a(href='/#/') Logout
           form.navbar-form.navbar-right
             input.form-control(type='text', placeholder='Search...')
@@ -67,9 +67,9 @@ html(ng-app='fihApp' ng-controller="MainCtrl")
           ul.nav.nav-sidebar
             li(ng-class="{active:isActive('/')}")
               a(href='/#/') API Markeplace
-            li(ng-class="{active:isActive('/apps')}")
+            li(ng-class="{active:isActive('/apps')}", ng-show="showSidebarApps")
               a(href='/#/apps') Applications/Integration Services
-            li(ng-class="{active:isActive('/dashboard')}")
+            li(ng-class="{active:isActive('/dashboard')}", ng-show="showSidebarDashboard")
               a(href='/#/dashboard') Dashboard
           //ul.nav.nav-sidebar
             li

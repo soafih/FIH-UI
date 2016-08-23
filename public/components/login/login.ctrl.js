@@ -1,4 +1,4 @@
-angular.module('fihApp').controller('LoginCtrl', function ($scope, $resource, $window, $location, UserService, $rootScope) {
+angular.module('fihApp').controller('LoginCtrl', function ($scope, $resource, $window, $location, $rootScope) {
     $scope.pageHeader = "Login";
 
     $scope.credentials = {
@@ -7,6 +7,7 @@ angular.module('fihApp').controller('LoginCtrl', function ($scope, $resource, $w
     };
 
     $scope.onSubmit = function () {
+        /*
         var StackatoService = $resource('/fih/stackatoapis/login');
         StackatoService.save($scope.credentials, function (res) {
             var response = JSON.stringify(res);
@@ -35,5 +36,6 @@ angular.module('fihApp').controller('LoginCtrl', function ($scope, $resource, $w
                 var response = JSON.stringify(error);
                 console.log("Response Error:" + response);
             });
+            */
     };
 });

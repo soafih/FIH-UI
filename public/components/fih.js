@@ -1,16 +1,26 @@
-var fihApp = angular.module('fihApp', ['ngAnimate','ui.bootstrap','ngResource','ngRoute','ngTable', 'ngCookies', 'angular-storage']);
+var fihApp = angular.module('fihApp', ['ngAnimate', 'ui.bootstrap', 'ngResource', 'ngRoute', 'ngTable', 'ngCookies', 'angular-storage']);
+fihApp.constant('AUTH_EVENTS', {
+    notAuthenticated: 'auth-not-authenticated',
+    notAuthorized: 'auth-not-authorized'
+});
 
-fihApp.config(['$routeProvider','$httpProvider', function($routeProvider, $httpProvider){
+fihApp.config(['$routeProvider', '$httpProvider', function ($routeProvider, $httpProvider) {
     $routeProvider
         .when('/', {
             templateUrl: 'components/marketplace/marketplace.html',
             controller: 'MarketPlaceCtrl',
-            activetab: 'APIMarketplace'
+            activetab: 'APIMarketplace',
+            resolve: {
+                userProfile: "UserProfile"
+            }
         })
         .when('/dashboard', {
             templateUrl: 'components/dashboard/dashboard.html',
             controller: 'DashboardCtrl',
-            activetab: 'Dashboard'
+            activetab: 'Dashboard',
+            resolve: {
+                access: ["Access", function (Access) { return Access.hasRole("app_admin"); }]
+            }
         })
         .when('/help', {
             templateUrl: 'components/help/help.html',
@@ -23,160 +33,190 @@ fihApp.config(['$routeProvider','$httpProvider', function($routeProvider, $httpP
         .when('/apps', {
             templateUrl: 'components/apps/apps.html',
             controller: 'AppsCtrl',
-            activetab: 'Applications'
+            activetab: 'Applications',
+            resolve: {
+                userProfile: "UserProfile",
+                access: ["Access", function (Access) { return Access.hasRole("app_developer"); }]
+            }
         })
         .when('/appdetails/:appname', {
             templateUrl: 'components/apps/appdetails.html',
-            controller: 'AppDetailsCtrl'
+            controller: 'AppDetailsCtrl',
+            resolve: {
+                userProfile: "UserProfile",
+                access: ["Access", function (Access) { return Access.hasAnyRole("app_operator, app_developer"); }]
+            }
         })
         .when('/add-api', {
             templateUrl: 'components/apis/addapi.html',
-            controller: 'AddApiCtrl'
+            controller: 'AddApiCtrl',
+            resolve: {
+                access: ["Access", function (Access) { return Access.hasRole("api_developer"); }]
+            }
         })
         .when('/appstatus', {
             templateUrl: 'components/apps/appstatus.html',
             controller: 'AppStatusCtrl',
-        })
-        .when('/login', {
-            templateUrl: 'components/login/login-form.html',
-            controller: 'LoginCtrl',
+            resolve: {
+                access: ["Access", function (Access) { return Access.hasRole("app_developer"); }]
+            }
         })
         .when('/add-app/:apitype', {
             templateUrl: 'components/apps/addapp.html',
             controller: 'AddAppCtrl',
             resolve: {
-                databaseList: function(databaseListFactory) {
+                databaseList: function (databaseListFactory) {
                     return databaseListFactory.getDatabaseList();
-                }
+                },
+                access: ["Access", function (Access) { return Access.hasRole("app_developer"); }]
             }
         })
         .otherwise({
             redirectTo: '/'
         });
 
-    $httpProvider.interceptors.push('APIInterceptor');
+    //$httpProvider.interceptors.push('APIInterceptor');
 }]);
 
-fihApp.controller('SidebarCtrl', function($scope, $resource, $location){
-    $scope.isActive = function(route) {
+fihApp.controller('SidebarCtrl', function ($scope, $resource, $location) {
+    $scope.isActive = function (route) {
         return route === $location.path();
     };
 });
 
-fihApp.controller('MainCtrl', function ($rootScope,  UserService, LoginService, $scope) {
-    var main = this;
+fihApp.controller('MainCtrl', function ($rootScope, $scope, UserService) {
+    $scope.showSidebarApps = true;
+    $scope.showSidebarDashboard = true;
+    var init = function(){
+        //$scope.showSidebarApps = UserService.hasAnyRole(['app_developer']);
+        //$scope.showSidebarDashboard = UserService.hasAnyRole(['app_admin']);
+    };
+    init();
+});
 
-    function logout() {
-        LoginService.logout()
-            .then(function (response) {
-                main.currentUser = UserService.setCurrentUser(null);
-                //$state.go('login');
-            }, function (error) {
-                console.log(error);
+fihApp.run(function ($rootScope, $location, $window, Access) {
+
+    $rootScope.$on("$routeChangeError", function (event, current, previous, rejection) {
+        if (rejection == Access.UNAUTHORIZED) {
+            console.log("Rejection: " + JSON.stringify(rejection));
+            $window.alert('You are not authorized to access this page. Please contact system administrator for details.');
+            $location.path("/");
+        } else if (rejection == Access.FORBIDDEN) {
+            $window.alert('You are not allowed to access this page. Please contact system administrator for details.');
+            $location.path("/forbidden");
+        }
+    });
+}); //bootstrap session;
+
+fihApp.factory("Access", function ($q, UserProfile) {
+
+    var Access = {
+        OK: 200,
+
+        // "User is unknown"
+        UNAUTHORIZED: 401,
+
+        // "User is known but profile does not allow access this resource"
+        FORBIDDEN: 403,
+
+        hasRole: function (role) {
+            console.log("Access | Checking Access for Role: " + role);
+            return UserProfile.then(function (userProfile) {
+                console.log("Access | userProfile: " + JSON.stringify(userProfile));
+                if (userProfile.$hasRole(role)) {
+                    console.log("Access | Permission Granted to " + role);
+                    return Access.OK;
+                }
+                else {
+                    console.log("Access | Permission denied to role: " + role);
+                    return $q.reject(Access.FORBIDDEN);
+                }
             });
-    }
-    $rootScope.$on('authorized', function () {
-        main.currentUser = UserService.getCurrentUser();
-        $scope.currentUser = UserService.getCurrentUser();
-        console.log("Authorized: "+main.currentUser.username);
-    });
+        },
 
-    $rootScope.$on('unauthorized', function () {
-        main.currentUser = UserService.setCurrentUser(null);
-        //$state.go('login');
-    });
-
-    main.logout = logout;
-    main.currentUser = UserService.getCurrentUser();
-});
-
-fihApp.service('LoginService', function ($http) {
-    var service = this,
-        path = 'Users/';
-
-    service.login = function (credentials) {
-        //return $http.post(getLogUrl('login'), credentials);
-    };
-
-    service.logout = function () {
-        //return $http.post(getLogUrl('logout'));
-    };
-
-    service.register = function (user) {
-        //return $http.post(getUrl(), user);
-    };
-});
-
-fihApp.service('UserService', function (store) {
-    var service = this,
-    currentUser = null;
-
-    service.setCurrentUser = function (user, accessToken) {
-        console.log("User Service:"+JSON.stringify(user)+" : "+accessToken);
-        currentUser = user;
-        currentUser.access_token = accessToken;
-        store.set('user', user);
-        return currentUser;
-    };
-
-    service.getCurrentUser = function () {
-        if (!currentUser) {
-            currentUser = store.get('user');
+        hasAnyRole: function (roles) {
+            console.log("Access | Checking Access for Roles: " + roles);
+            return UserProfile.then(function (userProfile) {
+                if (userProfile.$hasAnyRole(roles)) {
+                    return Access.OK;
+                }
+                else {
+                    console.log("Access | Permission denied to roles: " + roles);
+                    return $q.reject(Access.FORBIDDEN);
+                }
+            });
         }
-        return currentUser;
     };
+
+    return Access;
 
 });
 
-fihApp.service('APIInterceptor', function ($rootScope, UserService) {
-    console.log("Entered APIInterceptor..!!");
+fihApp.service("UserService", function (Security) {
     var service = this;
-    service.request = function (config) {
-        console.log("Entered Service..!!");
-        var currentUser = UserService.getCurrentUser(),
-            access_token = currentUser ? currentUser.accessToken : null;
-        if (access_token) {
-            config.headers.authorization = access_token;
-            console.log(" config.headers: "+ config.headers);
-        }
-        if(currentUser)
-            console.log("APIInterceptor:"+JSON.stringify(currentUser.access_token));
-        return config;
+    service.hasAnyRole = function(roles){
+        Security.getProfile().then(function (response) {
+            var found = false;
+            console.log("User Roles:" +response.roles);
+            console.log("Auth Roles: "+roles);
+            for (var i = 0; i < roles.length; i++) {
+                if (response.roles.indexOf(roles[i]) > -1) {
+                    console.log("Found");
+                    found = true;
+                    break;
+                }
+            }
+            return found;
+        });
     };
-    service.responseError = function (response) {
-        if (response.status === 401) {
-            $rootScope.$broadcast('unauthorized');
-        }
-        return response;
+});
+
+fihApp.factory("UserProfile", function (Security) {
+
+    var userProfile = {};
+
+    var fetchUserProfile = function () {
+        return Security.getProfile().then(function (response) {
+
+            for (var prop in userProfile) {
+                if (userProfile.hasOwnProperty(prop)) {
+                    delete userProfile[prop];
+                }
+            }
+
+            return angular.extend(userProfile, response.data, {
+
+                $refresh: fetchUserProfile,
+
+                $hasPermission: function (resource) {
+                    return userProfile.permission.indexOf(resource) >= 0;
+                },
+
+                $hasRole: function (role) {
+                    return userProfile.roles.indexOf(role) >= 0;
+                },
+
+                $hasAnyRole: function (roles) {
+                    return !!userProfile.roles.filter(function (role) {
+                        return roles.indexOf(role) >= 0;
+                    }).length;
+                },
+
+            });
+        });
+    };
+
+    return fetchUserProfile();
+
+});
+
+fihApp.service("Security", function ($http) {
+
+    this.getProfile = function () {
+        console.log("Fetching user profile data..!!");
+        return $http.get("/fih/security/user");
     };
 });
 
 
-/*
-fihApp.run(function(UserSession) {}); //bootstrap session;
 
-fihApp.factory('UserSession', function ($http) {
-    console.log("Initiated UserSession Service..!!");
-    var UserSession = {
-        data: {},
-        saveSession: function () { // persist session data if required 
-            },
-        updateSession: function (userObj) {
-            /* load data from db 
-              $http.get('session.json').then(function (r) { 
-                  return Session.data = r.data; 
-              });
-            console.log('Updating user session data');
-            UserSession.accessToken = userObj.accessToken;
-            UserSession.username = userObj.username;
-            delete userObj.accessToken;
-            UserSession.data = userObj;
-            return true;
-        }
-    };
-    //Session.updateSession();
-    return UserSession;
-});
-*/
-
-    

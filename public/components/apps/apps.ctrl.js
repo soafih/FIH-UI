@@ -1,9 +1,11 @@
 
-fihApp.controller('AppsCtrl', function($scope, $resource, $location){
+fihApp.controller('AppsCtrl', function($scope, $resource, $location, userProfile){
     $scope.pageHeader = "Applications / Integration Services";
     $scope.isActive = function(route) {
         return route === $location.path();
     };
+
+    $scope.showBtnView = userProfile.$hasPermission('app.view');
 
     // Generate random colors for API Panel
     $scope.Math = window.Math;

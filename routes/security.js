@@ -4,10 +4,18 @@ var async = require('async');
 var router = express.Router();
 var db = {};
 
-router.get('/:username', function(req, res) {
+router.get('/userdetail/:username', function(req, res) {
     console.log('Getting details for: '+req.params.username);
     db = req.db;
     var username = req.params.username;
+    getUserAuthenticationObject(username, function(err, response){
+        if (err) throw err;
+        res.json(response);
+    });
+});
+
+function getUserAuthenticationObject(username, callback){
+    
     async.waterfall([
         function getUserDetails(callback){
             console.log("1. getUserDetails | Entered getUserDetails");
@@ -21,12 +29,52 @@ router.get('/:username', function(req, res) {
         },
         mapInheriredRoles
     ], function (err, result) {
-        console.log("1. getUserDetails | Sending response back: "+JSON.stringify(result));
+        console.log("1. getUserDetails | Response: "+JSON.stringify(result));
+        //remove duplicate from permission array
         result.permission = result.permission.filter(function(item, pos) {
             return result.permission.indexOf(item) == pos;
         });
-        res.json(result);
+        callback(err, result);
     });
+}
+
+router.get('/logout', function(req, res) {
+    
+});
+
+router.get('/validate', function(req, res) {
+    res.send(true);
+});
+
+router.get('/user', function(req, res) {
+    console.log("Entered security service..");
+    db = req.db;
+    var username = req.get('x-authenticated-user-username');
+    
+    console.log("Getting details for user: "+username);
+    if(!username){
+        req.session.username = '';
+        req.session.guid = '';
+        req.session.isAuthenticated = false;
+        req.session.userobj = {};
+        console.log("Unauthorized access attempt..");
+        res.status(401);
+    }
+    else{
+        var userid = req.get('x-authenticated-user-id');
+        
+        getUserAuthenticationObject(username, function(err, response){
+            if (err) throw err;
+            if(userid){
+                response.guid = userid;
+            }
+            req.session.username = username;
+            req.session.guid = userid;
+            req.session.isAuthenticated = true;
+            req.session.userobj = response;
+            res.json(response);
+        });
+    }
 });
 
 function mapInheriredRoles(user, callback) {
