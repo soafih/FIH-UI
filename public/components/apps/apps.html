@@ -3,13 +3,13 @@
     <div class="container-fluid">
         <div ng-controller="ModalAppCtrl">
             <div class="column">
-                <div class="col-md-8">
+                <div class="col-md-7">
                     <h3>{{pageHeader}}</h3>
                 </div>
 
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-4">
             <div class="input-group">
                 <input class="form-control" ng-model="simpleSearchQuery" placeholder="AppName/API/Created By" type="text" />
                 <span class="input-group-addon" ng-click="simpleSearch()">
@@ -19,7 +19,7 @@
 
         </div>
         <div class="col-md-1">
-            <a href ng-click="advsearch=true" style="text-decoration: underline">Advanced</a>
+            <a href ng-click="advsearch=true" style="text-decoration: underline; font-size:90%">AdvancedSearch</a>
         </div>
     </div>
 </div>
@@ -29,12 +29,13 @@
 
 
   
-
-    <div class="appdetails" ng-show="advsearch">
+ 
+    <div ng-show="advsearch">
  
         <div class="col-md-12">
-            <span id='close' style="float: right;" ng-click='advsearch=false'>x</span>
-            <div class="row">
+            <button type="button" class="close" aria-label="Close" ng-click='advsearch=false'><span aria-hidden="true">&times;</span></button>
+            <!--<span id='close' style="float: right; border-style: ridge;border-width: 2px; padding-right: 2px;padding-left: 2px; font color: white; font-size:100%;background-color:#d22749" ng-click='advsearch=false'>&times;</span>
+           --> <div class="row">
                
                     <div class="col-sm-3"><select class="form-control"  ng-model="advSearchKey" ng-options="item as item.name for item in AdvSearchList | orderBy:'name'"
                             options-class="{'placeholder-color':'placeholder', 'control-color':'data'}">
@@ -65,13 +66,14 @@
 
                 <ul>
 
-                    <span style="border-style: ridge;border-width: 2px; padding: 2px; font-size:100%">{{item.key}} contains {{item.val}} </span>
+                    <span class="bg-info" >{{item.key}} contains {{item.val}} </span>
                     <span id='close' ng-click='advRemoveFilter(item.id)' style="border-style: ridge;border-width: 2px; padding: 2px;font-size:100%;background-color:#d3cfce">x</span>
                 </ul>
 
 
 
             </div>
+            <hr/>
         </div>
 
 
@@ -79,7 +81,7 @@
 
 
 
-</div>
+
 
 
 <div class="container-fluid">
