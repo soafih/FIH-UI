@@ -1,4 +1,3 @@
-
 <div class="app-header">
     <div class="container-fluid">
         <div ng-controller="ModalAppCtrl">
@@ -28,56 +27,56 @@
 
 
 
-  
- 
-    <div ng-show="advsearch">
- 
-        <div class="col-md-12">
-            <button type="button" class="close" aria-label="Close" ng-click='advsearch=false'><span aria-hidden="true">&times;</span></button>
-            <!--<span id='close' style="float: right; border-style: ridge;border-width: 2px; padding-right: 2px;padding-left: 2px; font color: white; font-size:100%;background-color:#d22749" ng-click='advsearch=false'>&times;</span>
-           --> <div class="row">
-               
-                    <div class="col-sm-3"><select class="form-control"  ng-model="advSearchKey" ng-options="item as item.name for item in AdvSearchList | orderBy:'name'"
-                            options-class="{'placeholder-color':'placeholder', 'control-color':'data'}">
+
+
+<div ng-show="advsearch">
+
+    <div class="col-md-12">
+        <button type="button" class="close" aria-label="Close" ng-click='advsearch=false'><span aria-hidden="true">&times;</span></button>
+       
+        <div class="row">
+
+            <div class="col-sm-3"><select class="form-control" ng-model="advSearchKey" ng-options="item as item.name for item in AdvSearchList | orderBy:'name'"
+                    options-class="{'placeholder-color':'placeholder', 'control-color':'data'}" ng-change="advSearchVal=null;advFromDate=null;advToDate=null;">
                             <option value="">- Please Choose -</option>
                     </select></div>
-                    <div class="col-sm-3" ng-show="advSearchKey.id=='created_date' || advSearchKey.id=='last_updated_date'" >
-                        <md-datepicker ng-model="advFromDate" md-placeholder="From date"></md-datepicker>
-                    </div>
-                    <div class="col-sm-3" ng-show="advSearchKey.id=='created_date' || advSearchKey.id=='last_updated_date'" >
-                        <md-datepicker ng-model="advToDate" md-placeholder="To date"></md-datepicker>
-                    </div>
-                    <div class="col-sm-4" ng-hide="advSearchKey.id=='created_date' || advSearchKey.id=='last_updated_date'">
-                        <input class="form-control" ng-model="advSearchVal" type="text"  />
-                    </div>
-                    <div class="col-sm-1">
-                        <button type="button" class="btn btn-default btn-sm active" ng-disabled="advSearchKey.id==null"  ng-click="advkeyValUpdate()">Search</button>
-                        <!--  <input type="button" value="Reset" ng-click="advSearchReset()"></input> -->
-                    </div>
+            <div class="col-sm-3" ng-show="advSearchKey.id=='created_date' || advSearchKey.id=='last_updated_date'">
+                <md-datepicker ng-model="advFromDate" md-placeholder="From date"></md-datepicker>
+            </div>
+            <div class="col-sm-3" ng-show="advSearchKey.id=='created_date' || advSearchKey.id=='last_updated_date'">
+                <md-datepicker ng-model="advToDate" md-placeholder="To date"></md-datepicker>
+            </div>
+            <div class="col-sm-4" ng-hide="advSearchKey.id=='created_date' || advSearchKey.id=='last_updated_date'">
+                <input class="form-control" ng-model="advSearchVal" type="text" />
+            </div>
+            <div class="col-sm-1">
+                <button type="button" class="btn btn-default btn-sm active" ng-disabled="advSearchKey.id==null" ng-click="advkeyValUpdate()">Search</button>
                
-
             </div>
+
+
         </div>
-
-
-
-        <div class="col-md-12">
-            <div class="row" style="margin-top: 10px" ng-repeat="item in advKeyVal">
-
-                <ul>
-
-                    <span class="bg-info" >{{item.key}} contains {{item.val}} </span>
-                    <span id='close' ng-click='advRemoveFilter(item.id)' style="border-style: ridge;border-width: 2px; padding: 2px;font-size:100%;background-color:#d3cfce">x</span>
-                </ul>
-
-
-
-            </div>
-            <hr/>
-        </div>
-
-
     </div>
+
+
+
+    <div class="col-md-12">
+        <div class="row" style="margin-top: 10px" ng-repeat="item in advKeyVal">
+
+            <ul>
+                <span class="bg-info" ng-show="item.key.includes('Date')">{{item.key}} from <b> {{item.val.split(',')[0]}} </b> To  <b>{{item.val.split(',')[1]}} </b> </span>
+                <span class="bg-info" ng-show="!(item.key.includes('Date'))">{{item.key}} contains <b>{{item.val}}</b> </span>
+                <span id='close' ng-click='advRemoveFilter(item.id)' style="border-style: ridge;border-width: 1px; padding-left: 2px;padding-right: 2px;font-size:100%;background-color:#d3cfce">x</span>
+            </ul>
+
+
+
+        </div>
+        <hr/>
+    </div>
+
+
+</div>
 
 
 
@@ -123,7 +122,7 @@
                     <div class="panel-body" style="background: {{bcolors[$index%8]}} none repeat scroll 0% 0%; height: 120px;">
                         <span class="bspan" style="color: {{hcolors[$index%8]}}"><p style="line-height:13px;">{{app.descr}}</p></span>
                     </div>
-                    <div ng-show="showBtnView" class="panel-footer" style="background: {{fcolors[$index%8]}}">
+                    <div class="panel-footer" style="background: {{fcolors[$index%8]}}">
                         <button style="border:0;" type="button" class="btn btn-success btn-transparent" ng-click="viewDetails(app.name)">View Details</button>
                         <!--<button style="border:0;" type="button" class="btn btn-success btn-transparent" ng-click="open(app.name)">View Details</button>-->
                     </div>
