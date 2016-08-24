@@ -1,8 +1,10 @@
-fihApp.controller('MarketPlaceCtrl', function ($scope, $resource, $location) {
+fihApp.controller('MarketPlaceCtrl', function ($scope, $resource, $location, userProfile) {
     $scope.pageHeader = "API Markeplace";
     $scope.isActive = function (route) {
         return route === $location.path();
     };
+    
+    $scope.showBtnAddApp = userProfile.$hasPermission('app.create');
 
     // Generate random colors for API Panel
     $scope.Math = window.Math;

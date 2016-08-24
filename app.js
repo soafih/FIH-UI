@@ -12,6 +12,7 @@ var apis = require('./routes/apis');
 var apps = require('./routes/apps');
 var dbconfig = require('./routes/dbconfig');
 var stackatoapis = require('./routes/stackatoapis');
+var security = require('./routes/security');
 
 // Initialize Monk for establishing connection with MongoDB
 var monk = require('monk');
@@ -24,24 +25,29 @@ var app = express();
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
+app.use(cookieParser());
+app.use(function(req,res,next){
+    //res.header("Access-Control-Allow-Origin", "*");
+    //res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    //console.log("Cookies: " + req.headers.cookie);
+    //console.log("Request Header: "+JSON.stringify(req.headers));
+    //console.log("Response Header: "+JSON.stringify(res.headers));
+
+    req.db = db;
+    next();
+});
+
 // uncomment after placing your favicon in /public
 app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use(session({secret: 'secureKey'}));
+app.use(session({secret: 'dummySecureKey'}));
 
 // Make our db accessible to our router
-app.use(function(req,res,next){
-    //res.header("Access-Control-Allow-Origin", "*");
-    //res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-    
-    req.db = db;
-    next();
-});
+
 
 app.use('/', routes);
 app.use('/users', users);
@@ -49,9 +55,10 @@ app.use('/fih/apis', apis);
 app.use('/fih/apps', apps);
 app.use('/fih/dbconfig', dbconfig);
 app.use('/fih/stackatoapis', stackatoapis);
+app.use('/fih/security', security);
 
 app.use(function(req, res, next) {
-    
+    console.log('Cookies: ', req.cookies);
     next();
 });
 
