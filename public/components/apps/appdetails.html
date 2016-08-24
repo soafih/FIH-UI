@@ -21,9 +21,9 @@
             <div class="row">
                 <div uib-alert style="height: 25px; border: none; margin:0 0 10px 10px; padding:0 0 0 10px;" dismiss-on-timeout="20000" ng-repeat="alert in alerts" ng-class="'alert-' + (alert.type || 'danger')" close="closeAlert($index)">{{alert.msg}}</div>
                 <div class="col-md-7"><h3>{{applicationName}}</h3></div>
-                <button class="btn btn-danger btn-md col-md-1 pull-right" ng-click="openDialog('delete')">Delete</button>
-                <button disabled class="btn btn-info btn-md col-md-1 pull-right" ng-click="">Restart</button>
-                <button class="btn btn-info btn-md col-md-1 pull-right" ng-click="openDialog('redeploy')">Redeploy</button>
+                <button ng-show="showBtnDelete" class="btn btn-danger btn-md col-md-1 pull-right" ng-click="openDialog('delete')">Delete</button>
+                <button ng-show="showBtnRestart" disabled class="btn btn-info btn-md col-md-1 pull-right" ng-click="">Restart</button>
+                <button ng-show="showBtnRedeploy" class="btn btn-info btn-md col-md-1 pull-right" ng-click="openDialog('redeploy')">Redeploy</button>
             </div>
         </div>
     </div>
@@ -34,7 +34,7 @@
                     <div class="panel panel-default" style="margin: 20px 0 10px 0; border-radius: 0em/.0em;">
                         <div class="panel-body description">
                             <div ng-show="showLabelAppDescr">{{appDetails.descr}}
-                                <button type="button" ng-click="editAppDescr()" class="btn btn-default btn-sm pull-right">
+                                <button ng-show="showBtnUpdate" type="button" ng-click="editAppDescr()" class="btn btn-default btn-sm pull-right">
                                     <span class="glyphicon glyphicon-edit"></span> Edit
                                 </button>
                             </div>
@@ -83,7 +83,7 @@
                                 <h4 class="panel-title">
                                     <div ng-show="!showEditableImplFields">
                                         <a class="accordion-toggle" ng-click="isImplCollapsed = !isImplCollapsed">Implementation Details</a>
-                                        <button type="button" ng-click="editImplDetails()" class="btn btn-default btn-sm">
+                                        <button ng-show="showBtnUpdate" type="button" ng-click="editImplDetails()" class="btn btn-default btn-sm">
                                             <span class="glyphicon glyphicon-edit"></span> Edit
                                         </button>
                                         <div style="display: inline;" ng-show="showSavedMessage"><font color="{{msgColor}}"> {{editMessage}}</font></div>
@@ -104,7 +104,7 @@
                                 <div class="panel-body">
                                     <div class="row" style="margin-top: 10px">
                                         <label class='control-label col-md-3'>Endpoint</label>
-                                        <label class='control-label col-md-9' style="font-weight:500"><a href={{appDetails.endpoint}}>{{appDetails.endpoint}}</a></label>
+                                        <label class='control-label col-md-9' style="font-weight:500"><a target="_blank" href={{appDetails.endpoint}}>{{appDetails.endpoint}}</a></label>
                                     </div>
                                     <div class="row">
                                         <div class="form-group">

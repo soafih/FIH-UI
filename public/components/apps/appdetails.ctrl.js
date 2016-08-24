@@ -1,8 +1,12 @@
 
-fihApp.controller('AppDetailsCtrl', function($scope, $routeParams, $timeout, $resource, $location, $anchorScroll, $filter, $uibModal, $window, $http){
+fihApp.controller('AppDetailsCtrl', function($scope, $routeParams, userProfile, $timeout, $resource, $location, $anchorScroll, $filter, $uibModal, $window, $http){
         $scope.applicationName = $routeParams.appname;
         $scope.showLabelAppDescr = true;
-        
+        $scope.showBtnDelete = userProfile.$hasPermission('app.delete');
+        $scope.showBtnRestart = userProfile.$hasPermission('app.restart');
+        $scope.showBtnRedeploy = userProfile.$hasPermission('app.deploy');
+        $scope.showBtnUpdate = userProfile.$hasPermission('app.update');
+
         $scope.loader = {
             loading: false,
         };

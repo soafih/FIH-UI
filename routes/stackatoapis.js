@@ -29,23 +29,23 @@ router.get('/spaces', function (req, res) {
 });
 
 router.get('/orgs', function (req, res) {
-   var cacheValue = stackatoCache.get( "orgs" );
-    if ( cacheValue === undefined ){
+    var cacheValue = stackatoCache.get("orgs");
+    if (cacheValue === undefined) {
         console.log("Retrieving orgs from stackato..");
         async.waterfall([
             getStackatoAccessTokenAsync,
             getAllOrganizations,
             getOrgDetails
         ], function (err, result) {
-            console.log("###### Sending response back: "+JSON.stringify(result));
+            console.log("###### Sending response back: " + JSON.stringify(result));
             stackatoCache.set("orgs", result, defaultTTL);
             res.json(result);
         });
     }
-    else{
+    else {
         console.log("Retrieved orgs from cache..");
         res.json(cacheValue);
-    } 
+    }
 });
 
 function getAllOrganizations(accessToken, callback) {
@@ -105,7 +105,22 @@ function getOrgDetails(accessToken, orgsArr, callback) {
         });
     }
 }
-
+router.get('/orgs_bkp', function (req, res) {
+    var cacheValue = stackatoCache.get( "orgs" );
+    if ( cacheValue === undefined ){
+        console.log("Retrieving orgs from stackato..");
+        getStackatoAccessToken(function(response){
+            getAllOrganizations(response, function(response){
+                stackatoCache.set("orgs", response, defaultTTL);
+                res.json(response);
+            });
+        });
+    }
+    else{
+        console.log("Retrieved orgs from cache..");
+        res.json(cacheValue);
+    }
+});
 
 router.get('/apps', function (req, res) {
 
@@ -116,6 +131,29 @@ router.get('/apps', function (req, res) {
         });
     });
 });
+
+router.get('/headertest', function (req, res) {
+    var cookies = parseCookies(req);
+    console.log("Session: "+JSON.stringify(req.session));
+    console.log("Username: "+req.session.username);
+    console.log('Cookies: ', req.cookies);
+    console.log("Request cookies: "+JSON.stringify(cookies));
+    console.log("Request Headers: "+JSON.stringify(req.headers));
+    res.json(req.cookies);
+});
+
+function parseCookies (request) {
+    var list = {},
+        rc = request.headers.cookie;
+        console.log(rc);
+    rc && rc.split(';').forEach(function( cookie ) {
+        var parts = cookie.split('=');
+        list[parts.shift().trim()] = decodeURI(parts.join('='));
+    });
+
+    return list;
+}
+
 
 router.get('/apps/:appname', function (req, res) {
     var appName = req.params.appname;
@@ -142,6 +180,34 @@ router.delete('/apps/:appguid', function (req, res) {
     });
 });
 
+router.post('/login', function(req, res) {
+    console.log("Login request for: "+req.body.username);
+    var username = req.body.username;
+    var password = req.body.password;
+
+    authenticateUser(username, password, function(response){
+        console.log("Login response from stackato:"+response);
+        var authStatus ={};
+        if(response){
+            req.session.isAuthenticated = true;
+            req.session.accessToken = response;
+            authStatus = {
+                status: 'success',
+                username: username,
+                accessToken: response
+            };
+        }
+        else{
+            req.session.isAuthenticated = false;
+            req.session.accessToken = null;
+            authStatus = {
+                status: 'failed',
+                error: response
+            };
+        }
+        res.json(authStatus);
+    });
+});
 
 function deleteApplication(accessToken, appGuid, callback){
 
@@ -366,3 +432,4 @@ function performRequest(host, endpoint, method, dataString, headers, success) {
 }
 
 module.exports = router;
+
