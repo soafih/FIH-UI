@@ -51,15 +51,13 @@ html(ng-app='fihApp' ng-controller="MainCtrl")
           a.navbar-brand(href='/#/') Fox Integration Hub
         .navbar-collapse.collapse
           ul.nav.navbar-nav.navbar-right
+            li(ng-if="user")
+              a(href='/#/login') {{userData.first_name}} {{userData.last_name}}
             li
               a(href='mailto:SOAEnterpriseTeam@fox.com?Subject=Fox%20Integration%20Hub%20Feedback' target='_top') Contact Us
             li
               a(href='/#/help') Help
-            //li(ng-if="!currentUser")
-              a(href='/#/login') Log In
-            //li(ng-if="currentUser" ng-click="")
-              a(href='/#/') Logout
-          form.navbar-form.navbar-right
+          //form.navbar-form.navbar-right
             input.form-control(type='text', placeholder='Search...')
     .container-fluid
       .row
@@ -81,9 +79,4 @@ html(ng-app='fihApp' ng-controller="MainCtrl")
                       
         .col-sm-9.col-sm-offset-3.col-md-10.col-md-offset-2.main
           block content
-    
-    // Bootstrap core JavaScript
-    // ==================================================
-    // Placed at the end of the document so the pages load faster
-    
     

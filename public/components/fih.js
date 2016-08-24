@@ -59,6 +59,7 @@ fihApp.config(['$routeProvider', '$httpProvider', function ($routeProvider, $htt
             templateUrl: 'components/apis/addapi.html',
             controller: 'AddApiCtrl',
             resolve: {
+                userProfile: "UserProfile",
                 access: ["Access", function (Access) { return Access.hasRole("api_developer"); }]
             }
         })
@@ -73,6 +74,7 @@ fihApp.config(['$routeProvider', '$httpProvider', function ($routeProvider, $htt
             templateUrl: 'components/apps/addapp.html',
             controller: 'AddAppCtrl',
             resolve: {
+                userProfile: "UserProfile",
                 databaseList: function (databaseListFactory) {
                     return databaseListFactory.getDatabaseList();
                 },
@@ -92,17 +94,14 @@ fihApp.controller('SidebarCtrl', function ($scope, $resource, $location) {
     };
 });
 
-fihApp.controller('MainCtrl', function ($rootScope, $scope, UserService) {
+fihApp.controller('MainCtrl', function ($rootScope, $scope) {
     $scope.showSidebarApps = true;
     $scope.showSidebarDashboard = true;
-    var init = function(){
-        //$scope.showSidebarApps = UserService.hasAnyRole(['app_developer']);
-        //$scope.showSidebarDashboard = UserService.hasAnyRole(['app_admin']);
-    };
-    init();
+    
+    $scope.userData = $rootScope.user;
 });
 
-fihApp.run(function ($rootScope, $location, $window, Access) {
+fihApp.run(function ($resource, $rootScope, $location, $window, Access) {
 
     $rootScope.$on("$routeChangeError", function (event, current, previous, rejection) {
         if (rejection == Access.UNAUTHORIZED) {
@@ -179,13 +178,14 @@ fihApp.service("UserService", function (Security) {
     };
 });
 
-fihApp.factory("UserProfile", function (Security) {
+fihApp.factory("UserProfile", function (Security, $rootScope) {
 
     var userProfile = {};
 
     var fetchUserProfile = function () {
         return Security.getProfile().then(function (response) {
-
+            $rootScope.user = response;
+            console.log("Loaded user profile");
             for (var prop in userProfile) {
                 if (userProfile.hasOwnProperty(prop)) {
                     delete userProfile[prop];
@@ -213,7 +213,6 @@ fihApp.factory("UserProfile", function (Security) {
             });
         });
     };
-
     return fetchUserProfile();
 
 });

@@ -3,6 +3,15 @@ fihApp.controller('MarketPlaceCtrl', function ($scope, $resource, $location, use
     $scope.isActive = function (route) {
         return route === $location.path();
     };
+
+    $scope.loader = {
+        loading: false,
+    };
+    $scope.loader.loading = true;
+    console.log("Loading application data..");
+    if(userProfile){
+        $scope.loader.loading = false;
+    }
     
     $scope.showBtnAddApp = userProfile.$hasPermission('app.create');
 

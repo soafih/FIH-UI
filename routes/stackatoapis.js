@@ -48,6 +48,42 @@ router.get('/orgs', function (req, res) {
     }
 });
 
+router.get('/userorgs/:guid', function (req, res) {
+    var guid = req.params.guid;
+    console.log("Retrieving orgs from stackato..");
+    async.waterfall([
+        getStackatoAccessTokenAsync,
+        function getUsersOrganizations(accessToken, callback) {
+
+            var headers = {
+                'Authorization': 'Bearer ' + accessToken
+            };
+
+            performRequest(hostApi, '/v2/users/' + guid + '/organizations', 'GET', '', headers, function (data) {
+                var resources = data.resources;
+                var orgsArr = [];
+                for (var i = 0; i < resources.length; i++) {
+                    var org = {
+                        name: resources[i].entity.name,
+                        spaces_url: resources[i].entity.spaces_url,
+                        domains_url: resources[i].entity.domains_url
+                    };
+                    orgsArr.push(org);
+                }
+                console.log("Stackato Org Response: " + JSON.stringify(orgsArr));
+
+                callback(null, accessToken, orgsArr);
+            });
+        },
+        getOrgDetails
+    ], function (err, result) {
+        console.log("###### Sending response back: " + JSON.stringify(result));
+        stackatoCache.set("orgs", result, defaultTTL);
+        res.json(result);
+    });
+
+});
+
 function getAllOrganizations(accessToken, callback) {
     
     var headers = {
@@ -105,6 +141,7 @@ function getOrgDetails(accessToken, orgsArr, callback) {
         });
     }
 }
+
 router.get('/orgs_bkp', function (req, res) {
     var cacheValue = stackatoCache.get( "orgs" );
     if ( cacheValue === undefined ){
@@ -430,6 +467,5 @@ function performRequest(host, endpoint, method, dataString, headers, success) {
     req.write(dataString);
     req.end();
 }
-
 module.exports = router;
 
