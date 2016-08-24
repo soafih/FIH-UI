@@ -33,7 +33,7 @@
 
     <div class="col-md-12">
         <button type="button" class="close" aria-label="Close" ng-click='advsearch=false'><span aria-hidden="true">&times;</span></button>
-       
+
         <div class="row">
 
             <div class="col-sm-3"><select class="form-control" ng-model="advSearchKey" ng-options="item as item.name for item in AdvSearchList | orderBy:'name'"
@@ -51,7 +51,11 @@
             </div>
             <div class="col-sm-1">
                 <button type="button" class="btn btn-default btn-sm active" ng-disabled="advSearchKey.id==null" ng-click="advkeyValUpdate()">Search</button>
-               
+
+            </div>
+            <div class="col-sm-1">
+                <button type="button" class="btn btn-default btn-sm active"  ng-click="advReset()">Reset</button>
+
             </div>
 
 
@@ -61,20 +65,17 @@
 
 
     <div class="col-md-12">
-        <div class="row" style="margin-top: 10px" ng-repeat="item in advKeyVal">
-
-            <ul>
-                <span class="bg-info" ng-show="item.key.includes('Date')">{{item.key}} from <b> {{item.val.split(',')[0]}} </b> To  <b>{{item.val.split(',')[1]}} </b> </span>
-                <span class="bg-info" ng-show="!(item.key.includes('Date'))">{{item.key}} contains <b>{{item.val}}</b> </span>
-                <span id='close' ng-click='advRemoveFilter(item.id)' style="border-style: ridge;border-width: 1px; padding-left: 2px;padding-right: 2px;font-size:100%;background-color:#d3cfce">x</span>
-            </ul>
-
-
-
+        <div class="column" style="margin-top: 10px" ng-repeat="item in advKeyVal">
+            <div class="col-xs-4" style="margin-top: 10px">
+                <span ng-show="item.key.includes('Date')">{{item.key}} from <b> {{item.val.split(',')[0]}} </b> To  <b>{{item.val.split(',')[1]}} </b> </span>
+                <span ng-show="!(item.key.includes('Date'))">{{item.key}} contains <b>{{item.val}}</b> </span>
+                <!-- <span id='close' ng-click='advRemoveFilter(item.id)' style="border-style: ridge;border-width: 1px; padding-left: 2px;padding-right: 2px;font-size:100%;background-color:#d3cfce">x</span>
+           -->
+                <span class="close-custom" aria-label="Close" ng-click='advRemoveFilter(item.id)'><span aria-hidden="true"><b>&times;</b></span></button>
+            </div>
         </div>
-        <hr/>
+        <hr class="col-md-12" />
     </div>
-
 
 </div>
 

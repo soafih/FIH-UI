@@ -40,15 +40,15 @@ fihApp.controller('AppsCtrl', function ($scope, $resource, $location, $filter) {
 
 
     $scope.advkeyValUpdate = function () {
-       // console.log($scope.advSearchKey);
+        // console.log($scope.advSearchKey);
 
         if ($scope.advSearchVal == null && ($scope.advFromDate == null || $scope.advToDate == null)) {
             alert('Enter the value to be searched');
-            
+
             return;
         }
         if ($scope.advSearchVal == null) {
-            $scope.advKeyVal.push({ id: $scope.advSearchKey.id, key: $scope.advSearchKey.name, val: $filter('date')($scope.advFromDate, "MM-dd-yyyy") + ',' + $filter('date')($scope.advToDate, "MM-dd-yyyy") });
+            $scope.advKeyVal.push({ id: $scope.advSearchKey.id, key: $scope.advSearchKey.name, val: $filter('date')($scope.advFromDate, "yyyy-MM-dd") + ',' + $filter('date')($scope.advToDate, "yyyy-MM-dd") });
         }
         else
             $scope.advKeyVal.push({ id: $scope.advSearchKey.id, key: $scope.advSearchKey.name, val: $scope.advSearchVal });
@@ -108,7 +108,18 @@ fihApp.controller('AppsCtrl', function ($scope, $resource, $location, $filter) {
         $scope.advSearch();
     };
 
-  
+
+
+    $scope.advReset = function () {
+
+        ($scope.advKeyVal).forEach(function (item) {
+            $scope.AdvSearchList.push({ id: item.id, name: item.key });
+        });
+
+        $scope.advKeyVal = [];
+        $scope.apps = $scope.appSearchBackup;
+    };
+
 });
 
 
