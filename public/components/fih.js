@@ -1,4 +1,4 @@
-var fihApp = angular.module('fihApp', ['ngAnimate','ui.bootstrap','ngResource','ngRoute','ngTable', 'ngCookies', 'angular-storage']);
+var fihApp = angular.module('fihApp', ['ngAnimate','ui.bootstrap','ngResource','ngRoute','ngTable', 'ngCookies', 'angular-storage', 'ngMaterial']);
 
 fihApp.config(['$routeProvider','$httpProvider', function($routeProvider, $httpProvider){
     $routeProvider
