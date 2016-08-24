@@ -40,9 +40,11 @@ fihApp.controller('AppsCtrl', function ($scope, $resource, $location, $filter) {
 
 
     $scope.advkeyValUpdate = function () {
-        console.log($scope.advSearchKey);
+       // console.log($scope.advSearchKey);
 
         if ($scope.advSearchVal == null && ($scope.advFromDate == null || $scope.advToDate == null)) {
+            alert('Enter the value to be searched');
+            
             return;
         }
         if ($scope.advSearchVal == null) {

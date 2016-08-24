@@ -1,5 +1,4 @@
-<br>
-<br>
+
 <div class="app-header">
     <div class="container-fluid">
         <div ng-controller="ModalAppCtrl">
@@ -26,16 +25,18 @@
 </div>
 <hr/>
 
-<div class="container-fluid">
 
+
+
+  
 
     <div class="appdetails" ng-show="advsearch">
-
+ 
         <div class="col-md-12">
             <span id='close' style="float: right;" ng-click='advsearch=false'>x</span>
             <div class="row">
                
-                    <div class="col-sm-3"><select class="form-control" ng-model="advSearchKey" ng-options="item as item.name for item in AdvSearchList | orderBy:'name'"
+                    <div class="col-sm-3"><select class="form-control"  ng-model="advSearchKey" ng-options="item as item.name for item in AdvSearchList | orderBy:'name'"
                             options-class="{'placeholder-color':'placeholder', 'control-color':'data'}">
                             <option value="">- Please Choose -</option>
                     </select></div>
@@ -49,7 +50,7 @@
                         <input class="form-control" ng-model="advSearchVal" type="text"  />
                     </div>
                     <div class="col-sm-1">
-                        <input type="button" ng-disabled="advSearchKey.id == null || (advSearchVal == null && (advFromDate == null || advToDate == null))" value=" Go " ng-click="advkeyValUpdate()"></input>
+                        <button type="button" class="btn btn-default btn-sm active" ng-disabled="advSearchKey.id==null"  ng-click="advkeyValUpdate()">Search</button>
                         <!--  <input type="button" value="Reset" ng-click="advSearchReset()"></input> -->
                     </div>
                
