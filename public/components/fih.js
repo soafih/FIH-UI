@@ -73,6 +73,7 @@ fihApp.config(['$routeProvider', '$httpProvider', function ($routeProvider, $htt
             templateUrl: 'components/apps/addapp.html',
             controller: 'AddAppCtrl',
             resolve: {
+                userProfile: "UserProfile",
                 databaseList: function (databaseListFactory) {
                     return databaseListFactory.getDatabaseList();
                 },

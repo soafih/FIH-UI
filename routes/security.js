@@ -2,7 +2,6 @@ var express = require('express');
 var router = express.Router();
 var stackato = require('./stackato_mod');
 var async = require('async');
-var request = require('request');
 var db = {};
 
 router.get('/userdetail/:username/:guid', function(req, res) {

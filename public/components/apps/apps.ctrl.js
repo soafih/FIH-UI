@@ -1,5 +1,5 @@
 
-fihApp.controller('AppsCtrl', function($scope, $resource, $location, userProfile,$filter){
+fihApp.controller('AppsCtrl', function($scope, $resource, $location, userProfile, $filter){
     $scope.pageHeader = "Applications / Integration Services";
     $scope.isActive = function(route) {
         return route === $location.path();
@@ -27,6 +27,7 @@ fihApp.controller('AppsCtrl', function($scope, $resource, $location, userProfile
         console.log("Got response");
         console.log(JSON.stringify("Response: " + res));
         $scope.apps = res.apps;
+        $scope.appSearchBackup = res.apps;
     });
 
     $scope.advKeyVal = [];
@@ -132,9 +133,6 @@ fihApp.controller('AppsCtrl', function($scope, $resource, $location, userProfile
 
 
 });
-
-
-
 
 
 fihApp.controller('ModalAppCtrl', function ($scope, $uibModal, $filter, $window) {
