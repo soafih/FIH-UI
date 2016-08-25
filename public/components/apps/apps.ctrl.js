@@ -1,18 +1,20 @@
 
-fihApp.controller('AppsCtrl', function ($scope, $resource, $location, $filter) {
+fihApp.controller('AppsCtrl', function($scope, $resource, $location, userProfile,$filter){
     $scope.pageHeader = "Applications / Integration Services";
-    $scope.isActive = function (route) {
+    $scope.isActive = function(route) {
         return route === $location.path();
     };
+    
+    $scope.showBtnView = userProfile.$hasPermission('app.view');
 
     // Generate random colors for API Panel
     $scope.Math = window.Math;
-    $scope.hcolors = new Array("#009688", "#D50000", "#2962FF", "#2E7D32", "#006064", "#607D8B", "#4E342E", "#E64A19");
-    $scope.bcolors = new Array("#80CBC4", "#FF8A80", "#82B1FF", "#C8E6C9", "#B2EBF2", "#CFD8DC", "#BCAAA4", "#FFAB91");
-    $scope.fcolors = new Array("#E0F2F1", "#FFEBEE", "#E3F2FD", "#E8F5E9", "#E0F7FA", "#ECEFF1", "#EFEBE9", "#FBE9E7");
+    $scope.hcolors = new Array("#009688","#D50000","#2962FF","#2E7D32","#006064","#607D8B","#4E342E","#E64A19");
+    $scope.bcolors = new Array("#80CBC4","#FF8A80","#82B1FF","#C8E6C9","#B2EBF2","#CFD8DC","#BCAAA4","#FFAB91");
+    $scope.fcolors = new Array("#E0F2F1","#FFEBEE","#E3F2FD","#E8F5E9","#E0F7FA","#ECEFF1","#EFEBE9","#FBE9E7");
 
     var Apps = $resource('/fih/apps');
-    Apps.query(function (apps) {
+    Apps.query(function(apps) {
         $scope.apps = apps;
         $scope.appSearchBackup = apps;
     });
@@ -40,11 +42,11 @@ fihApp.controller('AppsCtrl', function ($scope, $resource, $location, $filter) {
 
 
     $scope.advkeyValUpdate = function () {
-        // console.log($scope.advSearchKey);
+       // console.log($scope.advSearchKey);
 
         if ($scope.advSearchVal == null && ($scope.advFromDate == null || $scope.advToDate == null)) {
             alert('Enter the value to be searched');
-
+            
             return;
         }
         if ($scope.advSearchVal == null) {
@@ -108,9 +110,7 @@ fihApp.controller('AppsCtrl', function ($scope, $resource, $location, $filter) {
         $scope.advSearch();
     };
 
-
-
-    $scope.advReset = function () {
+  $scope.advReset = function () {
 
         ($scope.advKeyVal).forEach(function (item) {
             $scope.AdvSearchList.push({ id: item.id, name: item.key });
@@ -119,6 +119,7 @@ fihApp.controller('AppsCtrl', function ($scope, $resource, $location, $filter) {
         $scope.advKeyVal = [];
         $scope.apps = $scope.appSearchBackup;
     };
+
 
 });
 
@@ -130,12 +131,12 @@ fihApp.controller('ModalAppCtrl', function ($scope, $uibModal, $filter, $window)
 
     $scope.animationsEnabled = true;
     $scope.appDetails = [];
-    $scope.viewDetails = function (appName) {
-        $window.location.href = "/#/appdetails/" + appName;
+    $scope.viewDetails = function(appName) {
+        $window.location.href = "/#/appdetails/"+appName;
     };
     $scope.open = function (appName) {
 
-        var choosenApp = $filter('filter')($scope.apps, { name: appName }, true)[0];
+        var choosenApp = $filter('filter')($scope.apps, {name: appName}, true)[0];
         console.log("Filtered App Details: " + JSON.stringify(choosenApp));
 
         $scope.appDetails = [
