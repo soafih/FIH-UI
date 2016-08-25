@@ -1,27 +1,89 @@
 <div class="app-header">
     <div class="container-fluid">
-         <div ng-controller="ModalAppCtrl">
-        <div class="column">
-            <div class="col-md-8">
-                <h3>{{pageHeader}}</h3>
+        <div ng-controller="ModalAppCtrl">
+            <div class="column">
+                <div class="col-md-7">
+                    <h3>{{pageHeader}}</h3>
+                </div>
+
             </div>
-          
+        </div>
+        <div class="col-md-4">
+            <div class="input-group">
+                <input class="form-control" ng-model="simpleSearchQuery" placeholder="AppName/API/Created By" type="text" />
+                <span class="input-group-addon" ng-click="simpleSearch()">
+                    <span class="glyphicon glyphicon-search" ></span>
+                </span>
+            </div>
+
+        </div>
+        <div class="col-md-1">
+            <a href ng-click="advsearch=true" style="text-decoration: underline; font-size:90%">AdvancedSearch</a>
         </div>
     </div>
-     <div class="col-md-4">
-                <div class="input-group">
-                   
-                    <input class="form-control" ng-model="search.name" placeholder="Application Name" type="text" />
-                    <span class="input-group-addon" ng-click="" >
-                    <span class="glyphicon glyphicon-search" ></span>
-                    </span>
-                </div>
-                <a>
-            </div>
-</div>
- 
 </div>
 <hr/>
+
+
+
+
+
+
+<div ng-show="advsearch">
+
+    <div class="col-md-12">
+        <button type="button" class="close" aria-label="Close" ng-click='advsearch=false'><span aria-hidden="true">&times;</span></button>
+
+        <div class="row">
+
+            <div class="col-sm-3"><select class="form-control" ng-model="advSearchKey" ng-options="item as item.name for item in AdvSearchList | orderBy:'name'"
+                    options-class="{'placeholder-color':'placeholder', 'control-color':'data'}" ng-change="advSearchVal=null;advFromDate=null;advToDate=null;">
+                            <option value="">- Please Choose -</option>
+                    </select></div>
+            <div class="col-sm-3" ng-show="advSearchKey.id=='created_date' || advSearchKey.id=='last_updated_date'">
+                <md-datepicker ng-model="advFromDate" md-placeholder="From date"></md-datepicker>
+            </div>
+            <div class="col-sm-3" ng-show="advSearchKey.id=='created_date' || advSearchKey.id=='last_updated_date'">
+                <md-datepicker ng-model="advToDate" md-placeholder="To date"></md-datepicker>
+            </div>
+            <div class="col-sm-4" ng-hide="advSearchKey.id=='created_date' || advSearchKey.id=='last_updated_date'">
+                <input class="form-control" ng-model="advSearchVal" type="text" />
+            </div>
+            <div class="col-sm-1">
+                <button type="button" class="btn btn-default btn-sm active" ng-disabled="advSearchKey.id==null" ng-click="advkeyValUpdate()">Search</button>
+
+            </div>
+            <div class="col-sm-1">
+                <button type="button" class="btn btn-default btn-sm active"  ng-click="advReset()">Reset</button>
+
+            </div>
+
+
+        </div>
+    </div>
+
+
+
+    <div class="col-md-12">
+        <div class="column" style="margin-top: 10px" ng-repeat="item in advKeyVal">
+            <div class="col-xs-4" style="margin-top: 10px">
+                <span ng-show="item.key.includes('Date')">{{item.key}} from <b> {{item.val.split(',')[0]}} </b> To  <b>{{item.val.split(',')[1]}} </b> </span>
+                <span ng-show="!(item.key.includes('Date'))">{{item.key}} contains <b>{{item.val}}</b> </span>
+                <!-- <span id='close' ng-click='advRemoveFilter(item.id)' style="border-style: ridge;border-width: 1px; padding-left: 2px;padding-right: 2px;font-size:100%;background-color:#d3cfce">x</span>
+           -->
+                <span class="close-custom" aria-label="Close" ng-click='advRemoveFilter(item.id)'><span aria-hidden="true"><b>&times;</b></span></button>
+            </div>
+        </div>
+        <hr class="col-md-12" />
+    </div>
+
+</div>
+
+
+
+
+
+
 <div class="container-fluid">
     <div ng-controller="ModalAppCtrl">
         <script type="text/ng-template" id="myModalContent.html">
@@ -53,7 +115,7 @@
         </script>
 
         <div class="row">
-            <div ng-repeat='app in apps | filter : search:strict' class="col-lg-3">
+            <div ng-repeat='app in apps | filter : simpleFilter' class="col-lg-3">
                 <div class="panel panel-primary" style="margin: 10px 20px 40px 0px">
                     <div class="panel-heading" style="background: {{hcolors[$index%8]}}">
                         <span class="hspan">{{app.name}}</span>
@@ -61,7 +123,7 @@
                     <div class="panel-body" style="background: {{bcolors[$index%8]}} none repeat scroll 0% 0%; height: 120px;">
                         <span class="bspan" style="color: {{hcolors[$index%8]}}"><p style="line-height:13px;">{{app.descr}}</p></span>
                     </div>
-                    <div ng-show="showBtnView" class="panel-footer" style="background: {{fcolors[$index%8]}}">
+                    <div class="panel-footer" style="background: {{fcolors[$index%8]}}">
                         <button style="border:0;" type="button" class="btn btn-success btn-transparent" ng-click="viewDetails(app.name)">View Details</button>
                         <!--<button style="border:0;" type="button" class="btn btn-success btn-transparent" ng-click="open(app.name)">View Details</button>-->
                     </div>

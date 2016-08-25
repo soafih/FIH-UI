@@ -1,5 +1,5 @@
 
-fihApp.controller('ApiDetailsCtrl', function ($scope, $routeParams, $resource) {
+fihApp.controller('ApiDetailsCtrl', function ($scope, $routeParams, $resource, $filter) {
     $scope.apiName = $routeParams.apiname;
         
     var init = function () {
@@ -13,8 +13,8 @@ fihApp.controller('ApiDetailsCtrl', function ($scope, $routeParams, $resource) {
                 { "References": apiDetails.references },
                 { "Created By": apiDetails.created_by },
                 { "Endpoint": apiDetails.api_ep },
-                { "Last Updated": apiDetails.last_updated_date },
-                { "Published Date": apiDetails.published_date },
+                { "Last Updated": $filter('date')(apiDetails.last_updated_date, "yyyy-MM-dd HH:mm:ss")},
+                { "Published Date": $filter('date')(apiDetails.published_date, "yyyy-MM-dd HH:mm:ss")},
                 { "Last Updated By": apiDetails.last_updated_by }
             ];
 
