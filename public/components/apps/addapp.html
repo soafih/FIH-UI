@@ -48,7 +48,8 @@
                             <div class="form-group required">
                                 <label class='control-label col-sm-3' for="txtAppName">App / Integration Service Name</label>
                                 <div class="col-sm-6">
-                                    <input id="txtAppName" required class="form-control" ng-model="app.name"></input>
+								 <span ng-show="appInfoForm.AppName.$error.pattern" style="color:red; font-size: 80%">Allow only the characters in (a-z A-Z 1-9 -)and should start and end with letter or number</span>
+                                <input id="txtAppName" name="AppName" ng-pattern="reNamepattern" required class="form-control" ng-model="app.name"></input>
                                 </div>
                             </div>
                         </div>

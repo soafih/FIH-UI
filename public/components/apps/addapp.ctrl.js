@@ -2,6 +2,7 @@ fihApp.controller('AddAppCtrl', function($scope, $window, $http, $resource, $loc
     $routeParams, NgTableParams, databaseList, userProfile){
         
     $scope.pageHeader = "Application / Integration Service Configuration";
+	$scope.reNamepattern = /^[a-z0-9](-*[a-z0-9]+)*$/;
     $scope.previousBtnDisabled = true;
     $scope.changeActiveTab = function(selectedTab){
         switch(selectedTab){
