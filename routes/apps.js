@@ -11,6 +11,26 @@ router.get('/', function(req, res) {
     });
 });
 
+router.post('/userorgspace', function (req, res) {
+    var db = req.db;
+    var orgs = req.body.orgs;
+    var spaces = req.body.spaces;
+    console.log("Ogrs"+orgs);
+    console.log("Spaces"+spaces);
+    var collection = db.get('coll_app');
+    collection.find({
+        $and: [{
+            "stackato_config.org": { "$in": orgs}},
+            {"stackato_config.space": { "$in": spaces}}
+        ]
+    }, function (err, response) {
+        if (err) throw err;
+        var apps = {"apps": response};
+        console.log("Response Apps: "+JSON.stringify(apps));
+        res.json(apps);
+    });
+});
+
 router.get('/name/:name', function(req, res) {
     var db = req.db;
     var collection = db.get('coll_app');
