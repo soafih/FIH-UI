@@ -318,25 +318,15 @@ fihApp.controller('AddAppCtrl', function($scope, $window, $http, $resource, $loc
         $scope.stackatoOrgs = orgs;
         $scope.stackatoOrg = orgs;
         $scope.app.selectedOrg = orgs[0];
-        console.log("Selected Org:"+$scope.app.selectedOrg);
         $scope.stackatoSpace = $scope.stackatoOrgs[0].spaces;
         $scope.app.selectedSpace = $scope.stackatoSpace[0];
         $scope.loader.loading = false;
-
-        /*var SpaceApis = $resource('/fih/stackatoapis/spaces');
-        SpaceApis.query(function(spaces){
-            console.log("spaces: "+spaces);
-            $scope.stackatoSpace = spaces;
-            $scope.app.selectedSpace = $scope.stackatoSpace[0];
-            $scope.loader.loading = false;
-        });*/
 
         var Apis = $resource('/fih/apis/name/'+$scope.apitype);
         Apis.get(function(api){
             console.log("APIs Details: "+JSON.stringify(api));
             $scope.apiDetails = api;
         });
-         
     };
     // and fire it after definition
     init();
