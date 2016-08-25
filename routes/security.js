@@ -1,56 +1,25 @@
 var express = require('express');
-var async = require('async');
-
 var router = express.Router();
+var stackato = require('./stackato_mod');
+var async = require('async');
+var request = require('request');
 var db = {};
 
-router.get('/userdetail/:username', function(req, res) {
+router.get('/userdetail/:username/:guid', function(req, res) {
     console.log('Getting details for: '+req.params.username);
     db = req.db;
     var username = req.params.username;
-    getUserAuthenticationObject(username, function(err, response){
+    getUserAuthDetails(username, req.params.guid, function(err, response){
         if (err) throw err;
         res.json(response);
     });
-});
-
-function getUserAuthenticationObject(username, callback){
-    
-    async.waterfall([
-        function getUserDetails(callback){
-            console.log("1. getUserDetails | Entered getUserDetails");
-            var collection = db.get('coll_user');
-            collection.findOne({username: username}, 
-                {fields : {password:0, created_by: 0, creation_date:0, last_updated_by:0, last_update_date:0}} , function(err, user){
-                if (err) throw err;
-                console.log("1. getUserDetails | Completed. Error: ", err, " | result: ", JSON.stringify(user));
-                callback(null, user);
-            });
-        },
-        mapInheriredRoles
-    ], function (err, result) {
-        console.log("1. getUserDetails | Response: "+JSON.stringify(result));
-        //remove duplicate from permission array
-        result.permission = result.permission.filter(function(item, pos) {
-            return result.permission.indexOf(item) == pos;
-        });
-        callback(err, result);
-    });
-}
-
-router.get('/logout', function(req, res) {
-    
-});
-
-router.get('/validate', function(req, res) {
-    res.send(true);
 });
 
 router.get('/user', function(req, res) {
     console.log("Entered security service..");
     db = req.db;
     var username = req.get('x-authenticated-user-username');
-    
+    var userguid = req.get('x-authenticated-user-id');
     console.log("Getting details for user: "+username);
     if(!username){
         req.session.username = '';
@@ -61,21 +30,67 @@ router.get('/user', function(req, res) {
         res.status(401);
     }
     else{
-        var userid = req.get('x-authenticated-user-id');
-        
-        getUserAuthenticationObject(username, function(err, response){
+        getUserAuthDetails(username, userguid, function(err, response){
             if (err) throw err;
-            if(userid){
-                response.guid = userid;
+            if(userguid){
+                response.guid = userguid;
             }
             req.session.username = username;
-            req.session.guid = userid;
+            req.session.guid = userguid;
             req.session.isAuthenticated = true;
             req.session.userobj = response;
             res.json(response);
         });
     }
 });
+
+
+function getUserAuthDetails(username, guid, callback){
+    console.log('Entered getUserAuthDetails');
+    async.series([
+        function(callback) {
+            async.waterfall([
+                function getUserDetails(callback){
+                    console.log("1. getUserDetails | Entered getUserDetails");
+                    var collection = db.get('coll_user');
+                    collection.findOne({username: username}, 
+                        {fields : {password:0, created_by: 0, creation_date:0, last_updated_by:0, last_update_date:0}} , function(err, user){
+                        if (err) throw err;
+                        console.log("1. getUserDetails | Completed. Error: ", err, " | result: ", JSON.stringify(user));
+                        callback(null, user);
+                    });
+                },
+                mapInheriredRoles
+            ], 
+            function (err, result) {
+                console.log("1. getUserDetails | Response: "+JSON.stringify(result));
+                //remove duplicate from permission array
+                result.permission = result.permission.filter(function(item, pos) {
+                    return result.permission.indexOf(item) == pos;
+                });
+                callback(err, result);
+            });
+        },
+        function (callback) {
+            console.log("Calling getUserOrgs");
+            stackato.getUserOrgs(guid, function(res){
+                callback(null, res);
+            });
+        }
+    ],
+    // optional callback
+    function(err, results) {
+        console.log("Series Response: "+JSON.stringify(results));
+        var response = results[0];
+        response.stackato_config = results[1];
+        callback(err, response);
+    });
+}
+
+router.get('/logout', function(req, res) {
+    
+});
+
 
 function mapInheriredRoles(user, callback) {
     console.log("2. mapInheriredRoles | Getting mapInheriredRoles for :" + user.roles);

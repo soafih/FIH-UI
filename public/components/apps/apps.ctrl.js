@@ -13,10 +13,20 @@ fihApp.controller('AppsCtrl', function($scope, $resource, $location, userProfile
     $scope.bcolors = new Array("#80CBC4","#FF8A80","#82B1FF","#C8E6C9","#B2EBF2","#CFD8DC","#BCAAA4","#FFAB91");
     $scope.fcolors = new Array("#E0F2F1","#FFEBEE","#E3F2FD","#E8F5E9","#E0F7FA","#ECEFF1","#EFEBE9","#FBE9E7");
 
-    var Apps = $resource('/fih/apps');
-    Apps.query(function(apps) {
-        $scope.apps = apps;
-        $scope.appSearchBackup = apps;
+    var orgs = [], spaces = [];
+    for (var i = 0; i < userProfile.stackato_config.length; i++) {
+        orgs.push(userProfile.stackato_config[i].name);
+        spaces = spaces.concat(userProfile.stackato_config[i].spaces);
+    }
+    var request = {
+        "orgs": orgs,
+        "spaces": spaces
+    };
+    var Apps = $resource('/fih/apps/userorgspace');
+    Apps.save(request, function (res) {
+        console.log("Got response");
+        console.log(JSON.stringify("Response: " + res));
+        $scope.apps = res.apps;
     });
 
     $scope.advKeyVal = [];

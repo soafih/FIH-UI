@@ -1,36 +1,5 @@
-
-fihApp.factory('databaseListFactory', function($http) {
-    var factoryResult = {
-        getDatabaseList: function() {
-            var promise = $http({
-                method: 'GET', 
-                url: '/fih/dbconfig' 
-            }).success(function(data, status, headers, config) {
-                return data;
-            });
-
-            return promise;
-        }
-    }; 
-
-    return factoryResult;
-});
-
-
-fihApp.controller('ModalQueryInstanceCtrl', function ($scope, $uibModalInstance, testQueryResult) {
-
-    $scope.testQueryResult = testQueryResult;
-
-    /*$scope.ok = function () {
-        $uibModalInstance.close($scope.selected.item);
-    };*/
-
-    $scope.cancel = function () {
-        $uibModalInstance.dismiss('cancel');
-    };
-});
-
-fihApp.controller('AddAppCtrl', function($scope, $window, $http, $resource, $location, $uibModal, $filter, $routeParams, NgTableParams, databaseList){
+fihApp.controller('AddAppCtrl', function($scope, $window, $http, $resource, $location, $uibModal, $filter, 
+    $routeParams, NgTableParams, databaseList, userProfile){
         
     $scope.pageHeader = "Application / Integration Service Configuration";
     $scope.previousBtnDisabled = true;
@@ -340,38 +309,54 @@ fihApp.controller('AddAppCtrl', function($scope, $window, $http, $resource, $loc
         $scope.stackatoSpace = $scope.stackatoOrgs[key].spaces;
         $scope.app.selectedSpace = $scope.stackatoSpace[0];
     };
-    // at the bottom of your controller
+    
     var init = function () {
         $scope.spinnerData = "Loading page data..";
         $scope.loader.loading = true;
-        var OrgApis = $resource('/fih/stackatoapis/orgs');
-        OrgApis.query(function(orgs){
-            console.log("orgs: "+JSON.stringify(orgs));
-            $scope.stackatoOrgs = orgs;
-            $scope.stackatoOrg = orgs;
-            $scope.app.selectedOrg = orgs[0];
-            console.log("Selected Org:"+$scope.app.selectedOrg);
-            $scope.stackatoSpace = $scope.stackatoOrgs[0].spaces;
-            $scope.app.selectedSpace = $scope.stackatoSpace[0];
-            $scope.loader.loading = false;
-        });
-
-        /*var SpaceApis = $resource('/fih/stackatoapis/spaces');
-        SpaceApis.query(function(spaces){
-            console.log("spaces: "+spaces);
-            $scope.stackatoSpace = spaces;
-            $scope.app.selectedSpace = $scope.stackatoSpace[0];
-            $scope.loader.loading = false;
-        });*/
+        var orgs = userProfile.stackato_config;
+        console.log("orgs: "+JSON.stringify(orgs));
+        $scope.stackatoOrgs = orgs;
+        $scope.stackatoOrg = orgs;
+        $scope.app.selectedOrg = orgs[0];
+        $scope.stackatoSpace = $scope.stackatoOrgs[0].spaces;
+        $scope.app.selectedSpace = $scope.stackatoSpace[0];
+        $scope.loader.loading = false;
 
         var Apis = $resource('/fih/apis/name/'+$scope.apitype);
         Apis.get(function(api){
             console.log("APIs Details: "+JSON.stringify(api));
             $scope.apiDetails = api;
         });
-         
     };
-    // and fire it after definition
     init();
-    
+});
+
+fihApp.factory('databaseListFactory', function($http) {
+    var factoryResult = {
+        getDatabaseList: function() {
+            var promise = $http({
+                method: 'GET', 
+                url: '/fih/dbconfig' 
+            }).success(function(data, status, headers, config) {
+                return data;
+            });
+
+            return promise;
+        }
+    }; 
+
+    return factoryResult;
+});
+
+fihApp.controller('ModalQueryInstanceCtrl', function ($scope, $uibModalInstance, testQueryResult) {
+
+    $scope.testQueryResult = testQueryResult;
+
+    /*$scope.ok = function () {
+        $uibModalInstance.close($scope.selected.item);
+    };*/
+
+    $scope.cancel = function () {
+        $uibModalInstance.dismiss('cancel');
+    };
 });
