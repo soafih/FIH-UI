@@ -1,5 +1,5 @@
 applications:
-- name: FoxIntegrationHub
+- name: FoxIntegrationHub-RKS
   instances: 1
   memory: 512M
   services:

@@ -2,7 +2,7 @@ fihApp.controller('AddAppCtrl', function($scope, $window, $http, $resource, $loc
     $routeParams, NgTableParams, databaseList, userProfile){
         
     $scope.pageHeader = "Application / Integration Service Configuration";
-	$scope.reNamepattern = /^[a-z0-9](-*[a-z0-9]+)*$/;
+	$scope.reNamepattern = /^[a-z0-9](-*[a-z0-9]+)*$/i;
     $scope.previousBtnDisabled = true;
     $scope.changeActiveTab = function(selectedTab){
         switch(selectedTab){
@@ -125,11 +125,68 @@ fihApp.controller('AddAppCtrl', function($scope, $window, $http, $resource, $loc
         });
     };
 
+	
+	  $scope.validationModal = function () {
+        var modalInstance = $uibModal.open({
+            animation: $scope.animationsEnabled,
+            templateUrl: 'validationModalContent.html',
+            controller: 'ModalValidationCtrl',
+            size: 'md',
+            resolve: {
+                valid: function () {
+                    return $scope.validatedData;
+                }
+            }
+
+        });
+
+    };
+	
+	$scope.validate = function () {
+        $scope.validatedData = [];
+        var valid = true;
+        console.log($scope.app.name);
+        if ($scope.app.name == null) {
+            $scope.validatedData.push({ error: "Application name can not be blank" });
+        }
+        else {
+            if (!$scope.reNamepattern.test($scope.app.name.test)) {
+                $scope.validatedData.push({ error: "Application Name can contain only the characters in (a-z A-Z 1-9 -)and should start and end with letter or number" });
+            }
+        }
+        if ($scope.app.descr == null) {
+            $scope.validatedData.push({ error: "Application description can not be blank" });
+        }
+        if ($scope.app.selectedOrg == null) {
+            $scope.validatedData.push({ error: "Oganization can not be blank" });
+        }
+        if ($scope.app.selectedSpace == null) {
+            $scope.validatedData.push({ error: "Space can not be blank" });
+			
+        }
+		if ($scope.app.db_query == null) {
+            $scope.validatedData.push({ error: "Query can not be blank" });
+        }
+		
+        console.log($scope.validatedData);
+        if($scope.validatedData.length > 0)
+        {
+            
+            $scope.validationModal();
+            valid = false;
+        };
+        return valid;
+    }
+	
     $scope.app = {};
     $scope.app.dbconfig= {};
     $scope.apitype = $routeParams.apitype;
     
     $scope.createApp = function(){
+		 if (!$scope.validate()) {
+
+            return;
+        }
         console.log("Domain selected:"+$scope.app.selectedOrg.domain);
         $scope.spinnerData = "Processing application data.. ";
         $scope.loader.loading = true;
@@ -356,6 +413,15 @@ fihApp.controller('ModalQueryInstanceCtrl', function ($scope, $uibModalInstance,
     /*$scope.ok = function () {
         $uibModalInstance.close($scope.selected.item);
     };*/
+
+    $scope.cancel = function () {
+        $uibModalInstance.dismiss('cancel');
+    };
+});
+
+fihApp.controller('ModalValidationCtrl', function ($scope, $uibModalInstance, valid) {
+
+    $scope.valid = valid;
 
     $scope.cancel = function () {
         $uibModalInstance.dismiss('cancel');
