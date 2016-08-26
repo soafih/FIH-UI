@@ -24,7 +24,7 @@ module.exports = {
                 // user access denied
                 res.status(401).send({
                     success: false,
-                    message: 'No token provided.'
+                    message: 'Unauthorized access attempted.'
                 });
             }
             return response;
