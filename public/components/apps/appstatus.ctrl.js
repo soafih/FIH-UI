@@ -102,8 +102,9 @@ fihApp.controller('AppStatusCtrl', function($scope, $resource, $window, $routePa
         $scope.RefreshIFrame = $interval(function () {
             if($scope.apiDetails){
                 var statusUrl = $scope.apiDetails.api_ep + '/FIH/service/DAASAPI/JenkinUtility/GetStatus?buildNumber='+$routeParams.buildno;
-            
+                console.log("BuildAPI Status URL:" +statusUrl);
                 $http.get(statusUrl).then(function (res) {
+                    console.log("Response Status: "+JSON.stringify(res));
                     var appStatus = res.data.response.status;
                     var appStage = res.data.response.stage;
                     $scope.appCurrentState = appStatus;
@@ -139,12 +140,13 @@ fihApp.controller('AppStatusCtrl', function($scope, $resource, $window, $routePa
                         $scope.barState = $scope.appStateObj[$scope.appCurrentState][$scope.appCurrentStage];
                         $scope.buildUrl = $sce.trustAsResourceUrl($routeParams.buildurl+'?dummyVar='+ (new Date()).getTime());
 
-                        var updateObj = {
+                        var updateObjFailed = {
                             appObjectId : appObjectId,
                             status : appStatus,
                             stage: appStage,
                         };
-                        AppUpdate.save(updateObj, function(res){
+                        console.log('Updating status: '+JSON.stringify(updateObjFailed));
+                        AppUpdate.save(updateObjFailed, function(res){
                             console.log("Updated status: "+JSON.stringify(res));
                         },
                         function(error){
@@ -156,12 +158,12 @@ fihApp.controller('AppStatusCtrl', function($scope, $resource, $window, $routePa
                         $scope.barState = $scope.appStateObj[$scope.appCurrentState][appStage];
                         $scope.buildUrl = $sce.trustAsResourceUrl($routeParams.buildurl+'?dummyVar='+ (new Date()).getTime());
 
-                        var updateObj = {
+                        var updateObjWIP = {
                             appObjectId : appObjectId,
                             status : appStatus,
                             stage: appStage,
                         };
-                        AppUpdate.save(updateObj, function(res){
+                        AppUpdate.save(updateObjWIP, function(res){
                             console.log("Updated status: "+JSON.stringify(res));
                         },
                         function(error){

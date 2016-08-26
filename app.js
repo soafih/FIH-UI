@@ -25,19 +25,42 @@ var app = express();
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
-app.use(cookieParser());
-app.use(function(req,res,next){
-    //res.header("Access-Control-Allow-Origin", "*");
-    //res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-    //console.log("Cookies: " + req.headers.cookie);
-    //console.log("Request Header: "+JSON.stringify(req.headers));
-    //console.log("Response Header: "+JSON.stringify(res.headers));
+/*
+var passport = require('passport');
+var OAuth2Strategy = require('passport-oauth2');
 
+passport.use(new OAuth2Strategy({
+    authorizationURL: 'https://api.stackato-poc.foxinc.com/uaa/oauth/authorize',
+    tokenURL: 'https://aok.stackato-poc.foxinc.com/uaa/oauth/token',
+    clientID: 'srest',
+    clientSecret: 'welcome1',
+    callbackURL: "https://foxintegrationhub.soadev.stackato-poc.foxinc.com/srest/console/auth/callback"
+  },
+  function(accessToken, refreshToken, profile, cb) {
+    User.findOrCreate({ exampleId: profile.id }, function (err, user) {
+      return cb(err, user);
+    });
+  }
+));
+
+app.get('/',
+  passport.authenticate('oauth2'));
+
+app.get('/srest/console/auth/callback',
+  passport.authenticate('oauth2', { failureRedirect: '/login' }),
+  function(req, res) {
+    // Successful authentication, redirect home.
+    res.redirect('/');
+});
+*/
+
+// Make our db accessible to our router
+app.use(function(req,res,next){
     req.db = db;
     next();
 });
 
-// uncomment after placing your favicon in /public
+app.use(cookieParser());
 app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 app.use(logger('dev'));
 app.use(bodyParser.json());
@@ -45,9 +68,6 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(session({secret: 'dummySecureKey'}));
-
-// Make our db accessible to our router
-
 
 app.use('/', routes);
 app.use('/users', users);

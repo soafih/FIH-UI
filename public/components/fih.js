@@ -1,8 +1,12 @@
-var fihApp = angular.module('fihApp', ['ngAnimate', 'ui.bootstrap', 'ngResource', 'ngRoute', 'ngTable', 'ngCookies', 'angular-storage','ngMaterial']);
+var fihApp = angular.module('fihApp', ['ngAnimate','ui.bootstrap', 'ngResource', 'ngRoute', 'ngTable', 'ngCookies', 'angular-storage','ngMaterial', 'angular-loading-bar']);
 fihApp.constant('AUTH_EVENTS', {
     notAuthenticated: 'auth-not-authenticated',
     notAuthorized: 'auth-not-authorized'
 });
+fihApp.config(['cfpLoadingBarProvider', function(cfpLoadingBarProvider) {
+    cfpLoadingBarProvider.includeSpinner = false;
+    cfpLoadingBarProvider.spinnerTemplate = '<div><span class="fa fa-spinner fa-spin">Loading...</div>';
+  }]);
 
 fihApp.config(['$routeProvider', '$httpProvider', function ($routeProvider, $httpProvider) {
     $routeProvider
@@ -33,6 +37,9 @@ fihApp.config(['$routeProvider', '$httpProvider', function ($routeProvider, $htt
         .when('/help', {
             templateUrl: 'components/help/help.html',
             controller: 'HelpCtrl',
+        })
+        .when('/forbidden', {
+            templateUrl: 'components/shared/forbidden.html',
         })
         .when('/test', {
             templateUrl: 'components/test.html',
@@ -84,8 +91,26 @@ fihApp.config(['$routeProvider', '$httpProvider', function ($routeProvider, $htt
             redirectTo: '/'
         });
 
-    //$httpProvider.interceptors.push('APIInterceptor');
+    $httpProvider.interceptors.push('APIInterceptor');
 }]);
+
+fihApp.service('APIInterceptor', function ($rootScope) {
+    console.log("Entered APIInterceptor..!!");
+    var service = this;
+    service.request = function (config) {
+        /*config.headers = config.headers || {};
+        if ($localStorage.token) {
+            config.headers.Authorization = 'Bearer ' + $localStorage.token;
+        }*/
+        return config;
+    };
+    service.responseError = function (response) {
+        if (response.status === 401 || response.status === 403) {
+            $rootScope.$broadcast('unauthorized');
+        }
+        return response;
+    };
+});
 
 fihApp.controller('SidebarCtrl', function ($scope, $resource, $location) {
     $scope.isActive = function (route) {
@@ -93,28 +118,36 @@ fihApp.controller('SidebarCtrl', function ($scope, $resource, $location) {
     };
 });
 
-fihApp.controller('MainCtrl', function ($rootScope, $scope, UserService) {
+fihApp.controller('MainCtrl', function ($rootScope, $scope, $window, $location) {
     $scope.showSidebarApps = true;
     $scope.showSidebarDashboard = true;
-    var init = function(){
-        //$scope.showSidebarApps = UserService.hasAnyRole(['app_developer']);
-        //$scope.showSidebarDashboard = UserService.hasAnyRole(['app_admin']);
-    };
-    init();
+    
+    $rootScope.$on('unauthorized', function () {
+        $location.path('/forbidden');
+    });
 });
 
-fihApp.run(function ($rootScope, $location, $window, Access) {
+fihApp.run(function ($rootScope, $location, Access) {
 
     $rootScope.$on("$routeChangeError", function (event, current, previous, rejection) {
         if (rejection == Access.UNAUTHORIZED) {
-            console.log("Rejection: " + JSON.stringify(rejection));
-            $window.alert('You are not authorized to access this page. Please contact system administrator for details.');
-            $location.path("/");
+            $rootScope.$broadcast('unauthorized');
         } else if (rejection == Access.FORBIDDEN) {
-            $window.alert('You are not allowed to access this page. Please contact system administrator for details.');
-            $location.path("/forbidden");
+            $rootScope.$broadcast('unauthorized');
         }
     });
+
+    var history = [];
+
+    $rootScope.$on('$routeChangeSuccess', function() {
+        history.push($location.$$path);
+    });
+
+    $rootScope.back = function () {
+        console.log("Go back:"+history.splice(-2)[0]);
+        var prevUrl = history.length > 1 ? history.splice(-2)[0] : "/";
+        $location.path(prevUrl);
+    };
 }); //bootstrap session;
 
 fihApp.factory("Access", function ($q, UserProfile) {
@@ -198,14 +231,17 @@ fihApp.factory("UserProfile", function (Security) {
                 $refresh: fetchUserProfile,
 
                 $hasPermission: function (resource) {
-                    return userProfile.permission.indexOf(resource) >= 0;
+                    if(userProfile.permission)
+                        return userProfile.permission.indexOf(resource) >= 0;
                 },
 
                 $hasRole: function (role) {
-                    return userProfile.roles.indexOf(role) >= 0;
+                    if(userProfile.roles)
+                        return userProfile.roles.indexOf(role) >= 0;
                 },
 
                 $hasAnyRole: function (roles) {
+                    if(userProfile.roles)
                     return !!userProfile.roles.filter(function (role) {
                         return roles.indexOf(role) >= 0;
                     }).length;
@@ -219,14 +255,13 @@ fihApp.factory("UserProfile", function (Security) {
 
 });
 
-fihApp.service("Security", function ($http) {
+fihApp.service("Security", function ($http, $window) {
 
     this.getProfile = function () {
         console.log("Fetching user profile data..!!");
         return $http.get("/fih/security/user");
     };
 });
-
 
 
     

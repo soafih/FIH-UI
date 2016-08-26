@@ -292,13 +292,14 @@ fihApp.controller('AppDetailsCtrl', function($scope, $routeParams, userProfile, 
 
             var AppService = $resource('/fih/apps/name/'+$scope.applicationName);
             AppService.get(function(appDetails){
+                console.log("Fetched app details: "+JSON.stringify(appDetails));
 
                 var Apis = $resource('/fih/apis/name/'+appDetails.api_type);
                 Apis.get(function(api){
                     $scope.apiDetails = api;
+                    console.log("Fetched api details: "+JSON.stringify($scope.apiDetails));
                 });
-
-                console.log("Fetched app details: "+JSON.stringify(appDetails));
+                
                 $scope.appDetails = appDetails;
                 $scope.appSummary = [
                     {"API Type" : appDetails.api_type},

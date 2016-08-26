@@ -24,11 +24,12 @@ fihApp.controller('AppsCtrl', function($scope, $resource, $location, userProfile
     };
     var Apps = $resource('/fih/apps/userorgspace');
     Apps.save(request, function (res) {
-        console.log("Got response");
-        console.log(JSON.stringify("Response: " + res));
-        $scope.apps = res.apps;
-        $scope.appSearchBackup = res.apps;
-    });
+            $scope.apps = res.apps;
+            $scope.appSearchBackup = res.apps;
+        },function(error){
+            console.log("Got error: "+JSON.stringify(error.data));
+        }
+    );
 
     $scope.advKeyVal = [];
 

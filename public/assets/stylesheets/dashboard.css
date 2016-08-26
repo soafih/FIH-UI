@@ -43,7 +43,9 @@ body h4{
   padding-right: 0px;
   color: black;
 } 
-
+#loading-bar .bar {
+  position: relative;
+}
 .dbconninput{
   margin-left: 5px;
   padding-left: 0px;

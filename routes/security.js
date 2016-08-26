@@ -14,6 +14,23 @@ router.get('/userdetail/:username/:guid', function(req, res) {
     });
 });
 
+function checkPermission(resource) {
+    console.log("Entered checkPermission.." + resource);
+
+    return function(req, res, next){var response = false;
+        console.log('##### Check Permission: '+req.session.username);
+        var userProfile = req.session.userobj;
+        if (userProfile.permission.indexOf(resource) >= 0) {
+            response = true;
+        } else {
+            // user access denied
+            response = false;
+        }
+        return response;
+    };
+}
+
+
 router.get('/user', function(req, res) {
     console.log("Entered security service..");
     db = req.db;
@@ -26,7 +43,10 @@ router.get('/user', function(req, res) {
         req.session.isAuthenticated = false;
         req.session.userobj = {};
         console.log("Unauthorized access attempt..");
-        res.status(401);
+        res.status(401).send({ 
+            success: false, 
+            message: 'No token provided.' 
+        });
     }
     else{
         getUserAuthDetails(username, userguid, function(err, response){

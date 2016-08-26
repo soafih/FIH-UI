@@ -1,7 +1,8 @@
 var express = require('express');
 var router = express.Router();
+var permCheck = require('./permission-check');
 
-router.get('/', function(req, res) {
+router.get('/', permCheck.checkPermission('api.view'), function(req, res) {
     // Set our internal DB variable
     var db = req.db;
     var collection = db.get('coll_api');
@@ -12,7 +13,7 @@ router.get('/', function(req, res) {
     });
 });
 
-router.get('/name/:name', function(req, res) {
+router.get('/name/:name', permCheck.checkPermission('api.view'), function(req, res) {
     var db = req.db;
     var collection = db.get('coll_api');
     collection.findOne({ name: req.params.name }, function(err, api){
@@ -21,7 +22,7 @@ router.get('/name/:name', function(req, res) {
     });
 });
 
-router.get('/name/:name/version/:version', function(req, res) {
+router.get('/name/:name/version/:version', permCheck.checkPermission('api.view'), function(req, res) {
     var db = req.db;
     var collection = db.get('coll_api');
     collection.findOne({ name: req.params.name, version: req.params.version }, function(err, api){
@@ -42,7 +43,7 @@ router.post('/', function(req, res){
     });
 });
 */
-router.post('/', function(req, res){
+router.post('/', permCheck.checkPermission('api.create'), function(req, res){
     var formattedDate = '2016-01-01T00:00:00.000Z';
     var db = req.db;
     var collection = db.get('coll_api');
@@ -68,7 +69,7 @@ router.post('/', function(req, res){
     });
 });
 
-router.put('/name/:name', function(req, res){
+router.put('/name/:name', permCheck.checkPermission('api.create'), function(req, res){
     var db = req.db;
     var collection = db.get('coll_api');
     collection.update({
@@ -110,7 +111,7 @@ router.put('/name/:name', function(req, res){
 });
 */
 
-router.delete('/name/:name', function(req, res){
+router.delete('/name/:name', permCheck.checkPermission('api.delete'), function(req, res){
     var db = req.db;
     var collection = db.get('coll_api');
     collection.remove({ name: req.params.name }, function(err, api){
