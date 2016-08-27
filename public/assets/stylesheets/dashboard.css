@@ -95,9 +95,10 @@ div.modal-footer button.btn.btn-info{
 }
 
 .modal-dialog.modal-sm{
-    position:center;
-    width:480px;
+    position: center;
     height:300px;
+    width:600px;
+    margin-top:50px;   
     
 }
 
@@ -118,8 +119,9 @@ div.modal-footer button.btn.btn-info{
     height: 400px;
     overflow-y: auto;
 }
-.modal-body1{
+.modal-body.modal-sm{
     height: 170px;
+    width: 500px;
     overflow-y: auto;
 }
 .modal-header{

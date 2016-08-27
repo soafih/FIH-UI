@@ -35,15 +35,15 @@
                         </div>
                     </div>
                 </script>
-				 <script type="text/ng-template" id="validationModalContent.html">
-                    <div class="modal-dialog modal-sm" style="width:100%; margin-top:10px;">
-                        <div class="modal-dialog" style=" width: 100%; height:50%;  position:center; margin-top:0px;"> 
+				  <script type="text/ng-template" id="validationModalContent.html">
+                    <div class="modal-dialog modal-sm" >
+                        <div class="modal-dialog" > 
                             <div class="modal-header">
                                 <h2 class="modal-title">Validation Failed</h2>
                             </div>
-                            <div class="modal-body1">
+                            <div class="modal-body modal-sm">
                                 <ul>
-                               <div ng-repeat="data in valid">
+                               <div ng-repeat="data in validationErrors">
                                    <li>
                                 <span  style="color:red; font-size: 90%">{{data.error}}</span>
                                </li>

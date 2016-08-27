@@ -126,52 +126,48 @@ fihApp.controller('AddAppCtrl', function($scope, $window, $http, $resource, $loc
     };
 
 	
-	  $scope.validationModal = function () {
+	 $scope.validationModal = function () {
         var modalInstance = $uibModal.open({
             animation: $scope.animationsEnabled,
             templateUrl: 'validationModalContent.html',
             controller: 'ModalValidationCtrl',
-            size: 'md',
+            size: 'sm',
             resolve: {
-                valid: function () {
-                    return $scope.validatedData;
+                errors: function () {
+                    return $scope.errorMsgs;
                 }
             }
 
         });
 
+
+
     };
 	
-	$scope.validate = function () {
-        $scope.validatedData = [];
+	 $scope.validate = function () {
+        $scope.errorMsgs = [];
         var valid = true;
-        console.log($scope.app.name);
+       
         if ($scope.app.name == null) {
-            $scope.validatedData.push({ error: "Application name can not be blank" });
+            $scope.errorMsgs.push({ error: "Application name can not be blank and can contain only the characters in (a-z A-Z 1-9 -)and should start and end with letter or number" });
         }
-        else {
-            if (!$scope.reNamepattern.test($scope.app.name.test)) {
-                $scope.validatedData.push({ error: "Application Name can contain only the characters in (a-z A-Z 1-9 -)and should start and end with letter or number" });
-            }
-        }
+       
         if ($scope.app.descr == null) {
-            $scope.validatedData.push({ error: "Application description can not be blank" });
+            $scope.errorMsgs.push({ error: "Application description can not be blank" });
         }
         if ($scope.app.selectedOrg == null) {
-            $scope.validatedData.push({ error: "Oganization can not be blank" });
+            $scope.errorMsgs.push({ error: "Oganization can not be blank" });
         }
         if ($scope.app.selectedSpace == null) {
-            $scope.validatedData.push({ error: "Space can not be blank" });
-			
+            $scope.errorMsgs.push({ error: "Space can not be blank" });
         }
-		if ($scope.app.db_query == null) {
-            $scope.validatedData.push({ error: "Query can not be blank" });
+        if ($scope.app.db_query == null) {
+            $scope.errorMsgs.push({ error: "Query can not be blank" });
         }
-		
-        console.log($scope.validatedData);
-        if($scope.validatedData.length > 0)
+        console.log($scope.errorMsgs);
+       if($scope.errorMsgs.length > 0)
         {
-            
+           
             $scope.validationModal();
             valid = false;
         };
@@ -419,9 +415,9 @@ fihApp.controller('ModalQueryInstanceCtrl', function ($scope, $uibModalInstance,
     };
 });
 
-fihApp.controller('ModalValidationCtrl', function ($scope, $uibModalInstance, valid) {
+fihApp.controller('ModalValidationCtrl', function ($scope, $uibModalInstance, errors) {
 
-    $scope.valid = valid;
+    $scope.validationErrors = errors;
 
     $scope.cancel = function () {
         $uibModalInstance.dismiss('cancel');
