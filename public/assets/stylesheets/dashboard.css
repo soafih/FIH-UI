@@ -95,6 +95,11 @@ div.modal-footer button.btn.btn-info{
   background-color: #455A64;
   color: #ECEFF1;
 }
+.btn.btn-info.btn-md {
+ 
+  background-color: #455A64;
+  color: #ECEFF1;
+}
 
 .modal-dialog.modal-md{
     width:480px;
