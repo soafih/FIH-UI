@@ -151,20 +151,23 @@ fihApp.controller('AddAppCtrl', function($scope, $window, $http, $resource, $loc
         if ($scope.app.name == null) {
             $scope.errorMsgs.push({ error: "Application name can not be blank and can contain only the characters in (a-z A-Z 1-9 -)and should start and end with letter or number" });
         }
+		 else{
+           
+            var Apps = $resource('/fih/apps/name/'+$scope.app.name);
+            Apps.get(function (appDetails) {
+           if(appDetails.name != null && (appDetails.stackato_config.org == $scope.app.selectedOrg.name) && (appDetails.stackato_config.space == $scope.app.selectedSpace))
+            $scope.errorMsgs.push({ error: "Duplicate Application. The application with same name already exists" });
+            });
+        }
        
         if ($scope.app.descr == null) {
             $scope.errorMsgs.push({ error: "Application description can not be blank" });
         }
-        if ($scope.app.selectedOrg == null) {
-            $scope.errorMsgs.push({ error: "Oganization can not be blank" });
-        }
-        if ($scope.app.selectedSpace == null) {
-            $scope.errorMsgs.push({ error: "Space can not be blank" });
-        }
+       
         if ($scope.app.db_query == null) {
             $scope.errorMsgs.push({ error: "Query can not be blank" });
         }
-        console.log($scope.errorMsgs);
+        
        if($scope.errorMsgs.length > 0)
         {
            
