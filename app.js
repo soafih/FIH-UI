@@ -57,6 +57,7 @@ app.get('/srest/console/auth/callback',
 // Make our db accessible to our router
 app.use(function(req,res,next){
     req.db = db;
+    res.locals.userId = req.get('x-authenticated-user-username');
     next();
 });
 

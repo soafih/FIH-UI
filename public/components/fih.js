@@ -104,6 +104,12 @@ fihApp.service('APIInterceptor', function ($rootScope) {
         }*/
         return config;
     };
+    service.response = function (response) {
+        if (response.status === 401 || response.status === 403) {
+            $rootScope.$broadcast('unauthorized');
+        }
+        return response;
+    };
     service.responseError = function (response) {
         if (response.status === 401 || response.status === 403) {
             $rootScope.$broadcast('unauthorized');
@@ -118,10 +124,15 @@ fihApp.controller('SidebarCtrl', function ($scope, $resource, $location) {
     };
 });
 
-fihApp.controller('MainCtrl', function ($rootScope, $scope, $window, $location) {
+fihApp.controller('MainCtrl', function ($rootScope, $scope, $window, $location, Security) {
     $scope.showSidebarApps = true;
     $scope.showSidebarDashboard = true;
-    
+    $scope.loadUserData = function(){
+        Security.getProfile().then(function (response) {
+            //console.log(JSON.stringify(response));
+            $scope.name = response.data.first_name + ' ' + response.data.last_name;
+        });
+    };
     $rootScope.$on('unauthorized', function () {
         $location.path('/forbidden');
     });
@@ -227,6 +238,8 @@ fihApp.factory("UserProfile", function (Security) {
             }
 
             return angular.extend(userProfile, response.data, {
+
+                $userProfile: userProfile,
 
                 $refresh: fetchUserProfile,
 

@@ -4,7 +4,6 @@ var router = express.Router();
 module.exports = {
 
     checkPermission: function(resource) {
-        console.log("Entered checkPermission.." + resource);
 
         return function (req, res, next) {
             var response = false;
@@ -24,10 +23,11 @@ module.exports = {
                 // user access denied
                 res.status(401).send({
                     success: false,
-                    message: 'Unauthorized access attempted.'
+                    message: 'Unauthorized access attempted!'
                 });
             }
             return response;
         };
     }
+    
 };

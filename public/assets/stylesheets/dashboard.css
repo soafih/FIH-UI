@@ -30,6 +30,13 @@ body h4{
   margin-top: 0px;
 }
 
+.red{
+  color: red;
+}
+.green {
+  color: green;
+}
+
 .control-label{
   font-size: 13px;
   font-weight: 600;

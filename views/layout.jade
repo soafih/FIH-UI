@@ -1,5 +1,5 @@
 doctype html
-html(ng-app='fihApp' ng-controller="MainCtrl")
+html(ng-app='fihApp')
   head
     meta(charset='utf-8')
     meta(http-equiv='X-UA-Compatible', content='IE=edge')
@@ -43,7 +43,7 @@ html(ng-app='fihApp' ng-controller="MainCtrl")
     script(src='/components/apis/addapi.ctrl.js')
     script(src='/components/help/help.ctrl.js')
     script(src='/components/apis/apidetails.ctrl.js')
-  body
+  body(ng-controller="MainCtrl")
     div.spinner(ng-show="showSpinner")
       spinner(name='spinner6', group='bar', img-src='https://s3-us-west-2.amazonaws.com/s.cdpn.io/10607/spinner3.gif')
     .navbar.navbar-inverse.navbar-fixed-top(role='navigation', ng-show="!showSpinner")
@@ -55,19 +55,22 @@ html(ng-app='fihApp' ng-controller="MainCtrl")
             span.icon-bar
             span.icon-bar
           a.navbar-brand(href='/#/')
-            img(style="height:25px; background-color: #101010", src="assets/images/fihlogo_1.jpg") 
-          a.navbar-brand(href='/#/') Fox Integration Hub
+            img(style="height:32px; background-color: #101010", src="assets/images/fihlogo_1.jpg") 
+          a.navbar-brand(href='/#/' style="margin-top: 5px;") Fox Integration Hub
         .navbar-collapse.collapse
           ul.nav.navbar-nav.navbar-right
+            li(style="margin-bottom: -10px")
+              //if(locals.userId)
+              uib-accordion
+                div.panel-default(uib-accordion-group heading="Welcome #{userId}" ng-click="loadUserData()" style="opacity: 0.9; margin: 10px 0 0 0;")
+                    p {{name}}
             li
               a(href='mailto:SOAEnterpriseTeam@fox.com?Subject=Fox%20Integration%20Hub%20Feedback' target='_top') Contact Us
             li
               a(href='/#/help') Help
-            //li(ng-if="!currentUser")
-              a(href='/#/login') Log In
-            //li(ng-if="currentUser" ng-click="")
-              a(href='/#/') Logout
-          form.navbar-form.navbar-right
+            
+            
+          //form.navbar-form.navbar-right
             input.form-control(type='text', placeholder='Search...')
     .container-fluid
       .row

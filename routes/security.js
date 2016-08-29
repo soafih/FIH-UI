@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
-var stackato = require('./stackato_mod');
+var stackato = require('./mod/stackato_mod');
+var permCheck = require('./mod/permission-check');
 var async = require('async');
 var db = {};
 
@@ -30,7 +31,6 @@ function checkPermission(resource) {
     };
 }
 
-
 router.get('/user', function(req, res) {
     console.log("Entered security service..");
     db = req.db;
@@ -45,7 +45,7 @@ router.get('/user', function(req, res) {
         console.log("Unauthorized access attempt..");
         res.status(401).send({ 
             success: false, 
-            message: 'No token provided.' 
+            message: 'Unauthorized access attempted.' 
         });
     }
     else{
@@ -72,7 +72,7 @@ function getUserAuthDetails(username, guid, callback){
                 function getUserDetails(callback){
                     console.log("1. getUserDetails | Entered getUserDetails");
                     var collection = db.get('coll_user');
-                    collection.findOne({username: username}, 
+                    collection.findOne({username: username.toLowerCase()}, 
                         {fields : {password:0, created_by: 0, creation_date:0, last_updated_by:0, last_update_date:0}} , function(err, user){
                         if (err) throw err;
                         console.log("1. getUserDetails | Completed. Error: ", err, " | result: ", JSON.stringify(user));
@@ -107,7 +107,7 @@ function getUserAuthDetails(username, guid, callback){
 }
 
 router.get('/logout', function(req, res) {
-    
+    res.send(501);
 });
 
 

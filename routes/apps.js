@@ -1,6 +1,6 @@
 var express = require('express');
 var router = express.Router();
-var permCheck = require('./permission-check');
+var permCheck = require('./mod/permission-check');
 
 router.get('/', permCheck.checkPermission('app.view'), function(req, res) {
     // Set our internal DB variable
