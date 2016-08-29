@@ -12,6 +12,7 @@ var defaultTTL = 86399;
 var host = 'aok.stackato-poc.foxinc.com';
 var hostApi = 'api.stackato-poc.foxinc.com';
 var HOST_API_URL = 'https://api.stackato-poc.foxinc.com';
+var HOST_AOK_URL = 'https://aok.stackato-poc.foxinc.com';
 var username = process.env.FIH_SVC_USER;
 var password = process.env.FIH_SVC_PASSWORD;
 
@@ -20,7 +21,7 @@ router.get('/apps', permCheck.checkPermission('app.view'), function (req, res) {
     console.log("Retrieving apps from stackato..");
     getStackatoAccessToken(function (response) {
         getAllApplications(response, function (response) {
-            res.json(response);
+            res.json(response.data.apps);
         });
     });
 });
@@ -31,7 +32,8 @@ router.get('/apps/:appname', permCheck.checkPermission('app.view'), function (re
     console.log("Retrieving apps from stackato..");
     getStackatoAccessToken(function (response) {
         getAllApplications(response, function (response) {
-            var app = response.filter(function (apps) {
+            console.log("Array response: "+JSON.stringify(response));
+            var app = response.data.apps.filter(function (apps) {
                 return apps.name == appName;
             });
             res.json(app[0]);
@@ -68,98 +70,60 @@ function deleteStackatoApp(accessToken, appGuid, callback) {
         if (!error && (response.statusCode == 200 || response.statusCode == 404)) {
             var info = JSON.parse(body);
             console.log("Deleted Stackato App: " +info);
-            callback(generateSuccessResponse(response, body));
+            callback(generateSuccessResponse(response, JSON.parse(body)));
         }
         else{
-            console.log("Generating error response: "+console.log("Error:"+JSON.parse(error)));
-            callback(generateErrorResponse(response, body));
+            console.log("Generating error response: " + JSON.parse(error));
+            callback(generateErrorResponse(response, JSON.parse(body)));
         }
     }
 
     request(options, resCallback);
 }
 
-function generateSuccessResponse(response, body){
+function generateSuccessResponse(response, resData){
 
-    return {success: true, data: JSON.parse(body)}; 
+    return {success: true, data: resData}; 
 }
 
-function generateErrorResponse(response, body){
+function generateErrorResponse(response, resData){
 
-    return {success: false, status_code: response.statusCode, data: JSON.parse(body)}; 
-}
-
-function deleteApplication(accessToken, appGuid, callback){
-
-    var headers = { 
-        'Authorization': 'Bearer ' + accessToken,
-        'Content-Type': 'application/x-www-form-urlencoded' 
-    };
-
-    performRequest(hostApi, '/v2/apps/'+appGuid, 'DELETE', '', headers, function (data) {
-        console.log("Deleted Stackato Applications: " + JSON.stringify(data));
-        callback(data);
-    });
+    return {success: false, status_code: response.statusCode, data: resData}; 
 }
 
 function getAllApplications(accessToken, callback) {
 
-    var headers = { 'Authorization': 'Bearer ' + accessToken };
-
-    performRequest(hostApi, '/v2/apps', 'GET', '', headers, function (data) {
-        var resources = data.resources;
-        var resArr = [];
-        for (var i = 0; i < resources.length; i++) {
-            var app = {
-                guid: resources[i].metadata.guid,
-                name: resources[i].entity.name
-            };
-            resArr.push(app);
+    var options = {
+        url: HOST_API_URL + '/v2/apps',
+        headers: {
+            'Authorization': 'Bearer ' + accessToken,
         }
-        //console.log("Stackato Applications: " + JSON.stringify(resArr));
-        stackatoCache.set("apps", resArr, 3600);
-        callback(resArr);
-    });
-}
+    };
 
-function getStackatoAccessTokenAsync(callback) {
+    function resCallback(error, response, body) {
+        console.log("Get All Stackato response code: "+response.statusCode);
+        
+        if (!error && (response.statusCode == 200)) {
+            var info = JSON.parse(body);
 
-    var cacheValue = stackatoCache.get("accessToken");
-    if (cacheValue === undefined) {
-
-        var inputOAuth = {
-            "grant_type": "password",
-            "username": username,
-            "password": password
-        };
-
-        var dataString = querystring.stringify(inputOAuth);
-
-        var headers = {};
-        var method = 'POST';
-        headers = {
-            'Authorization': 'Basic Y2Y6',
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'Content-Length': Buffer.byteLength(dataString)
-        };
-
-        performRequest(host, '/uaa/oauth/token', 'POST', dataString, headers, function (data) {
-            console.log("oAuth Response: " + JSON.stringify(data));
-            if (data.error) {
-                console.log("Error getting Stackato oAuth session");
-                throw data.error;
+            var resources = info.resources;
+            var resArr = [];
+            for (var i = 0; i < resources.length; i++) {
+                var app = {
+                    guid: resources[i].metadata.guid,
+                    name: resources[i].entity.name
+                };
+                resArr.push(app);
             }
-            else {
-                var accessToken = data.access_token;
-                stackatoCache.set("accessToken", accessToken, data.expires_in);
-                callback(null, accessToken);
-            }
-        });
+            callback(generateSuccessResponse(response, {apps: resArr}));
+        }
+        else{
+            console.log("Generating error response: "+JSON.parse(error));
+            callback(generateErrorResponse(response, JSON.parse(body)));
+        }
     }
-    else {
-        console.log("Retrieved accessToken from cache..");
-        callback(null, cacheValue);
-    }
+
+    request(options, resCallback);
 }
 
 function getStackatoAccessToken(callback) {

@@ -4,11 +4,14 @@ var https = require('https');
 var querystring = require('querystring');
 var NodeCache = require( "node-cache" );
 var async = require('async');
+var request = require('request');
 var stackatoCache = new NodeCache();
 var defaultTTL = 86399;
 
 var host = 'aok.stackato-poc.foxinc.com';
 var hostApi = 'api.stackato-poc.foxinc.com';
+var HOST_API_URL = 'https://api.stackato-poc.foxinc.com';
+var HOST_AOK_URL = 'https://aok.stackato-poc.foxinc.com';
 var username = process.env.FIH_SVC_USER;
 var password = process.env.FIH_SVC_PASSWORD;
 
@@ -84,6 +87,7 @@ function getOrgDetails(accessToken, orgsArr, callback) {
 
 function getStackatoAccessTokenAsync(callback) {
     console.log("Entered getStackatoAccessTokenAsync");
+    
     var cacheValue = stackatoCache.get("accessToken");
     if (cacheValue === undefined) {
 
@@ -92,29 +96,35 @@ function getStackatoAccessTokenAsync(callback) {
             "username": username,
             "password": password
         };
-
+        
         var dataString = querystring.stringify(inputOAuth);
-
-        var headers = {};
-        var method = 'POST';
-        headers = {
+        var headers = {
             'Authorization': 'Basic Y2Y6',
             'Content-Type': 'application/x-www-form-urlencoded',
             'Content-Length': Buffer.byteLength(dataString)
         };
 
-        performRequest(host, '/uaa/oauth/token', 'POST', dataString, headers, function (data) {
-            console.log("oAuth Response: " + JSON.stringify(data));
-            if (data.error) {
-                console.log("Error getting Stackato oAuth session");
-                throw data.error;
+        var options = {
+            headers: headers,
+            method: 'POST',
+            url: HOST_AOK_URL + '/uaa/oauth/token',
+            form: inputOAuth
+        };
+
+        request(options, function (error, response, body) {
+                console.log("Stackato access token response code: " + JSON.parse(response.statusCode));
+
+                if (!error && (response.statusCode == 200)) {
+                    var info = JSON.parse(body);
+                    //console.log("Access Token: " + JSON.stringify(info));
+                    callback(null, info.access_token);
+                }
+                else {
+                    console.log("Generating error response: " + JSON.parse(error));
+                    callback(error, null);
+                }
             }
-            else {
-                var accessToken = data.access_token;
-                stackatoCache.set("accessToken", accessToken, data.expires_in);
-                callback(null, accessToken);
-            }
-        });
+        );
     }
     else {
         console.log("Retrieved accessToken from cache..");
