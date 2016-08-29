@@ -175,7 +175,7 @@ fihApp.factory("Access", function ($q, UserProfile) {
         hasRole: function (role) {
             console.log("Access | Checking Access for Role: " + role);
             return UserProfile.then(function (userProfile) {
-                console.log("Access | userProfile: " + JSON.stringify(userProfile));
+                //console.log("Access | userProfile: " + JSON.stringify(userProfile));
                 if (userProfile.$hasRole(role)) {
                     console.log("Access | Permission Granted to " + role);
                     return Access.OK;
