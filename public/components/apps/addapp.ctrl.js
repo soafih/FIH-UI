@@ -129,6 +129,7 @@ fihApp.controller('AddAppCtrl', function($scope, $window, $http, $resource, $loc
     $scope.apitype = $routeParams.apitype;
     
     $scope.createApp = function(){
+        console.log(userProfile.$hasRole("app.deploy"));
         console.log("Domain selected:"+$scope.app.selectedOrg.domain);
         $scope.spinnerData = "Processing application data.. ";
         $scope.loader.loading = true;

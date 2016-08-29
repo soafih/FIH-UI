@@ -4,12 +4,14 @@ var https = require('https');
 var querystring = require('querystring');
 var NodeCache = require( "node-cache" );
 var async = require('async');
+var request = require('request');
 var permCheck = require('./mod/permission-check');
 
 var stackatoCache = new NodeCache();
 var defaultTTL = 86399;
 var host = 'aok.stackato-poc.foxinc.com';
 var hostApi = 'api.stackato-poc.foxinc.com';
+var HOST_API_URL = 'https://api.stackato-poc.foxinc.com';
 var username = process.env.FIH_SVC_USER;
 var password = process.env.FIH_SVC_PASSWORD;
 
@@ -42,11 +44,50 @@ router.delete('/apps/:appguid', permCheck.checkPermission('app.delete'), functio
 
     console.log("Deleting app "+appGuid+" from stackato..");
     getStackatoAccessToken(function (response) {
-        deleteApplication(response, appGuid, function (response) {
-            res.send(response);
+        deleteStackatoApp(response, appGuid, function (response) {
+            console.log("Delete response: "+JSON.stringify(response));
+            //var response ={};
+            res.json(response);
         });
     });
 });
+
+function deleteStackatoApp(accessToken, appGuid, callback) {
+    var options = {
+        url: HOST_API_URL + '/v2/apps/',
+        method: 'DELETE',
+        headers: { 
+            'Authorization': 'Bearer ' + accessToken,
+            'Content-Type': 'application/x-www-form-urlencoded' 
+        }
+    };
+
+    function resCallback(error, response, body) {
+        console.log("Delete response code: "+response.statusCode);
+        
+        if (!error && (response.statusCode == 200 || response.statusCode == 404)) {
+            var info = JSON.parse(body);
+            console.log("Deleted Stackato App: " +info);
+            callback(generateSuccessResponse(response, body));
+        }
+        else{
+            console.log("Generating error response: "+console.log("Error:"+JSON.parse(error)));
+            callback(generateErrorResponse(response, body));
+        }
+    }
+
+    request(options, resCallback);
+}
+
+function generateSuccessResponse(response, body){
+
+    return {success: true, data: JSON.parse(body)}; 
+}
+
+function generateErrorResponse(response, body){
+
+    return {success: false, status_code: response.statusCode, data: JSON.parse(body)}; 
+}
 
 function deleteApplication(accessToken, appGuid, callback){
 

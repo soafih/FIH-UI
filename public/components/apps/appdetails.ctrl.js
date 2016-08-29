@@ -263,8 +263,7 @@ fihApp.controller('AppDetailsCtrl', function ($scope, $routeParams, userProfile,
         $scope.spinnerData = "Deleting application.. ";
         var StackatoService = $resource('/fih/stackatoapis/apps/' + $scope.appGUID);
         StackatoService.delete(function (res) {
-            var appDeleteStatus = JSON.stringify(res);
-            console.log(res + " Stackato App Delete Status: " + appDeleteStatus);
+            console.log("Stackato App Delete Status: " + JSON.stringify(res));
             if (res.success) {
                 var AppService = $resource('/fih/apps/name/' + $scope.applicationName);
                 AppService.delete(function (res) {
@@ -277,7 +276,7 @@ fihApp.controller('AppDetailsCtrl', function ($scope, $routeParams, userProfile,
             else {
                 $scope.loader.loading = false;
                 if (res.message) {
-                    console.log("Delete failed with reason: "+res.message);
+                    console.log("App Deletion failed with reason: "+res.message);
                     $scope.openDialog("deleteFailed");
                 }
                 else {
