@@ -1,5 +1,5 @@
 
-fihApp.controller('AppsCtrl', function($scope, $resource, $location, userProfile, $filter){
+fihApp.controller('AppsCtrl', function($scope, $resource, $location, userProfile, $filter, $uibModal){
     $scope.pageHeader = "Applications / Integration Services";
     $scope.isActive = function(route) {
         return route === $location.path();
@@ -36,7 +36,7 @@ fihApp.controller('AppsCtrl', function($scope, $resource, $location, userProfile
     $scope.AdvSearchList = [
         { id: "name", name: "Application Name" },
         { id: "api_type", name: "API Name" },
-        { id: "version", name: "Application Version" },
+        { id: "api_ver", name: "API Version" },
         { id: "created_by", name: "Created By" },
         { id: "created_date", name: "Created Date" },
         { id: "last_updated_date", name: "Modified Date" },
@@ -57,8 +57,8 @@ fihApp.controller('AppsCtrl', function($scope, $resource, $location, userProfile
        // console.log($scope.advSearchKey);
 
         if ($scope.advSearchVal == null && ($scope.advFromDate == null || $scope.advToDate == null)) {
-            alert('Enter the value to be searched');
-            
+             $scope.searchAlertModal();
+
             return;
         }
         if ($scope.advSearchVal == null) {
@@ -132,7 +132,15 @@ fihApp.controller('AppsCtrl', function($scope, $resource, $location, userProfile
         $scope.apps = $scope.appSearchBackup;
     };
 
+  $scope.searchAlertModal = function () {
+        var modalInstance = $uibModal.open({
+            animation: $scope.animationsEnabled,
+            templateUrl: 'serachAlertModalContent.html',
+            controller: 'ModalSearchAlertCtrl',
+            size: 'sm'
+        });
 
+    };
 });
 
 
@@ -197,6 +205,13 @@ fihApp.controller('ModalInstanceCtrl', function ($scope, $uibModalInstance, appD
     $scope.ok = function () {
         $uibModalInstance.close($scope.selected.item);
     };
+
+    $scope.cancel = function () {
+        $uibModalInstance.dismiss('cancel');
+    };
+});
+
+fihApp.controller('ModalSearchAlertCtrl', function ($scope, $uibModalInstance) {
 
     $scope.cancel = function () {
         $uibModalInstance.dismiss('cancel');
