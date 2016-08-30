@@ -160,15 +160,18 @@
                             <div class="form-group">
                                 <label class='control-label dbconn col-sm-2'>DB Max Active Connection</label>
                                 <div class="dbconninput col-sm-1">
-                                    <input id="txtMaxActive" class="form-control" ng-model="app.dbconfig.max_active" placeholder="50"></input>
+                                    <input id="txtMaxActive" class="form-control" ng-model="app.dbconfig.max_active" placeholder="50" 
+                                        uib-tooltip="The maximum number of active connections that can be allocated from the connection pool at the same time." tooltip-class="tooltip-addpp" tooltip-placement="top" tooltip-trigger="'mouseenter'" />
                                 </div>
                                 <label class='control-label dbconn col-sm-2'>DB Max Idle Connection</label>
                                 <div class="dbconninput col-sm-1">
-                                    <input id="txtMaxIdle" class="form-control" ng-model="app.dbconfig.max_idle" placeholder="30"></input>
+                                    <input id="txtMaxIdle" class="form-control" ng-model="app.dbconfig.max_idle" placeholder="30" 
+                                        uib-tooltip="The maximum number of connections that should be kept in the pool at all times." tooltip-placement="top" tooltip-class="tooltip-addpp" tooltip-trigger="'mouseenter'" />
                                 </div>
                                 <label class='control-label dbconn col-sm-2'>DB Max Wait Time</label>
                                 <div class="dbconninput col-sm-2">
-                                    <input id="txtMaxWait" class="form-control" ng-model="app.dbconfig.max_wait" placeholder="10000"></input>
+                                    <input id="txtMaxWait" class="form-control" ng-model="app.dbconfig.max_wait" placeholder="10000"  tooltip-class="tooltip-addpp"
+                                        uib-tooltip="The maximum number of milliseconds that the pool will wait (when there are no available connections) for a connection to be returned before throwing an exception." tooltip-placement="top" tooltip-trigger="'mouseenter'" />
                                 </div>
                             </div>
                         </div>
