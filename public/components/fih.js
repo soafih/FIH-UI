@@ -114,6 +114,9 @@ fihApp.service('APIInterceptor', function ($rootScope) {
         if (response.status === 401 || response.status === 403) {
             $rootScope.$broadcast('unauthorized');
         }
+        if (response.status === 503) {
+            $rootScope.$broadcast('serviceunavailable');
+        }
         return response;
     };
 });
@@ -124,17 +127,30 @@ fihApp.controller('SidebarCtrl', function ($scope, $resource, $location) {
     };
 });
 
-fihApp.controller('MainCtrl', function ($rootScope, $scope, $window, $location, Security) {
+fihApp.controller('MainCtrl', function ($rootScope, $scope, $window, $location, UserProfile) {
     $scope.showSidebarApps = true;
     $scope.showSidebarDashboard = true;
     $scope.loadUserData = function(){
-        Security.getProfile().then(function (response) {
-            //console.log(JSON.stringify(response));
-            $scope.name = response.data.first_name + ' ' + response.data.last_name;
+        UserProfile.then(function (response) {
+            console.log(response);
+            $scope.userfullname = response.first_name + ' ' + response.last_name;
+            $scope.useremail = response.email;
+            var userOrgs = '';
+            var userSpaces = '';
+            var orgs = response.stackato_config;
+            for(var i=0; i < orgs.length; i++){
+                userOrgs += orgs[i].name + ', ';
+                userSpaces += orgs[i].spaces + ', ';
+            }
+            $scope.userorgs = userOrgs.slice(0, -2);;
+            $scope.userspaces = userSpaces.slice(0, -2);
         });
     };
     $rootScope.$on('unauthorized', function () {
         $location.path('/forbidden');
+    });
+    $rootScope.$on('serviceunavailable', function () {
+        $window.alert("System seems to be responding slow. Please try after sometime.");
     });
 });
 

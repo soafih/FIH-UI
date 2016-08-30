@@ -54,21 +54,24 @@ html(ng-app='fihApp')
             span.icon-bar
             span.icon-bar
           a.navbar-brand(href='/#/')
-            img(style="height:32px; background-color: #101010", src="assets/images/fihlogo_1.jpg") 
-          a.navbar-brand(href='/#/' style="margin-top: 5px;") Fox Integration Hub
+            img(style="height:25px; background-color: #101010", src="assets/images/fihlogo_1.jpg") 
+          a.navbar-brand(href='/#/') Fox Integration Hub
         .navbar-collapse.collapse
           ul.nav.navbar-nav.navbar-right
-            li(style="margin-bottom: -10px")
-              //if(locals.userId)
-              uib-accordion
-                div.panel-default(uib-accordion-group heading="Welcome #{userId}" ng-click="loadUserData()" style="opacity: 0.9; margin: 10px 0 0 0;")
-                    p {{name}}
+            li
+              div.btn-group.header-welcome-msg(uib-dropdown, dropdown-append-to-body)
+                button.btn.btn-default(type="button", uib-dropdown-toggle, ng-click="loadUserData()") Welcome #{userId}
+                  span.caret
+                  ul.dropdown-menu.header-userdetails(uib-dropdown-menu, role="menu")
+                    li(role="menuitem") <strong>Name:</strong> {{userfullname}}
+                    li(role="menuitem") <strong>Email:</strong> {{useremail}}
+                    li.divider {{name}}
+                    li(role="menuitem") <strong>Orgs:</strong> {{userorgs}}
+                    li(role="menuitem") <strong>Spaces:</strong> {{userspaces}}
             li
               a(href='mailto:SOAEnterpriseTeam@fox.com?Subject=Fox%20Integration%20Hub%20Feedback' target='_top') Contact Us
             li
               a(href='/#/help') Help
-            
-            
           //form.navbar-form.navbar-right
             input.form-control(type='text', placeholder='Search...')
     .container-fluid

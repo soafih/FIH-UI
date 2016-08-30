@@ -37,6 +37,16 @@ body h4{
   color: green;
 }
 
+.header-userdetails {
+  font-size: 12px;
+  z-index: 9999;
+  padding: 10px
+}
+
+.header-welcome-msg{
+  margin: 8px 0 0 0;
+}
+
 .control-label{
   font-size: 13px;
   font-weight: 600;
