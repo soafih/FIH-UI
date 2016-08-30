@@ -98,6 +98,8 @@ fihApp.controller('AddAppCtrl', function($scope, $window, $http, $resource, $loc
 
         }
         else {
+            $scope.spinnerData = "";
+            $scope.loader.loading = false;
             $window.alert("Please select database from Database Info Tab..");
             $scope.activeTab = 1;
         }
