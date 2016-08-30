@@ -12,6 +12,7 @@ var host = 'aok.stackato-poc.foxinc.com';
 var hostApi = 'api.stackato-poc.foxinc.com';
 var HOST_API_URL = 'https://api.stackato-poc.foxinc.com';
 var HOST_AOK_URL = 'https://aok.stackato-poc.foxinc.com';
+var STACKATO_API_TIMEOUT = 150000;
 var username = process.env.FIH_SVC_USER;
 var password = process.env.FIH_SVC_PASSWORD;
 
@@ -45,7 +46,7 @@ module.exports = {
             getOrgDetails
         ], function (err, result) {
             console.log("###### Sending response back: " + JSON.stringify(result));
-            callback(result);
+            callback(err, result);
         });
     }
 };
@@ -108,21 +109,28 @@ function getStackatoAccessTokenAsync(callback) {
             headers: headers,
             method: 'POST',
             url: HOST_AOK_URL + '/uaa/oauth/token',
-            form: inputOAuth
+            form: inputOAuth,
+            timeout: STACKATO_API_TIMEOUT
         };
 
         request(options, function (error, response, body) {
-                console.log("Stackato access token response code: " + JSON.parse(response.statusCode));
+            if(error && error.code === 'ETIMEDOUT'){
+                console.log("Cannot establish connection with stackato. Connection timeout: "+error.connect === true);
+            }
+            else{
+                if(response)
+                    console.log("Stackato access token response code: " + JSON.parse(response.statusCode));
+            }
 
-                if (!error && (response.statusCode == 200)) {
-                    var info = JSON.parse(body);
-                    //console.log("Access Token: " + JSON.stringify(info));
-                    callback(null, info.access_token);
-                }
-                else {
-                    console.log("Generating error response: " + JSON.parse(error));
-                    callback(error, null);
-                }
+            if (!error && (response.statusCode == 200)) {
+                var info = JSON.parse(body);
+                //console.log("Access Token: " + JSON.stringify(info));
+                callback(null, info.access_token);
+            }
+            else {
+                console.log("Generating error response: " + error);
+                callback(error, null);
+            }
             }
         );
     }

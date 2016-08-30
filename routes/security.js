@@ -50,15 +50,26 @@ router.get('/user', function(req, res) {
     }
     else{
         getUserAuthDetails(username, userguid, function(err, response){
-            if (err) throw err;
-            if(userguid){
-                response.guid = userguid;
+            if (err) {
+                req.session.username = '';
+                req.session.guid = '';
+                req.session.isAuthenticated = false;
+                req.session.userobj = {};
+                res.status(503).send({
+                    success: false,
+                    message: 'Service Unavailable!'
+                });
             }
-            req.session.username = username;
-            req.session.guid = userguid;
-            req.session.isAuthenticated = true;
-            req.session.userobj = response;
-            res.json(response);
+            else {
+                if (userguid) {
+                    response.guid = userguid;
+                }
+                req.session.username = username;
+                req.session.guid = userguid;
+                req.session.isAuthenticated = true;
+                req.session.userobj = response;
+                res.json(response);
+            }
         });
     }
 });
@@ -70,9 +81,10 @@ function getUserAuthDetails(username, guid, callback){
         function(callback) {
             async.waterfall([
                 function getUserDetails(callback){
-                    console.log("1. getUserDetails | Entered getUserDetails");
+                    console.log("1. getUserDetails | Entered getUserDetails: "+username.toLowerCase());
+                    var userid = '^'+username;
                     var collection = db.get('coll_user');
-                    collection.findOne({username: username.toLowerCase()}, 
+                    collection.findOne({username: {$regex: userid, $options: 'i'}}, 
                         {fields : {password:0, created_by: 0, creation_date:0, last_updated_by:0, last_update_date:0}} , function(err, user){
                         if (err) throw err;
                         console.log("1. getUserDetails | Completed. Error: ", err, " | result: ", JSON.stringify(user));
@@ -92,17 +104,21 @@ function getUserAuthDetails(username, guid, callback){
         },
         function (callback) {
             console.log("Calling getUserOrgs");
-            stackato.getUserOrgs(guid, function(res){
-                callback(null, res);
+            stackato.getUserOrgs(guid, function(err, res){
+                callback(err, res);
             });
         }
     ],
-    // optional callback
     function(err, results) {
         console.log("Series Response: "+JSON.stringify(results));
-        var response = results[0];
-        response.stackato_config = results[1];
-        callback(err, response);
+        if(results){
+            var response = results[0];
+            response.stackato_config = results[1];
+            callback(err, response);
+        }
+        else{
+            callback(err, null);
+        }
     });
 }
 
