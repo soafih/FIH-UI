@@ -4,3 +4,6 @@ applications:
   memory: 512M
   services:
     fihmdb: mongodb
+  env:
+    FIH_SVC_USER: dummy
+    FIH_SVC_PASSWORD: dummy
