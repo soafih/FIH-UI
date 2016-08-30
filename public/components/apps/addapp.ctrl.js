@@ -2,6 +2,7 @@ fihApp.controller('AddAppCtrl', function($scope, $window, $http, $resource, $loc
     $routeParams, NgTableParams, databaseList, userProfile){
         
     $scope.pageHeader = "Application / Integration Service Configuration";
+	$scope.reNamepattern = /^[a-z0-9](-*[a-z0-9]+)*$/i;
     $scope.previousBtnDisabled = true;
     $scope.changeActiveTab = function(selectedTab){
         switch(selectedTab){
@@ -124,12 +125,68 @@ fihApp.controller('AddAppCtrl', function($scope, $window, $http, $resource, $loc
         });
     };
 
+	
+	 $scope.validationModal = function () {
+        var modalInstance = $uibModal.open({
+            animation: $scope.animationsEnabled,
+            templateUrl: 'validationModalContent.html',
+            controller: 'ModalValidationCtrl',
+            size: 'sm',
+            resolve: {
+                errors: function () {
+                    return $scope.errorMsgs;
+                }
+            }
+
+        });
+
+
+
+    };
+	
+	 $scope.validate = function () {
+        $scope.errorMsgs = [];
+        var valid = true;
+       
+        if ($scope.app.name == null) {
+            $scope.errorMsgs.push({ error: "Application name can not be blank and can contain only the characters in (a-z A-Z 1-9 -)and should start and end with letter or number" });
+        }
+		 else{
+           
+            var Apps = $resource('/fih/apps/name/'+$scope.app.name);
+            Apps.get(function (appDetails) {
+           if(appDetails.name != null && (appDetails.stackato_config.org == $scope.app.selectedOrg.name) && (appDetails.stackato_config.space == $scope.app.selectedSpace))
+            $scope.errorMsgs.push({ error: "Duplicate Application. The application with same name already exists" });
+            });
+        }
+       
+        if ($scope.app.descr == null) {
+            $scope.errorMsgs.push({ error: "Application description can not be blank" });
+        }
+       
+        if ($scope.app.db_query == null) {
+            $scope.errorMsgs.push({ error: "Query can not be blank" });
+        }
+        
+       if($scope.errorMsgs.length > 0)
+        {
+           
+            $scope.validationModal();
+            valid = false;
+        };
+        return valid;
+    }
+	
     $scope.app = {};
     $scope.app.dbconfig= {};
     $scope.apitype = $routeParams.apitype;
     
     $scope.createApp = function(){
         console.log(userProfile.$hasRole("app.deploy"));
+		 if (!$scope.validate()) {
+
+            return;
+        }
         console.log("Domain selected:"+$scope.app.selectedOrg.domain);
         $scope.spinnerData = "Processing application data.. ";
         $scope.loader.loading = true;
@@ -356,6 +413,15 @@ fihApp.controller('ModalQueryInstanceCtrl', function ($scope, $uibModalInstance,
     /*$scope.ok = function () {
         $uibModalInstance.close($scope.selected.item);
     };*/
+
+    $scope.cancel = function () {
+        $uibModalInstance.dismiss('cancel');
+    };
+});
+
+fihApp.controller('ModalValidationCtrl', function ($scope, $uibModalInstance, errors) {
+
+    $scope.validationErrors = errors;
 
     $scope.cancel = function () {
         $uibModalInstance.dismiss('cancel');
