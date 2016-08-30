@@ -120,10 +120,8 @@ div.modal-footer button.btn.btn-info{
 
 .modal-dialog.modal-sm{
     position: center;
-    height:300px;
-    width:600px;
-    margin-top:50px;   
-    
+    width:500px;
+    margin-top:50px;
 }
 
 .modal-dialog.modal-md{
@@ -143,11 +141,7 @@ div.modal-footer button.btn.btn-info{
     height: 400px;
     overflow-y: auto;
 }
-.modal-body.modal-sm{
-    height: 170px;
-    width: 500px;
-    overflow-y: auto;
-}
+
 .modal-header{
   margin-top: 30px;
 }

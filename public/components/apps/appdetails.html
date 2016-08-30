@@ -5,13 +5,13 @@
 <div class="tab-content">
     <script type="text/ng-template" id="modalDialog.html">
         <div class="modal-dialog modal-sm" style="width:450px">
-            <div class=modal-dialog style="width: 400px">
-                <h3 class="modal-title">{{modalTitle}}</h3>
-                <div ng-class="modalTitleStyle" style="margin: 20px 0 20px;"><p>{{modalMessage}}</p></div>
-                <div class="modal-footer">
-                    <button ng-hide="modalHideActionBtn" class="btn {{modalActionBtnType}}" type="button" ng-click="ok()">{{modalActionBtnText}}</button>
-                    <button class="btn btn-default" type="button" ng-click="cancel()">Cancel</button>
-                </div>
+            <h3 class="modal-title">{{modalTitle}}</h3>
+            <div ng-class="modalTitleStyle" style="margin: 20px 0 20px;">
+                <p>{{modalMessage}}</p>
+            </div>
+            <div class="modal-footer">
+                <button ng-hide="modalHideActionBtn" class="btn {{modalActionBtnType}}" type="button" ng-click="ok()">{{modalActionBtnText}}</button>
+                <button class="btn btn-default" type="button" ng-click="cancel()">Cancel</button>
             </div>
         </div>
     </script>

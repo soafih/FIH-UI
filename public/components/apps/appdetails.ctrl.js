@@ -120,7 +120,7 @@ fihApp.controller('AppDetailsCtrl', function ($scope, $routeParams, userProfile,
             animation: $scope.animationsEnabled,
             templateUrl: 'modalDialog.html',
             controller: 'AppDetailModalInstanceCtrl',
-            size: 'md',
+            size: 'sm',
             resolve: {
                 action: function () {
                     return action;
