@@ -114,7 +114,7 @@ div.modal-footer button.btn.btn-info{
   margin-top: 10px;
 }
 
-.modal-body{
+.modal-body.custom{
     height: 400px;
     overflow-y: auto;
 }
