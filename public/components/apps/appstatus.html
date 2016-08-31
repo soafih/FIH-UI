@@ -1,4 +1,6 @@
-
+<div ng-show="loader.loading">
+    <p>{{spinnerData}}<i class="fa fa-spinner fa-spin"></i></p>
+</div>
 <small><em>Application Build Progress</em></small>
 
 <uib-progressbar ng-class="barState.Class" value="barState.Per" type="{{barState.Type}}">{{barState.Text}}</uib-progressbar>
@@ -17,14 +19,18 @@
     </iframe>
 </div>
 <div ng-show="appCurrentState == 'Failed'">
-    <iframe name="logConsole" id="logConsole" style="height:500px; width:100%" ng-src="{{buildUrl}}">
-        Something wrong...
-    </iframe>
+    <p class="red">Application build failed. <a href="/#/appdetails/{{appName}}">Click here</a> to view/update application details.</p>
+    <button style="border:0; margin-top:5px;" type="button" class="btn btn-success btn-transparent" ng-init="showLogText = 'Show Logs'" ng-click="toggleDisplayLogs()">{{showLogText}}</button>
+    <div ng-show="toggleIFrame">
+        <iframe name="logConsole" id="logConsole" style="height:500px; width:100%" ng-src="{{buildUrl}}">
+            Something wrong...
+        </iframe>
+    </div>
 </div>
 <div ng-show="appCurrentState == 'Success'">
-    <p>Application build is successful. <a href="/#/appdetails/{{appName}}">Click here</a> to view application details.</p>
-    <button style="border:0; margin-top:5px;" type="button" class="btn btn-success btn-transparent" ng-init="showLogText = 'Show Logs'" ng-click="displaySuccessLogs()">{{showLogText}}</button>
-    <div ng-show="successIFrame">
+    <p class="green">Application build is successful. <a href="/#/appdetails/{{appName}}">Click here</a> to view application details.</p>
+    <button style="border:0; margin-top:5px;" type="button" class="btn btn-success btn-transparent" ng-init="showLogText = 'Show Logs'" ng-click="toggleDisplayLogs()">{{showLogText}}</button>
+    <div ng-show="toggleIFrame">
         <iframe name="logConsole" id="logConsole" style="height:500px; width:100%" ng-src="{{buildUrl}}">
             Something wrong...
         </iframe>

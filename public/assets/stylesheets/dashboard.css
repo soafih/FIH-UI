@@ -39,6 +39,12 @@ body h4{
 .amber {
   color: 	#FFBF00;
 }
+.blue {
+  color: 	blue;
+}
+.grey{
+  color: #595959;
+}
 
 .header-userdetails {
   font-size: 12px;
@@ -123,8 +129,8 @@ div.modal-footer button.btn.btn-info{
 
 .modal-dialog.modal-sm{
     position: center;
-    width:500px;
-    margin-top:50px;
+    width: 500px;
+    margin-top: 30px;
 }
 
 .modal-dialog.modal-md{

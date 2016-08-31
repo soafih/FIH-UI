@@ -232,7 +232,7 @@ fihApp.controller('AddAppCtrl', function ($scope, $window, $http, $resource, $lo
         });
 
         if (appCurrentState == 'SaveFailed') {
-            var redirectUrl = '/#/appstatus?apitype=' + $scope.apitype + '&appname=' + $scope.app.name + '&appId=' + appObjectId + '&buildappstatus=savefailed';
+            var redirectUrl = '/#/appstatus?appId=' + appObjectId;
             console.log("Failed to save application details in database. Redirect to: " + redirectUrl);
             $window.location.href = redirectUrl;
         }
@@ -297,7 +297,7 @@ fihApp.controller('AddAppCtrl', function ($scope, $window, $http, $resource, $lo
                         case "Queued":
                             AppUpdate.save(updateObj, function (res) {
                                 console.log("Successfully updated App status: " + JSON.stringify(res));
-                                redirectUrl = '/#/appstatus?apitype=' + $scope.apitype + '&appname=' + $scope.app.name + '&appId=' + appObjectId + '&buildappstatus=queued&buildidentifier=' + updateObj.build_identifier;
+                                redirectUrl = '/#/appstatus?appId=' + appObjectId;
                                 console.log("URL to redirect: " + redirectUrl);
                                 $window.location.href = redirectUrl;
                             },
@@ -310,7 +310,7 @@ fihApp.controller('AddAppCtrl', function ($scope, $window, $http, $resource, $lo
                         case "WIP":
                             AppUpdate.save(updateObj, function (res) {
                                 console.log("Successfully updated App status: " + JSON.stringify(res));
-                                redirectUrl = '/#/appstatus?apitype=' + $scope.apitype + '&appname=' + $scope.app.name + '&appId=' + appObjectId + '&buildappstatus=wip&buildno=' + updateObj.build_number + '&buildurl=' + encodeURIComponent(updateObj.build_url);
+                                redirectUrl = '/#/appstatus?appId=' + appObjectId;
                                 console.log("URL to redirect: " + redirectUrl);
                                 $window.location.href = redirectUrl;
                             },
@@ -337,7 +337,7 @@ fihApp.controller('AddAppCtrl', function ($scope, $window, $http, $resource, $lo
             };
             var AppUpdate = $resource('/fih/apps/updateStatus');
             AppUpdate.save(updateObj, function (res) {
-                var redirectUrl = '/#/appstatus?apitype=' + $scope.apitype + '&appname=' + $scope.app.name + '&appId=' + appObjectId + '&buildappstatus=failed&reason=' + error;
+                var redirectUrl = '/#/appstatus?appId=' + appObjectId + '&reason=' + error;
                 console.log("URL to redirect: " + redirectUrl);
                 $window.location.href = redirectUrl;
             },

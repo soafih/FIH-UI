@@ -101,7 +101,8 @@ function getAllApplications(accessToken, callback) {
     };
 
     request(options, function resCallback(error, response, body) {
-        console.log("Get All Stackato response code: "+response.statusCode);
+        if(response)
+            console.log("Get All Stackato response code: "+response.statusCode);
         
         if (!error && (response.statusCode == 200)) {
             var info = JSON.parse(body);

@@ -41,13 +41,11 @@ router.get('/name/:name', permCheck.checkPermission('app.view'), function(req, r
     });
 });
 
-router.get('/appobjectid',  function(req, res) {
+router.get('/objectid/:objectid',  function(req, res) {
     var db = req.db;
     var collection = db.get('coll_app');
-
-    var query = require('url').parse(req.url,true).query;
-    console.log("Fetching app data with object id: "+query.appobjectid);
-    collection.find(query.appobjectid, function(err, app){
+    console.log("Fetching app data with object id: "+req.params.objectid);
+    collection.findOne(req.params.objectid, function(err, app){
         if (err) throw err;
       	res.json(app);
     });

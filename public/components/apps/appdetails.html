@@ -5,8 +5,8 @@
 <div class="tab-content">
     <script type="text/ng-template" id="modalDialog.html">
         <div class="modal-dialog modal-sm" style="width:450px">
-            <h3 class="modal-title">{{modalTitle}}</h3>
-            <div ng-class="modalTitleStyle" style="margin: 20px 0 20px;">
+            <h3 class="modal-title {{modalTitleStyle}}">{{modalTitle}}</h3>
+            <div style="margin: 20px 0 20px;">
                 <p>{{modalMessage}}</p>
             </div>
             <div class="modal-footer">
@@ -21,9 +21,9 @@
             <div class="row">
                 <div uib-alert style="height: 25px; border: none; margin:0 0 10px 10px; padding:0 0 0 10px;" dismiss-on-timeout="20000" ng-repeat="alert in alerts" ng-class="'alert-' + (alert.type || 'danger')" close="closeAlert($index)">{{alert.msg}}</div>
                 <div class="col-md-7"><h3>{{applicationName}}</h3></div>
-                <button ng-show="showBtnDelete" class="btn btn-danger btn-md col-md-1 pull-right" ng-click="openDialog('delete')">Delete</button>
+                <button ng-show="showBtnDelete" class="btn btn-danger btn-md col-md-1 pull-right" ng-click="openDialog('delete', 'All application data will be deleted. This action cannot be undone!')">Delete</button>
                 <button ng-show="showBtnRestart" disabled class="btn btn-info btn-md col-md-1 pull-right" ng-click="">Restart</button>
-                <button ng-show="showBtnRedeploy" class="btn btn-info btn-md col-md-1 pull-right" ng-click="openDialog('redeploy')">Redeploy</button>
+                <button ng-show="showBtnRedeploy" class="btn btn-info btn-md col-md-1 pull-right" ng-click="openDialog('redeploy', 'Application redeployment request will be triggered!')">Redeploy</button>
             </div>
         </div>
     </div>
@@ -59,16 +59,6 @@
                                 </h4>
                             </div>
                             <div uib-collapse="isSummmaryCollapsed">
-                                <!--
-                                { "API Type": appDetails.api_type },
-                                { "API Version": appDetails.api_ver },
-                                { "Status": appDetails.status },
-                                { "Stage": appDetails.stage },
-                                { "Created": $filter('date')(appDetails.created_date, "yyyy-MM-dd HH:mm:ss") },
-                                { "Created By": appDetails.created_by },
-                                { "Last Updated": $filter('date')(appDetails.last_updated_date, "yyyy-MM-dd HH:mm:ss") },
-                                { "Last Updated By": appDetails.last_updated_by }
-                                -->
                                 <div class="panel-body">
                                     <div class="row app-details">
                                         <label class='control-label col-sm-3'>API Type</label>
@@ -80,7 +70,7 @@
                                     </div>
                                     <div class="row app-details">
                                         <label class='control-label col-sm-3'>Status</label>
-                                        <label class='control-label col-sm-9' style="font-weight:500">
+                                        <label class='control-label col-sm-2' style="font-weight:500">
                                             <div ng-switch on="appDetails.status">
                                                 <div ng-switch-when="Failed">
                                                     <span class="red">{{appDetails.status}}</span>
@@ -93,6 +83,9 @@
                                                 </div>
                                             </div>
                                         </label>
+                                        <a href="/#/appstatus?appId={{appDetails._id}}" style="margin-left:20px; border:0; font-weight:500;font-size:13px">View Logs<span class="glyphicon glyphicon-eye-open"></span></a>
+                                        <!--<button style="border:0;" type="button" class="btn btn-success btn-transparent" 
+                                            ng-init="showLogText = 'Show Logs'" ng-click="showAppLogs()">{{showLogText}}</button>-->
                                     </div>
                                     <div class="row app-details">
                                         <label class='control-label col-sm-3'>Stage</label>
