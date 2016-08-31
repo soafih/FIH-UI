@@ -67,7 +67,11 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use(session({secret: 'dummySecureKey'}));
+app.use(session({
+  secret: 'dummySecureKey',
+  resave: true,
+  saveUninitialized: true
+}));
 
 app.use('/', routes);
 app.use('/users', users);
