@@ -13,6 +13,7 @@ var host = 'aok.stackato-poc.foxinc.com';
 var hostApi = 'api.stackato-poc.foxinc.com';
 var HOST_API_URL = 'https://api.stackato-poc.foxinc.com';
 var HOST_AOK_URL = 'https://aok.stackato-poc.foxinc.com';
+var STACKATO_API_TIMEOUT = 150000;
 var username = process.env.FIH_SVC_USER;
 var password = process.env.FIH_SVC_PASSWORD;
 
@@ -31,6 +32,7 @@ router.get('/apps/:appname', permCheck.checkPermission('app.view'), function (re
 
     console.log("Retrieving apps from stackato..");
     getStackatoAccessToken(function (response) {
+        console.log("Access Token:"+response);
         getAllApplications(response, function (response) {
             console.log("Array response: "+JSON.stringify(response));
             var app = response.data.apps.filter(function (apps) {
@@ -64,7 +66,7 @@ function deleteStackatoApp(accessToken, appGuid, callback) {
         }
     };
 
-    function resCallback(error, response, body) {
+    request(options, function resCallback(error, response, body) {
         console.log("Delete response code: "+response.statusCode);
         
         if (!error && (response.statusCode == 200 || response.statusCode == 404)) {
@@ -76,9 +78,7 @@ function deleteStackatoApp(accessToken, appGuid, callback) {
             console.log("Generating error response: " + JSON.parse(error));
             callback(generateErrorResponse(response, JSON.parse(body)));
         }
-    }
-
-    request(options, resCallback);
+    });
 }
 
 function generateSuccessResponse(response, resData){
@@ -92,7 +92,7 @@ function generateErrorResponse(response, resData){
 }
 
 function getAllApplications(accessToken, callback) {
-
+    console.log("Entered getAllApplications: "+accessToken);
     var options = {
         url: HOST_API_URL + '/v2/apps',
         headers: {
@@ -100,7 +100,7 @@ function getAllApplications(accessToken, callback) {
         }
     };
 
-    function resCallback(error, response, body) {
+    request(options, function resCallback(error, response, body) {
         console.log("Get All Stackato response code: "+response.statusCode);
         
         if (!error && (response.statusCode == 200)) {
@@ -118,15 +118,14 @@ function getAllApplications(accessToken, callback) {
             callback(generateSuccessResponse(response, {apps: resArr}));
         }
         else{
-            console.log("Generating error response: "+JSON.parse(error));
+            console.log("getAllApplications | Generating error response: "+JSON.parse(error));
             callback(generateErrorResponse(response, JSON.parse(body)));
         }
-    }
-
-    request(options, resCallback);
+    });
 }
 
 function getStackatoAccessToken(callback) {
+console.log("Entered getStackatoAccessToken");
 
     var cacheValue = stackatoCache.get("accessToken");
     if (cacheValue === undefined) {
@@ -138,25 +137,37 @@ function getStackatoAccessToken(callback) {
         };
 
         var dataString = querystring.stringify(inputOAuth);
-
-        var headers = {};
-        var method = 'POST';
-        headers = {
+        var headers = {
             'Authorization': 'Basic Y2Y6',
             'Content-Type': 'application/x-www-form-urlencoded',
             'Content-Length': Buffer.byteLength(dataString)
         };
 
-        performRequest(host, '/uaa/oauth/token', 'POST', dataString, headers, function (data) {
-            console.log("oAuth Response: " + JSON.stringify(data));
-            if (data.error) {
-                console.log("Error getting Stackato oAuth session");
-                throw data.error;
+        var options = {
+            headers: headers,
+            method: 'POST',
+            url: HOST_AOK_URL + '/uaa/oauth/token',
+            form: inputOAuth,
+            timeout: STACKATO_API_TIMEOUT
+        };
+
+        request(options, function (error, response, body) {
+            if (error && error.code === 'ETIMEDOUT') {
+                console.log("Cannot establish connection with stackato. Connection timeout: " + error.connect === true);
             }
             else {
-                var accessToken = data.access_token;
-                stackatoCache.set("accessToken", accessToken, data.expires_in);
-                callback(accessToken);
+                if (response)
+                    console.log("Stackato access token response code: " + JSON.parse(response.statusCode));
+            }
+
+            if (!error && (response.statusCode == 200)) {
+                var info = JSON.parse(body);
+                console.log("Access Token: " + JSON.stringify(info));
+                callback(info.access_token);
+            }
+            else {
+                console.log("Generating error response: " + error);
+                callback(error);
             }
         });
     }
