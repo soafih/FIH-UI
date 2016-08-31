@@ -15,22 +15,6 @@ router.get('/userdetail/:username/:guid', function(req, res) {
     });
 });
 
-function checkPermission(resource) {
-    console.log("Entered checkPermission.." + resource);
-
-    return function(req, res, next){var response = false;
-        console.log('##### Check Permission: '+req.session.username);
-        var userProfile = req.session.userobj;
-        if (userProfile.permission.indexOf(resource) >= 0) {
-            response = true;
-        } else {
-            // user access denied
-            response = false;
-        }
-        return response;
-    };
-}
-
 router.get('/user', function(req, res) {
     console.log("Entered security service..");
     db = req.db;
