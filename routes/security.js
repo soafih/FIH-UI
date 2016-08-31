@@ -1,6 +1,6 @@
 var express = require('express');
 var router = express.Router();
-var stackato = require('./mod/stackato_mod');
+var stackato = require('./mod/stackato-mod');
 var permCheck = require('./mod/permission-check');
 var async = require('async');
 var db = {};
