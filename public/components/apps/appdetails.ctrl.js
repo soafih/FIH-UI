@@ -1,7 +1,6 @@
 
 fihApp.controller('AppDetailsCtrl', function ($scope, $routeParams, userProfile, $timeout, $resource, $location, $anchorScroll, $filter, $uibModal, $window, $http) {
     $scope.applicationName = $routeParams.appname;
-    $scope.showLabelAppDescr = true;
     $scope.showBtnDelete = userProfile.$hasPermission('app.delete');
     $scope.showBtnRestart = userProfile.$hasPermission('app.restart');
     $scope.showBtnRedeploy = userProfile.$hasPermission('app.deploy');
@@ -39,6 +38,15 @@ fihApp.controller('AppDetailsCtrl', function ($scope, $routeParams, userProfile,
     };
 
     $scope.saveImplDetails = function () {
+        if ($scope.appDetails.db_config.query == $scope.txtUpdatedQuery &&
+            $scope.appDetails.db_config.max_wait == $scope.txtMaxWait &&
+            $scope.appDetails.db_config.max_idle == $scope.txtMaxIdle &&
+            $scope.appDetails.db_config.max_active == $scope.txtMaxActive) {
+                $scope.showEditableImplFields = false;
+                $scope.showSavedMessage = false;
+                $scope.editMessage = "";
+                return;
+        }
         $scope.loader.loading = true;
         $scope.spinnerData = "Saving application data.. ";
         $scope.showEditableImplFields = false;
@@ -82,14 +90,12 @@ fihApp.controller('AppDetailsCtrl', function ($scope, $routeParams, userProfile,
     };
 
     $scope.editAppDescr = function () {
-        $scope.showLabelAppDescr = false;
         $scope.showTextAppDescr = true;
         $scope.updatedAppDesc = $scope.appDetails.descr;
     };
 
     $scope.saveAppDescr = function () {
 
-        $scope.showLabelAppDescr = true;
         $scope.showTextAppDescr = false;
 
         var updateObj = {
@@ -108,7 +114,6 @@ fihApp.controller('AppDetailsCtrl', function ($scope, $routeParams, userProfile,
     };
 
     $scope.cancelAppDescr = function () {
-        $scope.showLabelAppDescr = true;
         $scope.showTextAppDescr = false;
         $scope.updatedAppDesc = $scope.appDetails.descr;
     };
