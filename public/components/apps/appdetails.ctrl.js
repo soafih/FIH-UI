@@ -303,7 +303,8 @@ fihApp.controller('AppDetailsCtrl', function ($scope, $routeParams, userProfile,
                 $scope.apiDetails = api;
                 console.log("Fetched api details: " + JSON.stringify($scope.apiDetails));
             });
-
+            appDetails.created_date = $filter('date')(appDetails.created_date, "yyyy-MM-dd HH:mm:ss");
+            appDetails.last_updated_date = $filter('date')(appDetails.last_updated_date, "yyyy-MM-dd HH:mm:ss");
             $scope.appDetails = appDetails;
             $scope.appSummary = [
                 { "API Type": appDetails.api_type },
@@ -335,12 +336,8 @@ fihApp.controller('AppDetailsCtrl', function ($scope, $routeParams, userProfile,
                 console.log('Dirty App');
                 $scope.addAlert('App changes pending. Redeploy to reflect changes!');
             }
-
-
         });
-
     };
-
     init();
 });
 

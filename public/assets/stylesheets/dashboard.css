@@ -36,6 +36,9 @@ body h4{
 .green {
   color: green;
 }
+.amber {
+  color: 	#FFBF00;
+}
 
 .header-userdetails {
   font-size: 12px;
@@ -183,6 +186,10 @@ body .modal-header{
    content:"*";
    color:red;
 } 
+
+.row.app-details{
+  margin-top: 10px; padding-right: 5px;
+}
 
 /*
  * Global add-ons

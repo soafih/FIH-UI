@@ -59,21 +59,72 @@
                                 </h4>
                             </div>
                             <div uib-collapse="isSummmaryCollapsed">
+                                <!--
+                                { "API Type": appDetails.api_type },
+                                { "API Version": appDetails.api_ver },
+                                { "Status": appDetails.status },
+                                { "Stage": appDetails.stage },
+                                { "Created": $filter('date')(appDetails.created_date, "yyyy-MM-dd HH:mm:ss") },
+                                { "Created By": appDetails.created_by },
+                                { "Last Updated": $filter('date')(appDetails.last_updated_date, "yyyy-MM-dd HH:mm:ss") },
+                                { "Last Updated By": appDetails.last_updated_by }
+                                -->
                                 <div class="panel-body">
-                                    <div class="row" ng-repeat="item in appSummary" style="margin-top: 10px">
-                                        <div ng-repeat="(key, value) in item">
-                                            <label class='control-label col-sm-3'>{{key}}</label>
-                                            <label class='control-label col-sm-9' style="font-weight:500">
-                                                <div ng-switch on="key">
-                                                    <div ng-switch-when="End Point">
-                                                        <a href="{{value}}">{{value}}</a>
-                                                    </div>
-                                                    <div ng-switch-default>
-                                                        {{value}}
-                                                    </div>
+                                    <div class="row app-details">
+                                        <label class='control-label col-sm-3'>API Type</label>
+                                        <label class='control-label col-sm-9' style="font-weight:500">{{appDetails.api_type}}</label>
+                                    </div>
+                                    <div class="row app-details">
+                                        <label class='control-label col-sm-3'>API Version</label>
+                                        <label class='control-label col-sm-9' style="font-weight:500">{{appDetails.api_ver}}</label>
+                                    </div>
+                                    <div class="row app-details">
+                                        <label class='control-label col-sm-3'>Status</label>
+                                        <label class='control-label col-sm-9' style="font-weight:500">
+                                            <div ng-switch on="appDetails.status">
+                                                <div ng-switch-when="Failed">
+                                                    <span class="red">{{appDetails.status}}</span>
                                                 </div>
-                                            </label>
-                                        </div>
+                                                <div ng-switch-when="Success">
+                                                    <span class="green">{{appDetails.status}}</span>
+                                                </div>
+                                                <div ng-switch-default>
+                                                    <span class="amber">{{appDetails.status}}</span>
+                                                </div>
+                                            </div>
+                                        </label>
+                                    </div>
+                                    <div class="row app-details">
+                                        <label class='control-label col-sm-3'>Stage</label>
+                                        <label class='control-label col-sm-9' style="font-weight:500">
+                                            <div ng-switch on="appDetails.status">
+                                                <div ng-switch-when="Failed">
+                                                    <span class="red">{{appDetails.stage}}</span>
+                                                </div>
+                                                <div ng-switch-when="Success">
+                                                    <span class="green">{{appDetails.stage}}</span>
+                                                </div>
+                                                <div ng-switch-default>
+                                                    <span class="amber">{{appDetails.stage}}</span>
+                                                </div>
+                                            </div>
+                                        </label>
+                                    </div>
+                                    <div class="row app-details">
+                                        <label class='control-label col-sm-3'>Created</label>
+                                        <label class='control-label col-sm-9' style="font-weight:500">{{appDetails.created_date}}</label>
+                                    </div>
+                                    <div class="row app-details">
+                                        <label class='control-label col-sm-3'>Created By</label>
+                                        <label class='control-label col-sm-9' style="font-weight:500">{{appDetails.created_by}}</label>
+                                    </div>
+                                    <div class="row app-details">
+                                        <label class='control-label col-sm-3'>Last Updated</label>
+                                        <label class='control-label col-sm-9' style="font-weight:500">{{appDetails.last_updated_date}}</label>
+                                    </div>
+                                    <div class="row app-details">
+                                        <label class='control-label col-sm-3'>Last Updated By</label>
+                                        <label class='control-label col-sm-9' style="font-weight:500">{{appDetails.last_updated_by}}</label>
                                     </div>
                                 </div>
                             </div>
@@ -102,7 +153,7 @@
                             </div>
                             <div uib-collapse="isImplCollapsed">
                                 <div class="panel-body">
-                                    <div class="row" style="margin-top: 10px">
+                                    <div class="row app-details">
                                         <label class='control-label col-md-3'>Endpoint</label>
                                         <label class='control-label col-md-9' style="font-weight:500"><a target="_blank" href={{appDetails.endpoint}}>{{appDetails.endpoint}}</a></label>
                                     </div>
@@ -115,22 +166,22 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="row" style="margin-top: 10px; padding-right: 5px;">
+                                    <div class="row app-details">
                                         <label class='control-label col-md-3'>Query</label>
                                         <label ng-show="!showEditableImplFields" class='control-label col-md-9' style="font-weight:500">{{appDetails.db_config.query}}</label>
                                         <textarea ng-show="showEditableImplFields" style="font-size:12px; font-family: Tahoma; font-weight:500" class='control-label col-md-9' ng-model="txtUpdatedQuery" rows="10">{{appDetails.db_config.query}}</textarea>
                                     </div>
-                                    <div class="row" style="margin-top: 10px">
+                                    <div class="row app-details">
                                         <label class='control-label col-md-3'>Max Active</label>
                                         <label ng-show="!showEditableImplFields" class='control-label col-md-2' style="font-weight:500">{{appDetails.db_config.max_active}}</label>
                                         <input ng-show="showEditableImplFields" class="control-labe col-md-2" ng-model="txtMaxActive" placeholder="{{appDetails.db_config.max_active}}"></input>
                                     </div>
-                                    <div class="row" style="margin-top: 10px">
+                                    <div class="row app-details">
                                         <label class='control-label col-md-3'>Max Idle</label>
                                         <label ng-show="!showEditableImplFields" class='control-label col-md-2' style="font-weight:500">{{appDetails.db_config.max_idle}}</label>
                                         <input ng-show="showEditableImplFields" class="control-labe col-md-2" ng-model="txtMaxIdle" placeholder="{{appDetails.db_config.max_idle}}"></input>
                                     </div>
-                                    <div class="row" style="margin-top: 10px">
+                                    <div class="row app-details">
                                         <label class='control-label col-md-3'>Max Wait Time</label>
                                         <label ng-show="!showEditableImplFields" class='control-label col-md-2' style="font-weight:500">{{appDetails.db_config.max_wait}}</label>
                                         <input ng-show="showEditableImplFields" class="control-labe col-md-2" ng-model="txtMaxWait" placeholder="{{appDetails.db_config.max_wait}}"></input>
@@ -150,11 +201,11 @@
                             </div>
                             <div uib-collapse="isStackatoCollapsed">
                                 <div class="panel-body">
-                                    <div class="row" style="margin-top: 10px">
+                                    <div class="row app-details">
                                         <label class='control-label col-md-4'>Space</label>
                                         <label class='control-label col-md-6' style="font-weight:500">{{appDetails.stackato_config.space}}</label>
                                     </div>
-                                    <div class="row" style="margin-top: 10px">
+                                    <div class="row app-details">
                                         <label class='control-label col-md-4'>Organization</label>
                                         <label class='control-label col-md-6' style="font-weight:500">{{appDetails.stackato_config.org}}</label>
                                     </div>
@@ -169,7 +220,7 @@
                             </div>
                             <div uib-collapse="isDBInfoCollapsed">
                                 <div class="panel-body">
-                                    <div class="row" ng-repeat="item in dbDetails" style="margin-top: 10px">
+                                    <div class="row app-details" ng-repeat="item in dbDetails">
                                         <div ng-repeat="(key, value) in item">
                                             <label class='control-label col-sm-3'>{{key}}</label>
                                             <label class='control-label col-sm-9' style="font-weight:500">
