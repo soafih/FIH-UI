@@ -1,11 +1,11 @@
-fihApp.controller('AddAppCtrl', function($scope, $window, $http, $resource, $location, $uibModal, $filter, 
-    $routeParams, NgTableParams, databaseList, userProfile){
-        
+fihApp.controller('AddAppCtrl', function ($scope, $window, $http, $resource, $location, $uibModal, $filter,
+    $routeParams, NgTableParams, databaseList, userProfile) {
+
     $scope.pageHeader = "Application / Integration Service Configuration";
-	$scope.reNamepattern = /^[a-z0-9](-*[a-z0-9]+)*$/i;
+    $scope.reNamepattern = /^[a-z0-9](-*[a-z0-9]+)*$/i;
     $scope.previousBtnDisabled = true;
-    $scope.changeActiveTab = function(selectedTab){
-        switch(selectedTab){
+    $scope.changeActiveTab = function (selectedTab) {
+        switch (selectedTab) {
             case 0:
                 $scope.nextActiveTab = 1;
                 $scope.previousBtnDisabled = true;
@@ -31,16 +31,16 @@ fihApp.controller('AddAppCtrl', function($scope, $window, $http, $resource, $loc
     $scope.disableCreateBtn = true;
     $scope.disableQueryText = false;
 
-    $scope.resetQuery =  function(){
+    $scope.resetQuery = function () {
         $scope.app.db_query = null;
         $scope.disableCreateBtn = true;
         $scope.disableQueryText = false;
     };
 
-    $scope.testQuery = function(){
+    $scope.testQuery = function () {
         $scope.spinnerData = "Loading query result.. ";
         $scope.loader.loading = true;
-        console.log("Calling Test Query service.."+JSON.stringify($scope.app.dbconfig));
+        console.log("Calling Test Query service.." + JSON.stringify($scope.app.dbconfig));
         $scope.queryResponse = '';
         $scope.showQueryLabel = false;
         if ($scope.app.dbconfig.db_name) {
@@ -100,21 +100,23 @@ fihApp.controller('AddAppCtrl', function($scope, $window, $http, $resource, $loc
         else {
             $scope.spinnerData = "";
             $scope.loader.loading = false;
-            $window.alert("Please select database from Database Info Tab..");
+            $scope.errorMsgs = [];
+            $scope.errorMsgs.push({ error: "Please select database from Database Connection Info Tab.." });
             $scope.activeTab = 1;
+            $scope.validationModal();
         }
     };
-    
+
     $scope.animationsEnabled = false;
     $scope.openResultModal = function () {
         var modalInstance = $uibModal.open({
             animation: $scope.animationsEnabled,
             templateUrl: 'myModalContent.html',
             controller: 'ModalQueryInstanceCtrl',
-            size:'lg',
+            size: 'lg',
             resolve: {
                 testQueryResult: function () {
-                    console.log("scope.testQueryResult: "+JSON.stringify($scope.testQueryResult));
+                    console.log("scope.testQueryResult: " + JSON.stringify($scope.testQueryResult));
                     return $scope.testQueryResult;
                 }
             }
@@ -127,77 +129,70 @@ fihApp.controller('AddAppCtrl', function($scope, $window, $http, $resource, $loc
         });
     };
 
-	
-	 $scope.validationModal = function () {
+
+    $scope.validationModal = function () {
         var modalInstance = $uibModal.open({
             animation: $scope.animationsEnabled,
             templateUrl: 'validationModalContent.html',
             controller: 'ModalValidationCtrl',
-            size: 'sm',
+            size: 'md',
             resolve: {
                 errors: function () {
                     return $scope.errorMsgs;
                 }
             }
-
         });
-
-
-
     };
-	
-	 $scope.validate = function () {
+
+    $scope.validate = function () {
         $scope.errorMsgs = [];
         var valid = true;
-       
+
         if ($scope.app.name == null) {
             $scope.errorMsgs.push({ error: "Application name can not be blank and can contain only the characters in (a-z A-Z 1-9 -)and should start and end with letter or number" });
         }
-		 else{
-           
-            var Apps = $resource('/fih/apps/name/'+$scope.app.name);
+        else {
+
+            var Apps = $resource('/fih/apps/name/' + $scope.app.name);
             Apps.get(function (appDetails) {
-           if(appDetails.name != null && (appDetails.stackato_config.org == $scope.app.selectedOrg.name) && (appDetails.stackato_config.space == $scope.app.selectedSpace))
-            $scope.errorMsgs.push({ error: "Duplicate Application. The application with same name already exists" });
+                if (appDetails.name != null && (appDetails.stackato_config.org == $scope.app.selectedOrg.name) && (appDetails.stackato_config.space == $scope.app.selectedSpace))
+                    $scope.errorMsgs.push({ error: "Duplicate Application. The application with same name already exists" });
             });
         }
-       
+
         if ($scope.app.descr == null) {
             $scope.errorMsgs.push({ error: "Application description can not be blank" });
         }
-       
+
         if ($scope.app.db_query == null) {
             $scope.errorMsgs.push({ error: "Query can not be blank" });
         }
-        
-       if($scope.errorMsgs.length > 0)
-        {
-           
+
+        if ($scope.errorMsgs.length > 0) {
             $scope.validationModal();
             valid = false;
-        };
+        }
         return valid;
-    }
-	
-    $scope.app = {};
-    $scope.app.dbconfig= {};
-    $scope.apitype = $routeParams.apitype;
-    
-    $scope.createApp = function(){
-        console.log(userProfile.$hasRole("app.deploy"));
-		 if (!$scope.validate()) {
+    };
 
+    $scope.app = {};
+    $scope.app.dbconfig = {};
+    $scope.apitype = $routeParams.apitype;
+
+    $scope.createApp = function () {
+        console.log(userProfile.$hasRole("app.deploy"));
+        if (!$scope.validate()) {
             return;
         }
-        console.log("Domain selected:"+$scope.app.selectedOrg.domain);
+        console.log("Domain selected:" + $scope.app.selectedOrg.domain);
         $scope.spinnerData = "Processing application data.. ";
         $scope.loader.loading = true;
         $scope.hidePanel = true;
         $scope.app.name = $scope.app.name.replace("_", "-");
         var formattedDate = new Date();
-        var maxActive =  ($scope.app.dbconfig.max_active === undefined ? '50' : $scope.app.dbconfig.max_active);
-        var maxIdle= ($scope.app.dbconfig.max_idle === undefined ? '30' : $scope.app.dbconfig.max_idle);
-        var maxWait= ($scope.app.dbconfig.max_wait === undefined ? '10000' : $scope.app.dbconfig.max_wait);
+        var maxActive = ($scope.app.dbconfig.max_active === undefined ? '50' : $scope.app.dbconfig.max_active);
+        var maxIdle = ($scope.app.dbconfig.max_idle === undefined ? '30' : $scope.app.dbconfig.max_idle);
+        var maxWait = ($scope.app.dbconfig.max_wait === undefined ? '10000' : $scope.app.dbconfig.max_wait);
         var appPostRequest = {
             name: $scope.app.name,
             api_type: $scope.apitype,
@@ -211,10 +206,10 @@ fihApp.controller('AddAppCtrl', function($scope, $window, $http, $resource, $loc
             created_date: formattedDate,
             last_updated_by: 'System',
             last_updated_date: formattedDate,
-            messages: [{message: 'First Version'}],
-            stackato_config: { 
-                org: $scope.app.selectedOrg.name, 
-                space: $scope.app.selectedSpace, 
+            messages: [{ message: 'First Version' }],
+            stackato_config: {
+                org: $scope.app.selectedOrg.name,
+                space: $scope.app.selectedSpace,
                 domain: $scope.app.selectedOrg.domain
             },
             db_config: {
@@ -229,34 +224,34 @@ fihApp.controller('AddAppCtrl', function($scope, $window, $http, $resource, $loc
         var Apps = $resource('/fih/apps');
         var appCurrentState = {};
         var appObjectId = {};
-        Apps.save(appPostRequest, function(app){
+        Apps.save(appPostRequest, function (app) {
             appCurrentState = 'Saved';
             appObjectId = app._id;
-        }, function(error){
+        }, function (error) {
             appCurrentState = 'SaveFailed';
         });
 
-        if(appCurrentState == 'SaveFailed'){
-            var redirectUrl ='/#/appstatus?apitype='+$scope.apitype+'&appname='+$scope.app.name+'&appId='+appObjectId+'&buildappstatus=savefailed';
-            console.log("Failed to save application details in database. Redirect to: "+redirectUrl);
+        if (appCurrentState == 'SaveFailed') {
+            var redirectUrl = '/#/appstatus?apitype=' + $scope.apitype + '&appname=' + $scope.app.name + '&appId=' + appObjectId + '&buildappstatus=savefailed';
+            console.log("Failed to save application details in database. Redirect to: " + redirectUrl);
             $window.location.href = redirectUrl;
         }
-        else{
+        else {
             var buildAppRequest = {
-                "organization":$scope.app.selectedOrg.name,
-                "space":$scope.app.selectedSpace,
+                "organization": $scope.app.selectedOrg.name,
+                "space": $scope.app.selectedSpace,
                 "domain": $scope.app.selectedOrg.domain,
-                "applicationName":$scope.app.name,
-                "query":$scope.app.db_query,
+                "applicationName": $scope.app.name,
+                "query": $scope.app.db_query,
                 "databaseInfo":
                 {
-                    "databaseType":$scope.app.dbconfig.db_type,
+                    "databaseType": $scope.app.dbconfig.db_type,
                     "hostName": $scope.app.dbconfig.host,
                     "port": $scope.app.dbconfig.port,
-                    "databaseName":$scope.app.dbconfig.db_name,
-                    "schema":$scope.app.dbconfig.schema,
-                    "user":$scope.app.dbconfig.uname,
-                    "password":$scope.app.dbconfig.pwd
+                    "databaseName": $scope.app.dbconfig.db_name,
+                    "schema": $scope.app.dbconfig.schema,
+                    "user": $scope.app.dbconfig.uname,
+                    "password": $scope.app.dbconfig.pwd
                 },
                 "connectionAttr":
                 {
@@ -266,115 +261,116 @@ fihApp.controller('AddAppCtrl', function($scope, $window, $http, $resource, $loc
                 }
             };
 
-            var headerConfig = {headers:  {
+            var headerConfig = {
+                headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json;odata=verbose'
                 }
             };
-            
-            console.log("Build API Request: "+JSON.stringify(buildAppRequest));
-            $http.post($scope.apiDetails.api_ep + '/FIH/service/DAASAPI/BuildApp',buildAppRequest, headerConfig, {dataType: "jsonp"})
-            .success(function(response, status, headers, config){
-                console.log("Successfully invoked BuildAPI with response: "+JSON.stringify(response));
-                console.log("Build App status: "+ response.response.status);
 
-                var buildApiResponseStatus = response.response.status; 
-                var updateObj = {
-                    appObjectId : appObjectId,
-                    endpoint : response.response.app_ep,
-                    build_url : response.response.logURL,
-                    status : buildApiResponseStatus,
-                    stage : response.response.stage,
-                    build_number: response.response.buildNumber,
-                    build_identifier: response.response.buildIdentifier
-                };
-                
-                console.log("Updating app status with request: "+JSON.stringify(updateObj));
+            console.log("Build API Request: " + JSON.stringify(buildAppRequest));
+            $http.post($scope.apiDetails.api_ep + '/FIH/service/DAASAPI/BuildApp', buildAppRequest, headerConfig, { dataType: "jsonp" })
+                .success(function (response, status, headers, config) {
+                    console.log("Successfully invoked BuildAPI with response: " + JSON.stringify(response));
+                    console.log("Build App status: " + response.response.status);
 
-                var AppUpdate = $resource('/fih/apps/updateStatus');
-                var redirectUrl = '';
-                switch(buildApiResponseStatus){
-                    case "Failed":
-                        handleAppBuildFailure();
-                        break;
+                    var buildApiResponseStatus = response.response.status;
+                    var updateObj = {
+                        appObjectId: appObjectId,
+                        endpoint: response.response.app_ep,
+                        build_url: response.response.logURL,
+                        status: buildApiResponseStatus,
+                        stage: response.response.stage,
+                        build_number: response.response.buildNumber,
+                        build_identifier: response.response.buildIdentifier
+                    };
 
-                    case "Queued":
-                        AppUpdate.save(updateObj, function(res){
-                            console.log("Successfully updated App status: "+JSON.stringify(res));
-                            redirectUrl ='/#/appstatus?apitype='+$scope.apitype+'&appname='+$scope.app.name+'&appId='+appObjectId+'&buildappstatus=queued&buildidentifier='+updateObj.build_identifier;
-                            console.log("URL to redirect: "+redirectUrl);
-                            $window.location.href = redirectUrl;
-                        },
-                        function(error){
-                            handleAppBuildFailure(error);
-                        });
-                        
-                        break;
+                    console.log("Updating app status with request: " + JSON.stringify(updateObj));
 
-                    case "WIP":
-                        AppUpdate.save(updateObj, function(res){
-                            console.log("Successfully updated App status: "+JSON.stringify(res));
-                            redirectUrl ='/#/appstatus?apitype='+$scope.apitype+'&appname='+$scope.app.name+'&appId='+appObjectId+'&buildappstatus=wip&buildno='+updateObj.build_number+'&buildurl='+encodeURIComponent(updateObj.build_url);
-                            console.log("URL to redirect: "+redirectUrl);
-                            $window.location.href = redirectUrl;
-                        },
-                        function(error){
-                            handleAppBuildFailure(error);
-                        });
+                    var AppUpdate = $resource('/fih/apps/updateStatus');
+                    var redirectUrl = '';
+                    switch (buildApiResponseStatus) {
+                        case "Failed":
+                            handleAppBuildFailure();
+                            break;
 
-                        break;
-                }
-                    
-            })
-            .error(function(data, status, headers, config){
-                handleAppBuildFailure();
-            });
+                        case "Queued":
+                            AppUpdate.save(updateObj, function (res) {
+                                console.log("Successfully updated App status: " + JSON.stringify(res));
+                                redirectUrl = '/#/appstatus?apitype=' + $scope.apitype + '&appname=' + $scope.app.name + '&appId=' + appObjectId + '&buildappstatus=queued&buildidentifier=' + updateObj.build_identifier;
+                                console.log("URL to redirect: " + redirectUrl);
+                                $window.location.href = redirectUrl;
+                            },
+                                function (error) {
+                                    handleAppBuildFailure(error);
+                                });
+
+                            break;
+
+                        case "WIP":
+                            AppUpdate.save(updateObj, function (res) {
+                                console.log("Successfully updated App status: " + JSON.stringify(res));
+                                redirectUrl = '/#/appstatus?apitype=' + $scope.apitype + '&appname=' + $scope.app.name + '&appId=' + appObjectId + '&buildappstatus=wip&buildno=' + updateObj.build_number + '&buildurl=' + encodeURIComponent(updateObj.build_url);
+                                console.log("URL to redirect: " + redirectUrl);
+                                $window.location.href = redirectUrl;
+                            },
+                                function (error) {
+                                    handleAppBuildFailure(error);
+                                });
+
+                            break;
+                    }
+
+                })
+                .error(function (data, status, headers, config) {
+                    handleAppBuildFailure();
+                });
         }
-        
-        function handleAppBuildFailure(error){
+
+        function handleAppBuildFailure(error) {
             $scope.loader.loading = false;
-            console.log(JSON.stringify("Recieved Error From Build API: "+JSON.stringify(error)));
+            console.log(JSON.stringify("Recieved Error From Build API: " + JSON.stringify(error)));
             appStatus = 'Failed';
             var updateObj = {
-                appObjectId : appObjectId,
-                status : appStatus,
+                appObjectId: appObjectId,
+                status: appStatus,
             };
             var AppUpdate = $resource('/fih/apps/updateStatus');
-            AppUpdate.save(updateObj, function(res){
-                var redirectUrl ='/#/appstatus?apitype='+$scope.apitype+'&appname='+$scope.app.name+'&appId='+appObjectId+'&buildappstatus=failed&reason='+error;
-                console.log("URL to redirect: "+redirectUrl);
+            AppUpdate.save(updateObj, function (res) {
+                var redirectUrl = '/#/appstatus?apitype=' + $scope.apitype + '&appname=' + $scope.app.name + '&appId=' + appObjectId + '&buildappstatus=failed&reason=' + error;
+                console.log("URL to redirect: " + redirectUrl);
                 $window.location.href = redirectUrl;
             },
-            function(error){
-                console.log("Failed in updating app status: "+JSON.stringify(error));
-            });
+                function (error) {
+                    console.log("Failed in updating app status: " + JSON.stringify(error));
+                });
         }
     };
-    
+
     $scope.databases = databaseList.data;
 
-    $scope.databaseTable = new NgTableParams({}, 
-    {
-        total: $scope.databases.length, 
-        getData: function (params) {
-            $scope.data = params.sorting() ? $filter('orderBy')($scope.databases, params.orderBy()) : $scope.databases;
-            $scope.data = params.filter() ? $filter('filter')($scope.data, params.filter()) : $scope.data;
-            //$scope.data = $scope.data.slice((params.page() - 1) * params.count(), params.page() * params.count());
-        }
-    });
+    $scope.databaseTable = new NgTableParams({},
+        {
+            total: $scope.databases.length,
+            getData: function (params) {
+                $scope.data = params.sorting() ? $filter('orderBy')($scope.databases, params.orderBy()) : $scope.databases;
+                $scope.data = params.filter() ? $filter('filter')($scope.data, params.filter()) : $scope.data;
+                //$scope.data = $scope.data.slice((params.page() - 1) * params.count(), params.page() * params.count());
+            }
+        });
 
-    $scope.orgChange = function(){
-        console.log("Selected Org: "+$scope.app.selectedOrg.name);
+    $scope.orgChange = function () {
+        console.log("Selected Org: " + $scope.app.selectedOrg.name);
         var key = $scope.stackatoOrgs.indexOf($scope.app.selectedOrg);
         $scope.stackatoSpace = $scope.stackatoOrgs[key].spaces;
         $scope.app.selectedSpace = $scope.stackatoSpace[0];
     };
-    
+
     var init = function () {
         $scope.spinnerData = "Loading page data..";
         $scope.loader.loading = true;
         var orgs = userProfile.stackato_config;
-        console.log("orgs: "+JSON.stringify(orgs));
+        console.log("orgs: " + JSON.stringify(orgs));
         $scope.stackatoOrgs = orgs;
         $scope.stackatoOrg = orgs;
         $scope.app.selectedOrg = orgs[0];
@@ -382,28 +378,28 @@ fihApp.controller('AddAppCtrl', function($scope, $window, $http, $resource, $loc
         $scope.app.selectedSpace = $scope.stackatoSpace[0];
         $scope.loader.loading = false;
 
-        var Apis = $resource('/fih/apis/name/'+$scope.apitype);
-        Apis.get(function(api){
-            console.log("APIs Details: "+JSON.stringify(api));
+        var Apis = $resource('/fih/apis/name/' + $scope.apitype);
+        Apis.get(function (api) {
+            console.log("APIs Details: " + JSON.stringify(api));
             $scope.apiDetails = api;
         });
     };
     init();
 });
 
-fihApp.factory('databaseListFactory', function($http) {
+fihApp.factory('databaseListFactory', function ($http) {
     var factoryResult = {
-        getDatabaseList: function() {
+        getDatabaseList: function () {
             var promise = $http({
-                method: 'GET', 
-                url: '/fih/dbconfig' 
-            }).success(function(data, status, headers, config) {
+                method: 'GET',
+                url: '/fih/dbconfig'
+            }).success(function (data, status, headers, config) {
                 return data;
             });
 
             return promise;
         }
-    }; 
+    };
 
     return factoryResult;
 });

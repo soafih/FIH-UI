@@ -60,7 +60,7 @@ html(ng-app='fihApp')
           ul.nav.navbar-nav.navbar-right
             li
               div.btn-group.header-welcome-msg(uib-dropdown, dropdown-append-to-body)
-                button.btn.btn-default(type="button", uib-dropdown-toggle, ng-click="loadUserData()") Welcome #{userId}
+                button.btn.btn-default(type="button", uib-dropdown-toggle, ng-click="loadUserData()") Welcome #{userId} 
                   span.caret
                   ul.dropdown-menu.header-userdetails(uib-dropdown-menu, role="menu")
                     li(role="menuitem") <strong>Name:</strong> {{userfullname}}
