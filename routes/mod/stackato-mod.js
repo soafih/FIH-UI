@@ -12,11 +12,10 @@ var PASSWORD = process.env.FIH_SVC_PASSWORD;
 
 module.exports = {
     getUserOrgs: function (guid, callback) {
-        console.log("Retrieving orgs from stackato..");
+        console.log("Retrieving orgs from stackato for user guid: "+guid);
         async.waterfall([
             getStackatoAccessTokenAsync,
             function getUsersOrganizations(accessToken, callbackOrg) {
-                console.log("getUsersOrganizations | Access Token: "+accessToken);
                 var headers = {
                     'Authorization': 'Bearer ' + accessToken
                 };
@@ -170,7 +169,7 @@ function getStackatoAccessTokenAsync(callback) {
 
             if (!error && (response.statusCode == 200)) {
                 var info = JSON.parse(body);
-                console.log("Access Token: " + JSON.stringify(info));
+                //console.log("Access Token: " + JSON.stringify(info));
                 callback(null, info.access_token);
             }
             else {

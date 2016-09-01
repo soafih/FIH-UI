@@ -37,10 +37,17 @@ router.get('/user', function(req, res) {
     else{
         getUserAuthDetails(username, userguid, function(err, response){
             if (err) {
+                console.log("Error in getting user details: "+err);
                 req.session.username = '';
                 req.session.guid = '';
                 req.session.isAuthenticated = false;
                 req.session.userobj = {};
+                if(err.code == 400){
+                    res.status(400).send({
+                        success: false,
+                        message: 'User Not Found!'
+                    });
+                }
                 res.status(503).send({
                     success: false,
                     message: 'Service Unavailable!'
@@ -74,30 +81,41 @@ function getUserAuthDetails(username, guid, callback){
                         {fields : {password:0, created_by: 0, creation_date:0, last_updated_by:0, last_update_date:0}} , function(err, user){
                         if (err) throw err;
                         console.log("1. getUserDetails | Completed. Error: ", err, " | result: ", JSON.stringify(user));
-                        callback(null, user);
+                        if(user){
+                            callback(null, user);
+                        }
+                        else{
+                            console.log("User Not Found");
+                            var error = new Error("User Not Found!");
+                            error.code = 400;
+                            callback(error, null);
+                        }
                     });
                 },
                 mapInheriredRoles
             ], 
             function (err, result) {
-                console.log("1. getUserDetails | Response: "+JSON.stringify(result));
-                //remove duplicate from permission array
-                result.permission = result.permission.filter(function(item, pos) {
-                    return result.permission.indexOf(item) == pos;
-                });
+                console.log("1. getUserDetails | error: "+err+" | Response: "+JSON.stringify(result));
+                if(result){
+                    //remove duplicate from permission array
+                    result.permission = result.permission.filter(function(item, pos) {
+                        return result.permission.indexOf(item) == pos;
+                    });
+                }
+                
                 callback(err, result);
             });
         },
         function (callback) {
-            console.log("Calling getUserOrgs");
+            console.log("Getting user org and spaces from stackato..");
             stackato.getUserOrgs(guid, function(err, res){
                 callback(err, res);
             });
         }
     ],
     function(err, results) {
-        console.log("Series Response: "+JSON.stringify(results));
-        if(results){
+        console.log("Series Response: | Error: "+err+" | Result: " +JSON.stringify(results));
+        if(results[0]){
             var response = results[0];
             response.stackato_config = results[1];
             callback(err, response);

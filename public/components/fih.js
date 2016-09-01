@@ -111,6 +111,9 @@ fihApp.service('APIInterceptor', function ($rootScope) {
         return response;
     };
     service.responseError = function (response) {
+         if (response.status === 400) {
+            $rootScope.$broadcast('usernotfound');
+        }
         if (response.status === 401 || response.status === 403) {
             $rootScope.$broadcast('unauthorized');
         }
@@ -146,6 +149,9 @@ fihApp.controller('MainCtrl', function ($rootScope, $scope, $window, $location, 
             $scope.userspaces = userSpaces.slice(0, -2);
         });
     };
+    $rootScope.$on('usernotfound', function(){
+        $window.alert("User details not found. Only API Market place will be visible to you. In case you need further access, please contact System Administrator.");
+    });
     $rootScope.$on('unauthorized', function () {
         $location.path('/forbidden');
     });
