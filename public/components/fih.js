@@ -1,4 +1,4 @@
-var fihApp = angular.module('fihApp', ['ngAnimate','ui.bootstrap', 'ngResource', 'ngRoute', 'ngTable', 'ngCookies', 'angular-storage','ngMaterial', 'angular-loading-bar']);
+var fihApp = angular.module('fihApp', ['ngAnimate','ui.bootstrap', 'cgPrompt', 'ngResource', 'ngRoute', 'ngTable', 'ngCookies', 'angular-storage','ngMaterial', 'angular-loading-bar']);
 fihApp.constant('AUTH_EVENTS', {
     notAuthenticated: 'auth-not-authenticated',
     notAuthorized: 'auth-not-authorized'
@@ -130,7 +130,7 @@ fihApp.controller('SidebarCtrl', function ($scope, $resource, $location) {
     };
 });
 
-fihApp.controller('MainCtrl', function ($rootScope, $scope, $window, $location, UserProfile) {
+fihApp.controller('MainCtrl', function ($rootScope, $scope, $window, $location, UserProfile, prompt) {
     $scope.showSidebarApps = true;
     $scope.showSidebarDashboard = true;
     $scope.loadUserData = function(){
@@ -149,14 +149,32 @@ fihApp.controller('MainCtrl', function ($rootScope, $scope, $window, $location, 
             $scope.userspaces = userSpaces.slice(0, -2);
         });
     };
+
+    $scope.openDialog = function(message){
+        prompt({
+            title: 'Alert!',
+            message: message,
+            "buttons": [
+                {
+                    "label": "Close",
+                    "cancel": false,
+                    "primary": false
+                }
+            ]
+        }).then(function(){
+            //he hit ok and not can,
+        });
+    };
+
     $rootScope.$on('usernotfound', function(){
-        $window.alert("User details not found. Only API Market place will be visible to you. In case you need further access, please contact System Administrator.");
+        $scope.openDialog('User details not found. Only API Market place will be visible to you. In case you need further access, please contact System Administrator.');
+        //$window.alert("");
     });
     $rootScope.$on('unauthorized', function () {
         $location.path('/forbidden');
     });
     $rootScope.$on('serviceunavailable', function () {
-        $window.alert("System seems to be responding slow. Please try after sometime.");
+        $scope.openDialog("System seems to be responding slow. Please try after sometime.");
     });
 });
 
