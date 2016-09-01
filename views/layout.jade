@@ -43,6 +43,7 @@ html(ng-app='fihApp')
     script(src='/components/apis/addapi.ctrl.js')
     script(src='/components/help/help.ctrl.js')
     script(src='/components/apis/apidetails.ctrl.js')
+	script(src='/components/dbconfig/dbconfig.ctrl.js')
   body(ng-controller="MainCtrl")
     div.spinner(ng-show="showSpinner")
       spinner(name='spinner6', group='bar', img-src='https://s3-us-west-2.amazonaws.com/s.cdpn.io/10607/spinner3.gif')
@@ -85,6 +86,8 @@ html(ng-app='fihApp')
               a(href='/#/apps') Applications/Integration Services
             li(ng-class="{active:isActive('/dashboard')}", ng-show="showSidebarDashboard")
               a(href='/#/dashboard') Dashboard
+			li(ng-class="{active:isActive('/dbconfig')}", ng-show="showSidebarDashboard")
+              a(href='/#/dbconfig') DB Config
           //ul.nav.nav-sidebar
             li
               a(href='') Nav item
