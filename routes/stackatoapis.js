@@ -1,20 +1,19 @@
 var express = require('express');
 var router = express.Router();
-var https = require('https');
+
 var querystring = require('querystring');
 var NodeCache = require( "node-cache" );
 var async = require('async');
 var request = require('request');
 var permCheck = require('./mod/permission-check');
 
-var stackatoCache = new NodeCache();
-var defaultTTL = 86399;
-var host = 'aok.stackato-poc.foxinc.com';
-var hostApi = 'api.stackato-poc.foxinc.com';
-var HOST_API_URL = 'https://api.stackato-poc.foxinc.com';
-var HOST_AOK_URL = 'https://aok.stackato-poc.foxinc.com';
-var username = process.env.FIH_SVC_USER;
-var password = process.env.FIH_SVC_PASSWORD;
+var STACKATO_CACHE = new NodeCache();
+
+var HOST_API_URL = process.env.STACKATO_API_URL;
+var HOST_AOK_URL = process.env.STACKATO_AOK_URL;
+var STACKATO_API_TIMEOUT = parseInt(process.env.STACKATO_API_TIMEOUT);
+var USERNAME = process.env.FIH_SVC_USER;
+var PASSWORD = process.env.FIH_SVC_PASSWORD;
 
 router.get('/apps', permCheck.checkPermission('app.view'), function (req, res) {
 
@@ -31,6 +30,7 @@ router.get('/apps/:appname', permCheck.checkPermission('app.view'), function (re
 
     console.log("Retrieving apps from stackato..");
     getStackatoAccessToken(function (response) {
+        console.log("Access Token:"+response);
         getAllApplications(response, function (response) {
             console.log("Array response: "+JSON.stringify(response));
             var app = response.data.apps.filter(function (apps) {
@@ -48,7 +48,6 @@ router.delete('/apps/:appguid', permCheck.checkPermission('app.delete'), functio
     getStackatoAccessToken(function (response) {
         deleteStackatoApp(response, appGuid, function (response) {
             console.log("Delete response: "+JSON.stringify(response));
-            //var response ={};
             res.json(response);
         });
     });
@@ -64,7 +63,7 @@ function deleteStackatoApp(accessToken, appGuid, callback) {
         }
     };
 
-    function resCallback(error, response, body) {
+    request(options, function resCallback(error, response, body) {
         console.log("Delete response code: "+response.statusCode);
         
         if (!error && (response.statusCode == 200 || response.statusCode == 404)) {
@@ -76,9 +75,7 @@ function deleteStackatoApp(accessToken, appGuid, callback) {
             console.log("Generating error response: " + JSON.parse(error));
             callback(generateErrorResponse(response, JSON.parse(body)));
         }
-    }
-
-    request(options, resCallback);
+    });
 }
 
 function generateSuccessResponse(response, resData){
@@ -92,7 +89,7 @@ function generateErrorResponse(response, resData){
 }
 
 function getAllApplications(accessToken, callback) {
-
+    console.log("Entered getAllApplications: "+accessToken);
     var options = {
         url: HOST_API_URL + '/v2/apps',
         headers: {
@@ -100,8 +97,9 @@ function getAllApplications(accessToken, callback) {
         }
     };
 
-    function resCallback(error, response, body) {
-        console.log("Get All Stackato response code: "+response.statusCode);
+    request(options, function resCallback(error, response, body) {
+        if(response)
+            console.log("Get All Stackato response code: "+response.statusCode);
         
         if (!error && (response.statusCode == 200)) {
             var info = JSON.parse(body);
@@ -118,45 +116,56 @@ function getAllApplications(accessToken, callback) {
             callback(generateSuccessResponse(response, {apps: resArr}));
         }
         else{
-            console.log("Generating error response: "+JSON.parse(error));
+            console.log("getAllApplications | Generating error response: "+JSON.parse(error));
             callback(generateErrorResponse(response, JSON.parse(body)));
         }
-    }
-
-    request(options, resCallback);
+    });
 }
 
 function getStackatoAccessToken(callback) {
+    console.log("Entered getStackatoAccessToken");
 
-    var cacheValue = stackatoCache.get("accessToken");
+    var cacheValue = STACKATO_CACHE.get("accessToken");
     if (cacheValue === undefined) {
 
         var inputOAuth = {
             "grant_type": "password",
-            "username": username,
-            "password": password
+            "username": USERNAME,
+            "password": PASSWORD
         };
 
         var dataString = querystring.stringify(inputOAuth);
-
-        var headers = {};
-        var method = 'POST';
-        headers = {
+        var headers = {
             'Authorization': 'Basic Y2Y6',
             'Content-Type': 'application/x-www-form-urlencoded',
             'Content-Length': Buffer.byteLength(dataString)
         };
 
-        performRequest(host, '/uaa/oauth/token', 'POST', dataString, headers, function (data) {
-            console.log("oAuth Response: " + JSON.stringify(data));
-            if (data.error) {
-                console.log("Error getting Stackato oAuth session");
-                throw data.error;
+        var options = {
+            headers: headers,
+            method: 'POST',
+            url: HOST_AOK_URL + '/uaa/oauth/token',
+            form: inputOAuth,
+            timeout: STACKATO_API_TIMEOUT
+        };
+
+        request(options, function (error, response, body) {
+            if (error && error.code === 'ETIMEDOUT') {
+                console.log("Cannot establish connection with stackato. Connection timeout: " + error.connect === true);
             }
             else {
-                var accessToken = data.access_token;
-                stackatoCache.set("accessToken", accessToken, data.expires_in);
-                callback(accessToken);
+                if (response)
+                    console.log("Stackato access token response code: " + JSON.parse(response.statusCode));
+            }
+
+            if (!error && (response.statusCode == 200)) {
+                var info = JSON.parse(body);
+                console.log("Access Token: " + JSON.stringify(info));
+                callback(info.access_token);
+            }
+            else {
+                console.log("Generating error response: " + error);
+                callback(error);
             }
         });
     }
@@ -166,6 +175,16 @@ function getStackatoAccessToken(callback) {
     }
 }
 
+
+router.get('/headertest', function (req, res) {
+    console.log("Session: "+JSON.stringify(req.session));
+    console.log("Username: "+req.session.username);
+    console.log('Cookies: ', req.cookies);
+    console.log("Request Headers: "+JSON.stringify(req.headers));
+    res.json(req.headers);
+});
+
+/*
 function performRequest(host, endpoint, method, dataString, headers, success) {
 
     if (method == 'GET') {
@@ -226,17 +245,8 @@ function performRequest(host, endpoint, method, dataString, headers, success) {
     req.end();
 }
 
-router.get('/headertest', function (req, res) {
-    console.log("Session: "+JSON.stringify(req.session));
-    console.log("Username: "+req.session.username);
-    console.log('Cookies: ', req.cookies);
-    console.log("Request Headers: "+JSON.stringify(req.headers));
-    res.json(req.headers);
-});
-
-/*
 router.get('/orgs', function (req, res) {
-    var cacheValue = stackatoCache.get("orgs");
+    var cacheValue = STACKATO_CACHE.get("orgs");
     if (cacheValue === undefined) {
         console.log("Retrieving orgs from stackato..");
         async.waterfall([
@@ -245,7 +255,7 @@ router.get('/orgs', function (req, res) {
             getOrgDetails
         ], function (err, result) {
             console.log("###### Sending response back: " + JSON.stringify(result));
-            stackatoCache.set("orgs", result, defaultTTL);
+            STACKATO_CACHE.set("orgs", result, DEFAULT_TTL);
             res.json(result);
         });
     }
@@ -287,7 +297,7 @@ router.get('/userorgs/:guid', function (req, res) {
         getOrgDetails
     ], function (err, result) {
         console.log("###### Sending response back: " + JSON.stringify(result));
-        stackatoCache.set("orgs", result, defaultTTL);
+        STACKATO_CACHE.set("orgs", result, DEFAULT_TTL);
         res.json(result);
     });
 
@@ -356,12 +366,12 @@ function getOrgDetails(accessToken, orgsArr, callback) {
 */
 /*
 router.get('/orgs_bkp', function (req, res) {
-    var cacheValue = stackatoCache.get( "orgs" );
+    var cacheValue = STACKATO_CACHE.get( "orgs" );
     if ( cacheValue === undefined ){
         console.log("Retrieving orgs from stackato..");
         getStackatoAccessToken(function(response){
             getAllOrganizations(response, function(response){
-                stackatoCache.set("orgs", response, defaultTTL);
+                STACKATO_CACHE.set("orgs", response, DEFAULT_TTL);
                 res.json(response);
             });
         });

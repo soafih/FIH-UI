@@ -31,6 +31,7 @@ html(ng-app='fihApp')
     script(src='https://cdnjs.cloudflare.com/ajax/libs/angular-material/1.1.0/angular-material.js')
     script(src='https://ajax.googleapis.com/ajax/libs/angularjs/1.4.4/angular-aria.min.js')
     script(src='https://cdnjs.cloudflare.com/ajax/libs/angular-loading-bar/0.9.0/loading-bar.min.js')
+    script(src='assets/javascripts/angular-prompt.js')
     script(src='/components/fih.js')
     script(src='/components/login/login.ctrl.js')
     script(src='/components/marketplace/marketplace.ctrl.js')
@@ -60,14 +61,14 @@ html(ng-app='fihApp')
           ul.nav.navbar-nav.navbar-right
             li
               div.btn-group.header-welcome-msg(uib-dropdown, dropdown-append-to-body)
-                button.btn.btn-default(type="button", uib-dropdown-toggle, ng-click="loadUserData()") Welcome #{userId}
+                button.btn.btn-default(type="button", uib-dropdown-toggle, ng-click="loadUserData()") Welcome #{userId} 
                   span.caret
                   ul.dropdown-menu.header-userdetails(uib-dropdown-menu, role="menu")
                     li(role="menuitem") <strong>Name:</strong> {{userfullname}}
-                    li(role="menuitem") <strong>Email:</strong> {{useremail}}
+                    li(role="menuitem", style="padding-top:5px;") <strong>Email:</strong> {{useremail}}
                     li.divider {{name}}
                     li(role="menuitem") <strong>Orgs:</strong> {{userorgs}}
-                    li(role="menuitem") <strong>Spaces:</strong> {{userspaces}}
+                    li(role="menuitem", style="padding-top:5px;") <strong>Spaces:</strong> {{userspaces}}
             li
               a(href='mailto:SOAEnterpriseTeam@fox.com?Subject=Fox%20Integration%20Hub%20Feedback' target='_top') Contact Us
             li

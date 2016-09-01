@@ -1,7 +1,6 @@
 
 fihApp.controller('AppDetailsCtrl', function ($scope, $routeParams, userProfile, $timeout, $resource, $location, $anchorScroll, $filter, $uibModal, $window, $http) {
     $scope.applicationName = $routeParams.appname;
-    $scope.showLabelAppDescr = true;
     $scope.showBtnDelete = userProfile.$hasPermission('app.delete');
     $scope.showBtnRestart = userProfile.$hasPermission('app.restart');
     $scope.showBtnRedeploy = userProfile.$hasPermission('app.deploy');
@@ -39,6 +38,15 @@ fihApp.controller('AppDetailsCtrl', function ($scope, $routeParams, userProfile,
     };
 
     $scope.saveImplDetails = function () {
+        if ($scope.appDetails.db_config.query == $scope.txtUpdatedQuery &&
+            $scope.appDetails.db_config.max_wait == $scope.txtMaxWait &&
+            $scope.appDetails.db_config.max_idle == $scope.txtMaxIdle &&
+            $scope.appDetails.db_config.max_active == $scope.txtMaxActive) {
+            $scope.showEditableImplFields = false;
+            $scope.showSavedMessage = false;
+            $scope.editMessage = "";
+            return;
+        }
         $scope.loader.loading = true;
         $scope.spinnerData = "Saving application data.. ";
         $scope.showEditableImplFields = false;
@@ -82,14 +90,12 @@ fihApp.controller('AppDetailsCtrl', function ($scope, $routeParams, userProfile,
     };
 
     $scope.editAppDescr = function () {
-        $scope.showLabelAppDescr = false;
         $scope.showTextAppDescr = true;
         $scope.updatedAppDesc = $scope.appDetails.descr;
     };
 
     $scope.saveAppDescr = function () {
 
-        $scope.showLabelAppDescr = true;
         $scope.showTextAppDescr = false;
 
         var updateObj = {
@@ -108,12 +114,11 @@ fihApp.controller('AppDetailsCtrl', function ($scope, $routeParams, userProfile,
     };
 
     $scope.cancelAppDescr = function () {
-        $scope.showLabelAppDescr = true;
         $scope.showTextAppDescr = false;
         $scope.updatedAppDesc = $scope.appDetails.descr;
     };
 
-    $scope.openDialog = function (action) {
+    $scope.openDialog = function (action, message) {
         console.log("Action being performed:" + action);
 
         var modalInstance = $uibModal.open({
@@ -124,6 +129,9 @@ fihApp.controller('AppDetailsCtrl', function ($scope, $routeParams, userProfile,
             resolve: {
                 action: function () {
                     return action;
+                },
+                message: function () {
+                    return message;
                 }
             }
         });
@@ -142,6 +150,10 @@ fihApp.controller('AppDetailsCtrl', function ($scope, $routeParams, userProfile,
     };
 
     $scope.redeployApp = function () {
+        if (!$scope.apiDetails.api_ep) {
+            $scope.openDialog("error", 'API endpoint is not defined. Application cannot be redeployed!\nPlease verify API type.');
+            return;
+        }
         $scope.loader.loading = true;
         $scope.spinnerData = "Processing application data for redeployment.. ";
         var appObjectId = $scope.appDetails._id;
@@ -207,7 +219,7 @@ fihApp.controller('AppDetailsCtrl', function ($scope, $routeParams, userProfile,
                         AppUpdate.save(updateObj, function (res) {
                             $scope.loader.loading = false;
                             console.log("Successfully updated App status: " + JSON.stringify(res));
-                            redirectUrl = '/#/appstatus?apitype=' + $scope.appDetails.api_type + '&appname=' + $scope.appDetails.name + '&appId=' + appObjectId + '&buildappstatus=queued&buildidentifier=' + updateObj.build_identifier;
+                            redirectUrl = '/#/appstatus?appId=' + appObjectId;
                             console.log("URL to redirect: " + redirectUrl);
                             $window.location.href = redirectUrl;
                         },
@@ -221,7 +233,7 @@ fihApp.controller('AppDetailsCtrl', function ($scope, $routeParams, userProfile,
                         AppUpdate.save(updateObj, function (res) {
                             $scope.loader.loading = false;
                             console.log("Successfully updated App status: " + JSON.stringify(res));
-                            redirectUrl = '/#/appstatus?apitype=' + $scope.appDetails.api_type + '&appname=' + $scope.appDetails.name + '&appId=' + appObjectId + '&buildappstatus=wip&buildno=' + updateObj.build_number + '&buildurl=' + encodeURIComponent(updateObj.build_url);
+                            redirectUrl = '/#/appstatus?appId=' + appObjectId;
                             console.log("URL to redirect: " + redirectUrl);
                             $window.location.href = redirectUrl;
                         },
@@ -248,7 +260,7 @@ fihApp.controller('AppDetailsCtrl', function ($scope, $routeParams, userProfile,
             };
             var AppUpdate = $resource('/fih/apps/updateStatus');
             AppUpdate.save(updateObj, function (res) {
-                var redirectUrl = '/#/appstatus?apitype=' + $scope.appDetails.api_type + '&appname=' + $scope.appDetails.name + '&appId=' + appObjectId + '&buildappstatus=failed&reason=' + error;
+                var redirectUrl = '/#/appstatus?appId=' + appObjectId + '&reason=' + error;
                 console.log("URL to redirect: " + redirectUrl);
                 $window.location.href = redirectUrl;
             },
@@ -269,105 +281,118 @@ fihApp.controller('AppDetailsCtrl', function ($scope, $routeParams, userProfile,
                 AppService.delete(function (res) {
                     console.log("Deleted App: " + res);
                     $scope.loader.loading = false;
-                    $scope.openDialog("deleteCompleted");
+                    $scope.openDialog("deleteCompleted", 'Application deleted successfully!');
                     $location.path('/#/apps');
                 });
             }
             else {
                 $scope.loader.loading = false;
-                if (res.message) {
-                    console.log("App Deletion failed with reason: "+res.message);
-                    $scope.openDialog("deleteFailed");
+                if (res.status_code == 401 || res.status_code == 403) {
+                    return;
                 }
-                else {
-                    $scope.openDialog("deleteFailed");
+                else{
+                    if (res.message) {
+                        console.log("App Deletion failed with reason: " + res.message);
+                        $scope.openDialog("deleteFailed", 'App Deletion failed with reason: ' + res.message);
+                    }
+                    else {
+                        $scope.openDialog("deleteFailed", 'App Deletion failed!');
+                    }
                 }
             }
         });
+    };
+
+    $scope.showAppLogs = function () {
+        var redirectUrl = '/appstatus?appId=' + $scope.appDetails._id;
+        console.log("URL to redirect: " + redirectUrl);
+        $location.path(redirectUrl);
+        //$window.location.href = redirectUrl;
     };
 
     var init = function () {
 
-        var StackatoService = $resource('/fih/stackatoapis/apps/' + $scope.applicationName);
-        StackatoService.get(function (app) {
-            console.log("APP GUID: " + app.guid);
-            $scope.appGUID = app.guid;
-        });
-
         var AppService = $resource('/fih/apps/name/' + $scope.applicationName);
         AppService.get(function (appDetails) {
             console.log("Fetched app details: " + JSON.stringify(appDetails));
+            if (appDetails._id) {
+                var Apis = $resource('/fih/apis/name/' + appDetails.api_type);
+                Apis.get(function (api) {
+                    $scope.apiDetails = api;
+                    console.log("Fetched api details: " + JSON.stringify($scope.apiDetails));
+                });
 
-            var Apis = $resource('/fih/apis/name/' + appDetails.api_type);
-            Apis.get(function (api) {
-                $scope.apiDetails = api;
-                console.log("Fetched api details: " + JSON.stringify($scope.apiDetails));
-            });
+                var StackatoService = $resource('/fih/stackatoapis/apps/' + $scope.applicationName);
+                StackatoService.get(function (app) {
+                    console.log("APP GUID: " + app.guid);
+                    $scope.appGUID = app.guid;
+                });
 
-            $scope.appDetails = appDetails;
-            $scope.appSummary = [
-                { "API Type": appDetails.api_type },
-                { "API Version": appDetails.api_ver },
-                { "Status": appDetails.status },
-                { "Stage": appDetails.stage },
-                { "Created": $filter('date')(appDetails.created_date, "yyyy-MM-dd HH:mm:ss") },
-                { "Created By": appDetails.created_by },
-                { "Last Updated": $filter('date')(appDetails.last_updated_date, "yyyy-MM-dd HH:mm:ss") },
-                { "Last Updated By": appDetails.last_updated_by }
-            ];
+                appDetails.created_date = $filter('date')(appDetails.created_date, "yyyy-MM-dd HH:mm:ss");
+                appDetails.last_updated_date = $filter('date')(appDetails.last_updated_date, "yyyy-MM-dd HH:mm:ss");
+                $scope.appDetails = appDetails;
 
-            var DBService = $resource('/fih/dbconfig/name/' + appDetails.db_config.db_name);
-            DBService.get(function (dbconfig) {
-                console.log("Fetched database details: " + JSON.stringify(dbconfig));
-                $scope.databaseInfo = dbconfig;
-                $scope.dbDetails = [
-                    { "Name": dbconfig.db_name },
-                    { "Type": dbconfig.db_type },
-                    { "Host": dbconfig.host },
-                    { "Port": dbconfig.port },
-                    { "User": dbconfig.uname },
-                    { "Schema": dbconfig.schema }
-                ];
-                $scope.loader.loading = false;
-            });
-            console.log("appDetails.dirty: " + $scope.appDetails.dirty);
-            if ($scope.appDetails.dirty == true) {
-                console.log('Dirty App');
-                $scope.addAlert('App changes pending. Redeploy to reflect changes!');
+                var DBService = $resource('/fih/dbconfig/name/' + appDetails.db_config.db_name);
+                DBService.get(function (dbconfig) {
+                    console.log("Fetched database details: " + JSON.stringify(dbconfig));
+                    $scope.databaseInfo = dbconfig;
+                    $scope.dbDetails = [
+                        { "Name": dbconfig.db_name },
+                        { "Type": dbconfig.db_type },
+                        { "Host": dbconfig.host },
+                        { "Port": dbconfig.port },
+                        { "User": dbconfig.uname },
+                        { "Schema": dbconfig.schema }
+                    ];
+                    $scope.loader.loading = false;
+                });
+                console.log("appDetails.dirty: " + $scope.appDetails.dirty);
+                if ($scope.appDetails.dirty === true) {
+                    console.log('Dirty App');
+                    $scope.addAlert('App changes pending. Redeploy to reflect changes!');
+                }
             }
-
-
+            else{
+                $scope.openDialog("error", "Application not found! Please selected one of listed Applications / Integration Services");
+                $location.path('/apps');
+                return;
+            }
         });
-
     };
-
     init();
 });
 
-fihApp.controller('AppDetailModalInstanceCtrl', function ($scope, $uibModalInstance, action) {
+fihApp.controller('AppDetailModalInstanceCtrl', function ($scope, $uibModalInstance, action, message) {
     console.log('Action Ctrl:' + action);
+    $scope.btnCancelText = "Cancel";
+    $scope.modalMessage = message;
     if (action === 'delete') {
+        $scope.modalTitleStyle = "amber";
         $scope.modalTitle = 'Delete Application';
-        $scope.modalMessage = 'All application data will be deleted. This action cannot be undone!';
         $scope.modalActionBtnText = 'Delete';
         $scope.modalActionBtnType = 'btn-danger';
     }
     else if (action === 'redeploy') {
+        $scope.modalTitleStyle = "grey";
         $scope.modalTitle = 'Redeploy Application';
-        $scope.modalMessage = 'Application redeployment request will be triggered!';
         $scope.modalActionBtnText = 'Redeploy';
         $scope.modalActionBtnType = 'btn-primary';
     }
     else if (action === 'deleteCompleted') {
-        $scope.modalTitle = 'Message Box';
-        $scope.modalMessage = 'Application deleted successfully.!';
-        $scope.modalHideActionBtn = true; 
+        $scope.modalTitleStyle = "green";
+        $scope.modalTitle = 'Alert';
+        $scope.modalHideActionBtn = true;
     }
     else if (action === 'deleteFailed') {
         $scope.modalTitleStyle = "red";
-        $scope.modalTitle = 'Message Box';
-        $scope.modalMessage = 'Application deletion failed.!';
-        $scope.modalHideActionBtn = true; 
+        $scope.modalTitle = 'Alert';
+        $scope.modalHideActionBtn = true;
+    }
+    else if (action === 'error') {
+        $scope.modalTitleStyle = "red";
+        $scope.modalTitle = 'Alert';
+        $scope.modalHideActionBtn = true;
+        $scope.btnCancelText = "Close";
     }
 
     $scope.ok = function () {

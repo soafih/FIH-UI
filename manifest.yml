@@ -2,8 +2,11 @@ applications:
 - name: FoxIntegrationHub
   instances: 1
   memory: 512M
-  services:
-    fihmdb: mongodb
   env:
     FIH_SVC_USER: dummy
     FIH_SVC_PASSWORD: dummy
+    STACKATO_API_URL: https://api.stackato-poc.foxinc.com
+    STACKATO_AOK_URL: https://aok.stackato-poc.foxinc.com
+    STACKATO_API_TIMEOUT: 150000
+    SESSION_SECRET_KEY: "dummySecretKey"
+    MONGODB_CONN_STR: "dummyConnStr"

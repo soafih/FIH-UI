@@ -8,7 +8,7 @@ module.exports = {
         return function (req, res, next) {
             var response = false;
             console.log('##### Check Permission: ' + req.session.username);
-            console.log("User Obj: " + JSON.stringify(req.session.userobj));
+            //console.log("User Obj: " + JSON.stringify(req.session.userobj));
             console.log("resource: " + resource);
             var userProfile = req.session.userobj;
             if (userProfile.permission.indexOf(resource) >= 0) {

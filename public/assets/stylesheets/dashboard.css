@@ -36,6 +36,15 @@ body h4{
 .green {
   color: green;
 }
+.amber {
+  color: 	#FFBF00;
+}
+.blue {
+  color: 	blue;
+}
+.grey{
+  color: #595959;
+}
 
 .header-userdetails {
   font-size: 12px;
@@ -120,8 +129,8 @@ div.modal-footer button.btn.btn-info{
 
 .modal-dialog.modal-sm{
     position: center;
-    width:500px;
-    margin-top:50px;
+    width: 500px;
+    margin-top: 30px;
 }
 
 .modal-dialog.modal-md{
@@ -144,6 +153,11 @@ div.modal-footer button.btn.btn-info{
 
 .modal-header{
   margin-top: 30px;
+}
+
+.modal-title.prompt{
+  font-size: 18px;
+  font-family: Tahoma;
 }
 
 body .modal-header{
@@ -183,6 +197,10 @@ body .modal-header{
    content:"*";
    color:red;
 } 
+
+.row.app-details{
+  margin-top: 10px; padding-right: 5px;
+}
 
 /*
  * Global add-ons
