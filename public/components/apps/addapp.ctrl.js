@@ -380,8 +380,17 @@ fihApp.controller('AddAppCtrl', function ($scope, $window, $http, $resource, $lo
 
         var Apis = $resource('/fih/apis/name/' + $scope.apitype);
         Apis.get(function (api) {
-            console.log("APIs Details: " + JSON.stringify(api));
-            $scope.apiDetails = api;
+            if(api.name){
+                console.log("APIs Details: " + JSON.stringify(api));
+                $scope.apiDetails = api;
+            }
+            else{
+                $scope.errorMsgs = [];
+                $scope.errorMsgs.push({ error: "API not found! Please select one of the listed API from Marketplace." });
+                $scope.validationModal();
+                $location.path('/');
+                return;
+            }
         });
     };
     init();

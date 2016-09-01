@@ -353,7 +353,7 @@ fihApp.controller('AppDetailsCtrl', function ($scope, $routeParams, userProfile,
                 }
             }
             else{
-                $scope.openDialog("error", "Application not found!");
+                $scope.openDialog("error", "Application not found! Please selected one of listed Applications / Integration Services");
                 $location.path('/apps');
                 return;
             }
