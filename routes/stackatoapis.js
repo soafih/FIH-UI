@@ -1,18 +1,19 @@
 var express = require('express');
 var router = express.Router();
-var https = require('https');
+
 var querystring = require('querystring');
 var NodeCache = require( "node-cache" );
 var async = require('async');
 var request = require('request');
 var permCheck = require('./mod/permission-check');
 
-var stackatoCache = new NodeCache();
+var STACKATO_CACHE = new NodeCache();
+
 var HOST_API_URL = process.env.STACKATO_API_URL;
 var HOST_AOK_URL = process.env.STACKATO_AOK_URL;
 var STACKATO_API_TIMEOUT = parseInt(process.env.STACKATO_API_TIMEOUT);
-var username = process.env.FIH_SVC_USER;
-var password = process.env.FIH_SVC_PASSWORD;
+var USERNAME = process.env.FIH_SVC_USER;
+var PASSWORD = process.env.FIH_SVC_PASSWORD;
 
 router.get('/apps', permCheck.checkPermission('app.view'), function (req, res) {
 
@@ -122,15 +123,15 @@ function getAllApplications(accessToken, callback) {
 }
 
 function getStackatoAccessToken(callback) {
-console.log("Entered getStackatoAccessToken");
+    console.log("Entered getStackatoAccessToken");
 
-    var cacheValue = stackatoCache.get("accessToken");
+    var cacheValue = STACKATO_CACHE.get("accessToken");
     if (cacheValue === undefined) {
 
         var inputOAuth = {
             "grant_type": "password",
-            "username": username,
-            "password": password
+            "username": USERNAME,
+            "password": PASSWORD
         };
 
         var dataString = querystring.stringify(inputOAuth);
@@ -174,6 +175,16 @@ console.log("Entered getStackatoAccessToken");
     }
 }
 
+
+router.get('/headertest', function (req, res) {
+    console.log("Session: "+JSON.stringify(req.session));
+    console.log("Username: "+req.session.username);
+    console.log('Cookies: ', req.cookies);
+    console.log("Request Headers: "+JSON.stringify(req.headers));
+    res.json(req.headers);
+});
+
+/*
 function performRequest(host, endpoint, method, dataString, headers, success) {
 
     if (method == 'GET') {
@@ -234,17 +245,8 @@ function performRequest(host, endpoint, method, dataString, headers, success) {
     req.end();
 }
 
-router.get('/headertest', function (req, res) {
-    console.log("Session: "+JSON.stringify(req.session));
-    console.log("Username: "+req.session.username);
-    console.log('Cookies: ', req.cookies);
-    console.log("Request Headers: "+JSON.stringify(req.headers));
-    res.json(req.headers);
-});
-
-/*
 router.get('/orgs', function (req, res) {
-    var cacheValue = stackatoCache.get("orgs");
+    var cacheValue = STACKATO_CACHE.get("orgs");
     if (cacheValue === undefined) {
         console.log("Retrieving orgs from stackato..");
         async.waterfall([
@@ -253,7 +255,7 @@ router.get('/orgs', function (req, res) {
             getOrgDetails
         ], function (err, result) {
             console.log("###### Sending response back: " + JSON.stringify(result));
-            stackatoCache.set("orgs", result, DEFAULT_TTL);
+            STACKATO_CACHE.set("orgs", result, DEFAULT_TTL);
             res.json(result);
         });
     }
@@ -295,7 +297,7 @@ router.get('/userorgs/:guid', function (req, res) {
         getOrgDetails
     ], function (err, result) {
         console.log("###### Sending response back: " + JSON.stringify(result));
-        stackatoCache.set("orgs", result, DEFAULT_TTL);
+        STACKATO_CACHE.set("orgs", result, DEFAULT_TTL);
         res.json(result);
     });
 
@@ -364,12 +366,12 @@ function getOrgDetails(accessToken, orgsArr, callback) {
 */
 /*
 router.get('/orgs_bkp', function (req, res) {
-    var cacheValue = stackatoCache.get( "orgs" );
+    var cacheValue = STACKATO_CACHE.get( "orgs" );
     if ( cacheValue === undefined ){
         console.log("Retrieving orgs from stackato..");
         getStackatoAccessToken(function(response){
             getAllOrganizations(response, function(response){
-                stackatoCache.set("orgs", response, DEFAULT_TTL);
+                STACKATO_CACHE.set("orgs", response, DEFAULT_TTL);
                 res.json(response);
             });
         });
