@@ -25,13 +25,16 @@ fihApp.controller('AppStatusCtrl', function($scope, $resource, $window, $routePa
     };
     
     $scope.toggleIFrame = false;
+   
     $scope.toggleDisplayLogs = function(){
         $scope.toggleIFrame = !$scope.toggleIFrame;
         if($scope.toggleIFrame){
             $scope.showLogText = 'Hide Logs';
+            $scope.hideLogText = 'Show Logs';
         }
         else{
             $scope.showLogText = 'Show Logs';
+            $scope.hideLogText = 'Hide Logs';
         }
     };
 

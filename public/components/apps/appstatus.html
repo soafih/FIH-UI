@@ -20,8 +20,8 @@
 </div>
 <div ng-show="appCurrentState == 'Failed'">
     <p class="red">Application build failed. <a href="/#/appdetails/{{appName}}">Click here</a> to view/update application details.</p>
-    <button style="border:0; margin-top:5px;" type="button" class="btn btn-success btn-transparent" ng-init="showLogText = 'Show Logs'" ng-click="toggleDisplayLogs()">{{showLogText}}</button>
-    <div ng-show="toggleIFrame">
+    <button style="border:0; margin-top:5px;" type="button" class="btn btn-success btn-transparent" ng-init="hideLogText = 'Hide Logs'" ng-click="toggleDisplayLogs()">{{hideLogText}}</button>
+    <div ng-hide="toggleIFrame">
         <iframe name="logConsole" id="logConsole" style="height:500px; width:100%" ng-src="{{buildUrl}}">
             Something wrong...
         </iframe>
