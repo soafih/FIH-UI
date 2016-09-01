@@ -1,8 +1,10 @@
 var express = require('express');
 var router = express.Router();
+
+var async = require('async');
 var stackato = require('./mod/stackato-mod');
 var permCheck = require('./mod/permission-check');
-var async = require('async');
+
 var db = {};
 
 router.get('/userdetail/:username/:guid', function(req, res) {
