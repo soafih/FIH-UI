@@ -6,15 +6,12 @@ var NodeCache = require("node-cache");
 var async = require('async');
 var request = require('request');
 var stackatoCache = new NodeCache();
-var defaultTTL = 86399;
 
-var host = 'aok.stackato-poc.foxinc.com';
-var hostApi = 'api.stackato-poc.foxinc.com';
-var HOST_API_URL = 'https://api.stackato-poc.foxinc.com';
-var HOST_AOK_URL = 'https://aok.stackato-poc.foxinc.com';
-var STACKATO_API_TIMEOUT = 150000;
-var username = process.env.FIH_SVC_USER;
-var password = process.env.FIH_SVC_PASSWORD;
+var HOST_API_URL = process.env.STACKATO_API_URL;
+var HOST_AOK_URL = process.env.STACKATO_AOK_URL;
+var STACKATO_API_TIMEOUT = parseInt(process.env.STACKATO_API_TIMEOUT);
+var USERNAME = process.env.FIH_SVC_USER;
+var PASSWORD = process.env.FIH_SVC_PASSWORD;
 
 module.exports = {
     getUserOrgs: function (guid, callback) {
@@ -183,8 +180,8 @@ function getStackatoAccessTokenAsync(callback) {
 
         var inputOAuth = {
             "grant_type": "password",
-            "username": username,
-            "password": password
+            "username": USERNAME,
+            "password": PASSWORD
         };
 
         var dataString = querystring.stringify(inputOAuth);

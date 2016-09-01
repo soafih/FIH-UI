@@ -8,12 +8,9 @@ var request = require('request');
 var permCheck = require('./mod/permission-check');
 
 var stackatoCache = new NodeCache();
-var defaultTTL = 86399;
-var host = 'aok.stackato-poc.foxinc.com';
-var hostApi = 'api.stackato-poc.foxinc.com';
-var HOST_API_URL = 'https://api.stackato-poc.foxinc.com';
-var HOST_AOK_URL = 'https://aok.stackato-poc.foxinc.com';
-var STACKATO_API_TIMEOUT = 150000;
+var HOST_API_URL = process.env.STACKATO_API_URL;
+var HOST_AOK_URL = process.env.STACKATO_AOK_URL;
+var STACKATO_API_TIMEOUT = parseInt(process.env.STACKATO_API_TIMEOUT);
 var username = process.env.FIH_SVC_USER;
 var password = process.env.FIH_SVC_PASSWORD;
 
@@ -50,7 +47,6 @@ router.delete('/apps/:appguid', permCheck.checkPermission('app.delete'), functio
     getStackatoAccessToken(function (response) {
         deleteStackatoApp(response, appGuid, function (response) {
             console.log("Delete response: "+JSON.stringify(response));
-            //var response ={};
             res.json(response);
         });
     });
@@ -257,7 +253,7 @@ router.get('/orgs', function (req, res) {
             getOrgDetails
         ], function (err, result) {
             console.log("###### Sending response back: " + JSON.stringify(result));
-            stackatoCache.set("orgs", result, defaultTTL);
+            stackatoCache.set("orgs", result, DEFAULT_TTL);
             res.json(result);
         });
     }
@@ -299,7 +295,7 @@ router.get('/userorgs/:guid', function (req, res) {
         getOrgDetails
     ], function (err, result) {
         console.log("###### Sending response back: " + JSON.stringify(result));
-        stackatoCache.set("orgs", result, defaultTTL);
+        stackatoCache.set("orgs", result, DEFAULT_TTL);
         res.json(result);
     });
 
@@ -373,7 +369,7 @@ router.get('/orgs_bkp', function (req, res) {
         console.log("Retrieving orgs from stackato..");
         getStackatoAccessToken(function(response){
             getAllOrganizations(response, function(response){
-                stackatoCache.set("orgs", response, defaultTTL);
+                stackatoCache.set("orgs", response, DEFAULT_TTL);
                 res.json(response);
             });
         });
