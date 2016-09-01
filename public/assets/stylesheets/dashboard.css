@@ -155,6 +155,11 @@ div.modal-footer button.btn.btn-info{
   margin-top: 30px;
 }
 
+.modal-title.prompt{
+  font-size: 18px;
+  font-family: Tahoma;
+}
+
 body .modal-header{
   color: 212121;
 }

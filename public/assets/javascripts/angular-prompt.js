@@ -106,10 +106,10 @@ angular.module('cgPrompt').run(['$templateCache', function($templateCache) {
   'use strict';
 
   $templateCache.put('angular-prompt.html',
-    "<div>\n" +
+    "<div class=\"modal-dialog modal-sm\">\n" +
     "    <div class=\"modal-header\">\n" +
     "        <button type=\"button\" class=\"close pull-right\" ng-click=\"$dismiss()\" aria-hidden=\"true\">×</button>\n" +
-    "        <h4 class=\"modal-title red\">{{options.title}}</h4>\n" +
+    "        <h4 class=\"modal-title prompt red\">{{options.title}}</h4>\n" +
     "    </div>\n" +
     "    <div class=\"modal-body\">\n" +
     "\n" +
