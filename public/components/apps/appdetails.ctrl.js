@@ -42,10 +42,10 @@ fihApp.controller('AppDetailsCtrl', function ($scope, $routeParams, userProfile,
             $scope.appDetails.db_config.max_wait == $scope.txtMaxWait &&
             $scope.appDetails.db_config.max_idle == $scope.txtMaxIdle &&
             $scope.appDetails.db_config.max_active == $scope.txtMaxActive) {
-                $scope.showEditableImplFields = false;
-                $scope.showSavedMessage = false;
-                $scope.editMessage = "";
-                return;
+            $scope.showEditableImplFields = false;
+            $scope.showSavedMessage = false;
+            $scope.editMessage = "";
+            return;
         }
         $scope.loader.loading = true;
         $scope.spinnerData = "Saving application data.. ";
@@ -130,7 +130,7 @@ fihApp.controller('AppDetailsCtrl', function ($scope, $routeParams, userProfile,
                 action: function () {
                     return action;
                 },
-                message: function(){
+                message: function () {
                     return message;
                 }
             }
@@ -150,7 +150,7 @@ fihApp.controller('AppDetailsCtrl', function ($scope, $routeParams, userProfile,
     };
 
     $scope.redeployApp = function () {
-        if(!$scope.apiDetails.api_ep){
+        if (!$scope.apiDetails.api_ep) {
             $scope.openDialog("error", 'API endpoint is not defined. Application cannot be redeployed!\nPlease verify API type.');
             return;
         }
@@ -287,12 +287,17 @@ fihApp.controller('AppDetailsCtrl', function ($scope, $routeParams, userProfile,
             }
             else {
                 $scope.loader.loading = false;
-                if (res.message) {
-                    console.log("App Deletion failed with reason: "+res.message);
-                    $scope.openDialog("deleteFailed", 'App Deletion failed with reason: '+res.message);
+                if (res.status_code == 401 || res.status_code == 403) {
+                    return;
                 }
-                else {
-                    $scope.openDialog("deleteFailed", 'App Deletion failed!');
+                else{
+                    if (res.message) {
+                        console.log("App Deletion failed with reason: " + res.message);
+                        $scope.openDialog("deleteFailed", 'App Deletion failed with reason: ' + res.message);
+                    }
+                    else {
+                        $scope.openDialog("deleteFailed", 'App Deletion failed!');
+                    }
                 }
             }
         });
@@ -307,61 +312,70 @@ fihApp.controller('AppDetailsCtrl', function ($scope, $routeParams, userProfile,
 
     var init = function () {
 
-        var StackatoService = $resource('/fih/stackatoapis/apps/' + $scope.applicationName);
-        StackatoService.get(function (app) {
-            console.log("APP GUID: " + app.guid);
-            $scope.appGUID = app.guid;
-        });
-
         var AppService = $resource('/fih/apps/name/' + $scope.applicationName);
         AppService.get(function (appDetails) {
             console.log("Fetched app details: " + JSON.stringify(appDetails));
+            if (appDetails._id) {
+                var Apis = $resource('/fih/apis/name/' + appDetails.api_type);
+                Apis.get(function (api) {
+                    $scope.apiDetails = api;
+                    console.log("Fetched api details: " + JSON.stringify($scope.apiDetails));
+                });
 
-            var Apis = $resource('/fih/apis/name/' + appDetails.api_type);
-            Apis.get(function (api) {
-                $scope.apiDetails = api;
-                console.log("Fetched api details: " + JSON.stringify($scope.apiDetails));
-            });
-            appDetails.created_date = $filter('date')(appDetails.created_date, "yyyy-MM-dd HH:mm:ss");
-            appDetails.last_updated_date = $filter('date')(appDetails.last_updated_date, "yyyy-MM-dd HH:mm:ss");
-            $scope.appDetails = appDetails;
-            $scope.appSummary = [
-                { "API Type": appDetails.api_type },
-                { "API Version": appDetails.api_ver },
-                { "Status": appDetails.status },
-                { "Stage": appDetails.stage },
-                { "Created": $filter('date')(appDetails.created_date, "yyyy-MM-dd HH:mm:ss") },
-                { "Created By": appDetails.created_by },
-                { "Last Updated": $filter('date')(appDetails.last_updated_date, "yyyy-MM-dd HH:mm:ss") },
-                { "Last Updated By": appDetails.last_updated_by }
-            ];
+                var StackatoService = $resource('/fih/stackatoapis/apps/' + $scope.applicationName);
+                StackatoService.get(function (app) {
+                    console.log("APP GUID: " + app.guid);
+                    $scope.appGUID = app.guid;
+                });
 
-            var DBService = $resource('/fih/dbconfig/name/' + appDetails.db_config.db_name);
-            DBService.get(function (dbconfig) {
-                console.log("Fetched database details: " + JSON.stringify(dbconfig));
-                $scope.databaseInfo = dbconfig;
-                $scope.dbDetails = [
-                    { "Name": dbconfig.db_name },
-                    { "Type": dbconfig.db_type },
-                    { "Host": dbconfig.host },
-                    { "Port": dbconfig.port },
-                    { "User": dbconfig.uname },
-                    { "Schema": dbconfig.schema }
-                ];
-                $scope.loader.loading = false;
-            });
-            console.log("appDetails.dirty: " + $scope.appDetails.dirty);
-            if ($scope.appDetails.dirty == true) {
-                console.log('Dirty App');
-                $scope.addAlert('App changes pending. Redeploy to reflect changes!');
+                appDetails.created_date = $filter('date')(appDetails.created_date, "yyyy-MM-dd HH:mm:ss");
+                appDetails.last_updated_date = $filter('date')(appDetails.last_updated_date, "yyyy-MM-dd HH:mm:ss");
+                $scope.appDetails = appDetails;
+
+                var DBService = $resource('/fih/dbconfig/name/' + appDetails.db_config.db_name);
+                DBService.get(function (dbconfig) {
+                    console.log("Fetched database details: " + JSON.stringify(dbconfig));
+                    $scope.databaseInfo = dbconfig;
+                    $scope.dbDetails = [
+                        { "Name": dbconfig.db_name },
+                        { "Type": dbconfig.db_type },
+                        { "Host": dbconfig.host },
+                        { "Port": dbconfig.port },
+                        { "User": dbconfig.uname },
+                        { "Schema": dbconfig.schema }
+                    ];
+                    $scope.loader.loading = false;
+                });
+                console.log("appDetails.dirty: " + $scope.appDetails.dirty);
+                if ($scope.appDetails.dirty === true) {
+                    console.log('Dirty App');
+                    $scope.addAlert('App changes pending. Redeploy to reflect changes!');
+                }
+            }
+            else{
+                $scope.openDialog("error", "Application not found!");
+                $location.path('/apps');
+                return;
             }
         });
     };
     init();
 });
 
+function isEmpty(obj) {
+    for(var prop in obj) {
+        if(obj.hasOwnProperty(prop)){
+            console.log("returning false");
+            return false;
+        }
+    }
+    console.log(JSON.stringify(obj));
+    return true;
+}
+
 fihApp.controller('AppDetailModalInstanceCtrl', function ($scope, $uibModalInstance, action, message) {
     console.log('Action Ctrl:' + action);
+    $scope.btnCancelText = "Cancel";
     $scope.modalMessage = message;
     if (action === 'delete') {
         $scope.modalTitleStyle = "amber";
@@ -378,17 +392,18 @@ fihApp.controller('AppDetailModalInstanceCtrl', function ($scope, $uibModalInsta
     else if (action === 'deleteCompleted') {
         $scope.modalTitleStyle = "green";
         $scope.modalTitle = 'Alert';
-        $scope.modalHideActionBtn = true; 
+        $scope.modalHideActionBtn = true;
     }
     else if (action === 'deleteFailed') {
         $scope.modalTitleStyle = "red";
         $scope.modalTitle = 'Alert';
-        $scope.modalHideActionBtn = true; 
+        $scope.modalHideActionBtn = true;
     }
     else if (action === 'error') {
         $scope.modalTitleStyle = "red";
         $scope.modalTitle = 'Alert';
-        $scope.modalHideActionBtn = true; 
+        $scope.modalHideActionBtn = true;
+        $scope.btnCancelText = "Close";
     }
 
     $scope.ok = function () {
