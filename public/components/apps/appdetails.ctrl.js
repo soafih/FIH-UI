@@ -362,17 +362,6 @@ fihApp.controller('AppDetailsCtrl', function ($scope, $routeParams, userProfile,
     init();
 });
 
-function isEmpty(obj) {
-    for(var prop in obj) {
-        if(obj.hasOwnProperty(prop)){
-            console.log("returning false");
-            return false;
-        }
-    }
-    console.log(JSON.stringify(obj));
-    return true;
-}
-
 fihApp.controller('AppDetailModalInstanceCtrl', function ($scope, $uibModalInstance, action, message) {
     console.log('Action Ctrl:' + action);
     $scope.btnCancelText = "Cancel";
