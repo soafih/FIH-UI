@@ -87,6 +87,15 @@ fihApp.config(['$routeProvider', '$httpProvider', function ($routeProvider, $htt
                 access: ["Access", function (Access) { return Access.hasRole("app_developer"); }]
             }
         })
+		.when('/dbconfig', {
+            templateUrl: 'components/dbconfig/dbconfig.html',
+            controller: 'dbconfigctrl',
+            resolve: {
+                userProfile: "UserProfile",
+                access: ["Access", function (Access) { return Access.hasRole("app_developer"); }]
+            }
+        })
+		
         .otherwise({
             redirectTo: '/'
         });

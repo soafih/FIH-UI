@@ -121,6 +121,14 @@ div.modal-footer button.btn.btn-info{
   background-color: #455A64;
   color: #ECEFF1;
 }
+
+
+.btn.btn-info.btn-md.col-md-2.pull-right {
+  margin-right: 10px;
+  background-color: #455A64;
+  color: #ECEFF1;
+}
+
 .btn.btn-info.btn-md {
  
   background-color: #455A64;
