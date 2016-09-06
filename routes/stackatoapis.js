@@ -18,39 +18,63 @@ var PASSWORD = process.env.FIH_SVC_PASSWORD;
 router.get('/apps', permCheck.checkPermission('app.view'), function (req, res) {
 
     console.log("Retrieving apps from stackato..");
-    getStackatoAccessToken(function (response) {
-        getAllApplications(response, function (response) {
+    var fihToken = req.session.fih_token.access_token;
+    console.log("Access Token:"+fihToken);
+    if(fihToken){
+        getAllApplications(fihToken, function (response) {
             res.json(response.data.apps);
         });
-    });
+    }
+    else{
+        res.status(401).send({ 
+            success: false, 
+            message: 'Invalid access token, pleasse login again.!' 
+        });
+    }
 });
 
 router.get('/apps/:appname', permCheck.checkPermission('app.view'), function (req, res) {
     var appName = req.params.appname;
 
     console.log("Retrieving apps from stackato..");
-    getStackatoAccessToken(function (response) {
-        console.log("Access Token:"+response);
-        getAllApplications(response, function (response) {
+    var fihToken = req.session.fih_token.access_token;
+    console.log("Access Token:"+fihToken);
+    if(fihToken){
+        getAllApplications(fihToken, function (response) {
             console.log("Array response: "+JSON.stringify(response));
             var app = response.data.apps.filter(function (apps) {
                 return apps.name == appName;
             });
             res.json(app[0]);
         });
-    });
+    }
+    else{
+        res.status(401).send({ 
+            success: false, 
+            message: 'Invalid access token, pleasse login again.!' 
+        });
+    }
 });
 
 router.delete('/apps/:appguid', permCheck.checkPermission('app.delete'), function (req, res) {
     var appGuid = req.params.appguid;
 
     console.log("Deleting app "+appGuid+" from stackato..");
-    getStackatoAccessToken(function (response) {
+    
+    var fihToken = req.session.fih_token.access_token;
+    console.log("Access Token:"+fihToken);
+    if(fihToken){
         deleteStackatoApp(response, appGuid, function (response) {
             console.log("Delete response: "+JSON.stringify(response));
             res.json(response);
         });
-    });
+    }
+    else{
+        res.status(401).send({ 
+            success: false, 
+            message: 'Invalid access token, pleasse login again.!' 
+        });
+    }
 });
 
 function deleteStackatoApp(accessToken, appGuid, callback) {
@@ -124,8 +148,15 @@ function getAllApplications(accessToken, callback) {
 
 function getStackatoAccessToken(callback) {
     console.log("Entered getStackatoAccessToken");
-
-    var cacheValue = STACKATO_CACHE.get("accessToken");
+    var fih_token = req.session.fih_token.access_token;
+    console.log("Access token from cookie: "+fih_token);
+    if(fih_token){
+        callback(fih_token);
+    }
+    else{
+        callback({success: false, message: 'Invalid access token, pleasse login again.!'});
+    }
+    /*var cacheValue = STACKATO_CACHE.get("accessToken");
     if (cacheValue === undefined) {
 
         var inputOAuth = {
@@ -173,6 +204,7 @@ function getStackatoAccessToken(callback) {
         console.log("Retrieved accessToken from cache..");
         callback(cacheValue);
     }
+    */
 }
 
 

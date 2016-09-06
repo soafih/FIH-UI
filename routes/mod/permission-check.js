@@ -14,6 +14,7 @@ module.exports = {
             if (userProfile && userProfile.permission.indexOf(resource) >= 0) {
                 console.log("Granted acccess");
                 if (next) {
+                    console.log("Check Permission, calling next middleware.");
                     next();
                 }
                 else {
@@ -26,6 +27,7 @@ module.exports = {
                     message: 'Unauthorized access attempted!'
                 });
             }
+            console.log("Check Permission, sending response back: "+response);
             return response;
         };
     }

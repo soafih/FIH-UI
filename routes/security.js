@@ -22,8 +22,9 @@ router.get('/user', function(req, res) {
     db = req.db;
     var username = req.get('x-authenticated-user-username');
     var userguid = req.get('x-authenticated-user-id');
-    console.log("Getting details for user: "+username);
-    if(!username){
+    var fihToken = req.session.fih_token.access_token;
+    console.log("Access token from cookie: "+fihToken);
+    if(!fihToken || !username){
         req.session.username = '';
         req.session.guid = '';
         req.session.isAuthenticated = false;
@@ -31,11 +32,12 @@ router.get('/user', function(req, res) {
         console.log("Unauthorized access attempt..");
         res.status(401).send({ 
             success: false, 
-            message: 'Unauthorized access attempted.' 
+            message: 'Invalid access token, pleasse login again.!' 
         });
     }
     else{
-        getUserAuthDetails(username, userguid, function(err, response){
+        console.log("Getting details for user: "+username);
+        getUserAuthDetails(username, userguid, fihToken, function(err, response){
             if (err) {
                 console.log("Error in getting user details: "+err);
                 req.session.username = '';
@@ -68,7 +70,7 @@ router.get('/user', function(req, res) {
 });
 
 
-function getUserAuthDetails(username, guid, callback){
+function getUserAuthDetails(username, guid, fihToken, callback){
     console.log('Entered getUserAuthDetails');
     async.series([
         function(callback) {
@@ -108,7 +110,8 @@ function getUserAuthDetails(username, guid, callback){
         },
         function (callback) {
             console.log("Getting user org and spaces from stackato..");
-            stackato.getUserOrgs(guid, function(err, res){
+            
+            stackato.getUserOrgs(guid, fihToken, function(err, res){
                 callback(err, res);
             });
         }

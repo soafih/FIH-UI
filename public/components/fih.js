@@ -98,10 +98,6 @@ fihApp.service('APIInterceptor', function ($rootScope) {
     console.log("Entered APIInterceptor..!!");
     var service = this;
     service.request = function (config) {
-        /*config.headers = config.headers || {};
-        if ($localStorage.token) {
-            config.headers.Authorization = 'Bearer ' + $localStorage.token;
-        }*/
         return config;
     };
     service.response = function (response) {
