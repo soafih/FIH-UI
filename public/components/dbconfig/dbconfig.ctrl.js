@@ -1,25 +1,12 @@
-fihApp.controller('dbconfigctrl', function ($scope, $uibModal, $filter, $resource, NgTableParams, databaseListFactory, DBData, TestQuery, prompt) {
+fihApp.controller('dbconfigctrl', function ($scope, $uibModal, $filter, $resource, NgTableParams, databaseListFactory, ConnectionData, TestQuery, prompt) {
+   
     $scope.pageHeader = "Database Configurations";
-
-    /* databaseListFactory.getDatabaseList().then(function (response) {
-         $scope.databases = response.data;
-         $scope.databaseTable = new NgTableParams({},
-             {
-                 total: $scope.databases.length,
-                 getData: function (params) {
-                     alert(params.sorting());
-                     $scope.data = params.sorting() ? $filter('orderBy')($scope.databases, params.orderBy()) : $scope.databases;
-                     $scope.data = params.filter() ? $filter('filter')($scope.data, params.filter()) : $scope.data;
- 
-                     console.log($scope.data);
-                 }
-             });
-     });*/
 
 
     $scope.$watch('status', function () {
-        console.log($scope.status + "in Watch")
+       
         databaseListFactory.getDatabaseList().then(function (response) {
+             $scope.app.dbconfig = {};
             $scope.databases = response.data;
             $scope.databaseTable = new NgTableParams({},
                 {
@@ -39,7 +26,7 @@ fihApp.controller('dbconfigctrl', function ($scope, $uibModal, $filter, $resourc
     $scope.app.dbconfig = {};
 
 
-    $scope.popup = function (action) {
+    $scope.do = function (action) {
         if (action == 'Create') {
             $scope.app.dbconfig = {};
         }
@@ -82,7 +69,7 @@ fihApp.controller('dbconfigctrl', function ($scope, $uibModal, $filter, $resourc
 
             if (action == 'Create') {
                 var db = $resource('/fih/dbconfig');
-                db.save(DBData.message, function (app) {
+                db.save(ConnectionData.message, function (app) {
                 }, function (error) {
                     console.log("Error occured");
                 });
@@ -90,13 +77,14 @@ fihApp.controller('dbconfigctrl', function ($scope, $uibModal, $filter, $resourc
 
             if (action == 'Update') {
                 var db = $resource('/fih/dbconfig/update');
-                db.save(DBData.message, function (app) {
+                db.save(ConnectionData.message, function (app) {
                 }, function (error) {
                     console.log("Error occured");
                 });
             }
 
             $scope.status = 'update' + (new Date()).getTime();
+          
         }, function () {
             console.log('Modal Action dismissed');
         });
@@ -155,7 +143,7 @@ fihApp.controller('dbconfigctrl', function ($scope, $uibModal, $filter, $resourc
     }
 
     $scope.testQuery = function (dbconfigs) {
-        console.log("DBConfigs" + dbconfigs)
+       
         var testQueryRequest = {
 
             "databaseInfo": {
@@ -203,20 +191,28 @@ fihApp.controller('dbconfigctrl', function ($scope, $uibModal, $filter, $resourc
 });
 
 
-fihApp.controller('registerDatabaseCtrl', function ($scope, $uibModalInstance, $resource, DBData, action, dbConf) {
+fihApp.controller('registerDatabaseCtrl', function ($scope, $uibModalInstance, $resource, ConnectionData, action, dbConf) {
 
     $scope.db = {};
     $scope.db = dbConf;
-    console.log($scope.db.db_type);
+
 
     $scope.DBType = [
         { id: "oracle", name: "oracle" },
         { id: "as400", name: "as400" },
-        { id: "MySQL", name: "Host" },
+        { id: "MySQL", name: "MySQL" },
         { id: "SQL server", name: "SQL Server" }
     ];
 
     $scope.action = action;
+
+    if ($scope.action == 'Create') {
+        $scope.title = "Create new Database Connection";
+        $scope.db.db_type = "oracle";
+    }
+    else
+        $scope.title = "Update the Database Connection";
+
     $scope.cancel = function () {
         $uibModalInstance.dismiss('cancel');
     };
@@ -235,32 +231,30 @@ fihApp.controller('registerDatabaseCtrl', function ($scope, $uibModalInstance, $
         };
 
 
-        DBData.setMessage(dbPostRequest);
+        ConnectionData.setMessage(dbPostRequest);
         $uibModalInstance.close();
     };
 });
 
 
-fihApp.factory("DBData", function () {
-    var DBData = {};
-    DBData.message = {};
-    DBData.setMessage = function (message) {
-        DBData.message = message;
-        console.log(message);
-        console.log(DBData.message);
+fihApp.factory("ConnectionData", function () {
+    var ConnectionData = {};
+    ConnectionData.message = {};
+    ConnectionData.setMessage = function (message) {
+        ConnectionData.message = message;
     };
 
-    DBData.getMessage = function () {
-        return DBData.message;
+    ConnectionData.getMessage = function () {
+        return ConnectionData.message;
     };
-    return DBData;
+    return ConnectionData;
 
 });
 
 fihApp.factory("TestQuery", function ($http) {
-    var DBData = {};
+    var db = {};
 
-    DBData.testQuery = function (DBRequest) {
+    db.testQuery = function (DBRequest) {
 
         var headerConfig = {
             headers: {
@@ -281,7 +275,7 @@ fihApp.factory("TestQuery", function ($http) {
 
         return promise;
     }
-    console.log("before return");
-    return DBData;
+    
+    return db;
 
 });

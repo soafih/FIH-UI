@@ -215,6 +215,7 @@
                                 <div class="panel-body">
                                     <div class="row app-details" ng-repeat="item in dbDetails">
                                         <div ng-repeat="(key, value) in item">
+										 <div ng-show="key !='Schema' || dbDetails[1].Type =='as400' ">
                                             <label class='control-label col-sm-3'>{{key}}</label>
                                             <label class='control-label col-sm-9' style="font-weight:500">
                                                 <div ng-switch on="key">
@@ -226,6 +227,7 @@
                                                     </div>
                                                 </div>
                                             </label>
+											</div>
                                         </div>
                                     </div>
                                 </div>
