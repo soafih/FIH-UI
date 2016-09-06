@@ -51,4 +51,43 @@ router.get('/dbtype', function(req, res) {
     });
 });
 
+
+router.post('/', function(req, res){
+    var db = req.db;
+    var collection = db.get('coll_dbconfig');
+    console.log('Inserting DB: '+req.body.name);
+    collection.insert(req.body, function(err, app){
+        if (err) throw err;
+        res.send(app);
+        console.log('Successfully Inserted: '+app.name);
+    });
+});
+
+router.post('/update', function(req, res) {
+    console.log("Updating ");
+    var appObjectId = req.body._id;
+    delete req.body._id;
+    console.log("Updating app status for objectId: "+appObjectId);
+
+    var db = req.db;
+    var collection = db.get('coll_dbconfig');
+    collection.update({_id: appObjectId}, {$set: req.body}, 
+        function(err, response){
+            if (err) throw err;
+            console.log("Successfully updated app status: "+response);
+            res.json(response);
+    });
+});
+
+router.delete('/:id', function(req, res){
+     var appObjectId =req.params.id ;
+      delete req.body.appObjectId;
+    var db = req.db;
+    var collection = db.get('coll_dbconfig');
+    collection.remove({ _id: appObjectId }, function(err, app){
+        if (err) throw err;
+        res.send(app);
+    });
+});
+
 module.exports = router;
