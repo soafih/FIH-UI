@@ -17,7 +17,6 @@ var security = require('./routes/security');
 // Initialize Monk for establishing connection with MongoDB
 var monk = require('monk');
 var db = monk(process.env.MONGODB_CONN_STR);
-console.log("MongoDB URL: "+process.env.MONGODB_CONN_STR);
 var app = express();
 
 // view engine setup
@@ -36,35 +35,6 @@ app.use(session({
   resave: true,
   saveUninitialized: true
 }));
-
-/*
-var passport = require('passport');
-var OAuth2Strategy = require('passport-oauth2');
-
-passport.use(new OAuth2Strategy({
-    authorizationURL: 'https://api.stackato-poc.foxinc.com/uaa/oauth/authorize',
-    tokenURL: 'https://aok.stackato-poc.foxinc.com/uaa/oauth/token',
-    clientID: 'srest',
-    clientSecret: 'welcome1',
-    callbackURL: "https://foxintegrationhub.soadev.stackato-poc.foxinc.com/srest/console/auth/callback"
-  },
-  function(accessToken, refreshToken, profile, cb) {
-    User.findOrCreate({ exampleId: profile.id }, function (err, user) {
-      return cb(err, user);
-    });
-  }
-));
-
-app.get('/',
-  passport.authenticate('oauth2'));
-
-app.get('/srest/console/auth/callback',
-  passport.authenticate('oauth2', { failureRedirect: '/login' }),
-  function(req, res) {
-    // Successful authentication, redirect home.
-    res.redirect('/');
-});
-*/
 
 var oauth2 = require('simple-oauth2')({
   clientID: process.env.OAUTH_CLIENT_ID,
@@ -216,6 +186,5 @@ app.use(function(err, req, res, next) {
     error: {}
   });
 });
-
 
 module.exports = app;

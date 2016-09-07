@@ -13,4 +13,4 @@ applications:
     NODE_TLS_REJECT_UNAUTHORIZED: 0
     OAUTH_CLIENT_ID: dummyClientId
     OAUTH_CLIENT_SECRET: dummySecretKey
-    OAUTH_REDIRECT_URL: https://foxintegrationhub.soadev.stackato-poc.foxinc.com/auth/callback
+    OAUTH_REDIRECT_URL: https://foxintegrationhub.soaqa.stackato-poc.foxinc.com/auth/callback
