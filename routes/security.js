@@ -22,22 +22,11 @@ router.get('/user', function(req, res) {
     db = req.db;
     var username = req.get('x-authenticated-user-username');
     var userguid = req.get('x-authenticated-user-id');
-    var fihToken = req.session.fih_token.access_token;
-    console.log("Access token from cookie: "+fihToken);
-    if(!fihToken || !username){
-        req.session.username = '';
-        req.session.guid = '';
-        req.session.isAuthenticated = false;
-        req.session.userobj = {};
-        console.log("Unauthorized access attempt..");
-        res.status(401).send({ 
-            success: false, 
-            message: 'Invalid access token, pleasse login again.!' 
-        });
-    }
-    else{
-        console.log("Getting details for user: "+username);
-        getUserAuthDetails(username, userguid, fihToken, function(err, response){
+    var fihToken = req.session.fih_token;
+    
+    if(fihToken && fihToken.access_token && username && userguid){
+        console.log("Getting details for user: "+username+ " | Guid: "+userguid);
+        getUserAuthDetails(username, userguid, fihToken.access_token, function(err, response){
             if (err) {
                 console.log("Error in getting user details: "+err);
                 req.session.username = '';
@@ -65,6 +54,18 @@ router.get('/user', function(req, res) {
                 req.session.userobj = response;
                 res.json(response);
             }
+        });
+    }
+    else{
+        console.log("One of the value not found: Username: "+username + " | Guid: " + userguid + " | Token: " + fihToken.access_token);
+        req.session.username = '';
+        req.session.guid = '';
+        req.session.isAuthenticated = false;
+        req.session.userobj = {};
+        console.log("Unauthorized access attempt..");
+        res.status(401).send({ 
+            success: false, 
+            message: 'Invalid access token, pleasse login again.!' 
         });
     }
 });

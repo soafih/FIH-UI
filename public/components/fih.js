@@ -92,6 +92,7 @@ fihApp.config(['$routeProvider', '$httpProvider', function ($routeProvider, $htt
         });
 
     $httpProvider.interceptors.push('APIInterceptor');
+    $httpProvider.interceptors.push('RedirectInterceptor');
 }]);
 
 fihApp.service('APIInterceptor', function ($rootScope) {
@@ -120,10 +121,41 @@ fihApp.service('APIInterceptor', function ($rootScope) {
     };
 });
 
+fihApp.factory('RedirectInterceptor', function($window, $location, $q) {
+    console.log("RedirectInterceptor | Entered");
+    return function(promise) {
+        promise.then(
+            function(response) {
+                if (typeof response.data === 'string') {
+                    console.log("RedirectInterceptor | Str response");
+                    if (response.data.indexOf instanceof Function) {
+                    //&& response.data.indexOf('<html id="ng-app" ng-app="loginApp">') != -1) {
+                        //$location.path("/logout");
+                        console.log("RedirectInterceptor | Redirecting to logout");
+                        $window.location.href = "/auth/logout"; 
+                    }
+                }
+                return response;
+            },
+            function(response) {
+                 console.log("RedirectInterceptor | $q reject");
+                return $q.reject(response);
+            }
+        );
+        return promise;
+    };
+});
+
 fihApp.controller('SidebarCtrl', function ($scope, $resource, $location) {
     $scope.isActive = function (route) {
         return route === $location.path();
     };
+});
+
+fihApp.controller('LogoutCtrl', function ($scope, $resource, userProfile) {
+    console.log("Logging out..");
+    userProfile.$refresh();
+    $window.location.href = '/auth/logout';
 });
 
 fihApp.controller('MainCtrl', function ($rootScope, $scope, $window, $location, UserProfile, prompt) {
@@ -149,6 +181,11 @@ fihApp.controller('MainCtrl', function ($rootScope, $scope, $window, $location, 
                 $rootScope.$broadcast('usernotfound'); 
             }
         });
+    };
+
+    $scope.logout = function(message){
+        console.log("Logging out..");
+        $window.location.href = '/auth/logout';
     };
 
     $scope.openDialog = function(message){

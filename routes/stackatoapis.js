@@ -18,10 +18,9 @@ var PASSWORD = process.env.FIH_SVC_PASSWORD;
 router.get('/apps', permCheck.checkPermission('app.view'), function (req, res) {
 
     console.log("Retrieving apps from stackato..");
-    var fihToken = req.session.fih_token.access_token;
-    console.log("Access Token:"+fihToken);
-    if(fihToken){
-        getAllApplications(fihToken, function (response) {
+    var fihToken = req.session.fih_token;
+    if(fihToken && fihToken.access_token){
+        getAllApplications(fihToken.access_token, function (response) {
             res.json(response.data.apps);
         });
     }
@@ -37,10 +36,9 @@ router.get('/apps/:appname', permCheck.checkPermission('app.view'), function (re
     var appName = req.params.appname;
 
     console.log("Retrieving apps from stackato..");
-    var fihToken = req.session.fih_token.access_token;
-    console.log("Access Token:"+fihToken);
-    if(fihToken){
-        getAllApplications(fihToken, function (response) {
+    var fihToken = req.session.fih_token;
+    if(fihToken && fihToken.access_token){
+        getAllApplications(fihToken.access_token, function (response) {
             console.log("Array response: "+JSON.stringify(response));
             var app = response.data.apps.filter(function (apps) {
                 return apps.name == appName;
@@ -61,10 +59,9 @@ router.delete('/apps/:appguid', permCheck.checkPermission('app.delete'), functio
 
     console.log("Deleting app "+appGuid+" from stackato..");
     
-    var fihToken = req.session.fih_token.access_token;
-    console.log("Access Token:"+fihToken);
-    if(fihToken){
-        deleteStackatoApp(response, appGuid, function (response) {
+    var fihToken = req.session.fih_token;
+    if(fihToken && fihToken.access_token){
+        deleteStackatoApp(fihToken.access_token, appGuid, function (response) {
             console.log("Delete response: "+JSON.stringify(response));
             res.json(response);
         });

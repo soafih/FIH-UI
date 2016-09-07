@@ -69,7 +69,7 @@ module.exports = {
 function getOrgDetails(accessToken, orgsArr, callbackOrgs) {
     async.map(orgsArr, getSpacesAndDomains, function (err, results) {
         console.log("getOrgDetails | Map completed. Error: ", err, " | result: ", JSON.stringify(results));
-        callbackOrgs(null, results);
+        callbackOrgs(err, results);
     });
 
     function getSpacesAndDomains(org, callback) {

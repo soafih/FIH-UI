@@ -66,11 +66,6 @@ app.get('/srest/console/auth/callback',
 });
 */
 
-
-//process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
-var port = process.env.PORT || 3000;
-var host = process.env.VCAP_APP_HOST || "127.0.0.1";
-console.log("Host: "+host+":"+port);
 var oauth2 = require('simple-oauth2')({
   clientID: process.env.OAUTH_CLIENT_ID,
   clientSecret: process.env.OAUTH_CLIENT_SECRET,
@@ -86,8 +81,7 @@ var authorization_uri = oauth2.authCode.authorizeURL({
 });
 
 // Initial page redirecting to Github
-app.get('/auth', function (req, res) {
-    req.session.fih_token = {};
+app.get('/auth/login', function (req, res) {
     console.log("Is SSL Enabled: "+process.env.NODE_TLS_REJECT_UNAUTHORIZED);
     res.redirect(authorization_uri);
 });
@@ -111,26 +105,32 @@ app.get('/auth/callback', function (req, res) {
 
       token = oauth2.accessToken.create(result);
       req.session.fih_token = result;
-      console.log("Converted Token: "+token);
-      console.log("Expires in: "+result.expires_in);
-      res.cookie('fih_token', result.access_token, { maxAge: result.expires_in, httpOnly: true });
-      //res.cookie('accessToken',token, { maxAge: 900000 });
-      console.log('cookie created successfully');
-      res.redirect("/");
+      //req.session.cookie.expires = new Date(Date.now() + result.expires_in*1000);
+      console.log("Expires in: "+req.session.cookie.expires);
+      //res.cookie('fih_token', result.access_token, { maxAge: result.expires_in, httpOnly: true });
+      console.log('Cookie created successfully');
+      console.log('Redirect url: '+req.session.oauth2return);
+      var redirect = '/';//req.session.oauth2return
+      delete req.session.oauth2return;
+      res.redirect(redirect);
     }
 });
 
-app.get('/logout', function(req, res, next){
+app.get('/auth/logout', function(req, res, next){
   console.log("Logging out of session.!");
   var token = oauth2.accessToken.create(req.session.fih_token);
   token.revoke('access_token', function(error) {
-    // Session ended. But the refresh_token is still valid.
 
     // Revoke the refresh_token
     token.revoke('refresh_token', function(error) {
       console.log('token revoked.');
-      res.cookie('fih_token', { maxAge: Date.now(0)});
-      res.redirect("/auth");
+      req.session.oauth2return = req.originalUrl;
+      delete req.session.fih_token;
+      delete req.session.username;
+      delete req.session.guid;
+      req.session.isAuthenticated = false;
+      delete req.session.userobj;
+      res.redirect("/auth/login");
     });
   });
   
@@ -147,15 +147,22 @@ app.use(function (req, res, next) {
     var tokenDecoded = JSON.parse(buf.toString("ascii"));
     console.log("Decoded Token: " + JSON.stringify(tokenDecoded));
 
-    req.headers["x-authenticated-user-username"]  = tokenDecoded.user_name;
-    req.headers["x-authenticated-user-id"]  = tokenDecoded.user_id;
-    req.headers["x-authenticated-email"]  = tokenDecoded.email;
+    req.headers["x-authenticated-user-username"] = tokenDecoded.user_name;
+    req.headers["x-authenticated-user-id"] = tokenDecoded.user_id;
+    req.headers["x-authenticated-email"] = tokenDecoded.email;
     next();
   }
   else {
     console.log("Token not found. Redirecting to login page.");
-    console.log("Header: "+JSON.stringify(req.headers));
-    res.redirect("/auth");
+    console.log("Session Object Value: "+JSON.stringify(req.session));
+    if (req.query.return) {
+      req.session.oauth2return = req.query.return;
+    }
+    else{
+      req.session.oauth2return = req.originalUrl;
+    }
+    console.log("Redirect URL: "+req.session.oauth2return);
+    res.redirect("/auth/login");
   }
 });
 
