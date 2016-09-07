@@ -22,20 +22,11 @@ router.get('/user', function(req, res) {
     db = req.db;
     var username = req.get('x-authenticated-user-username');
     var userguid = req.get('x-authenticated-user-id');
-    console.log("Getting details for user: "+username);
-    if(!username){
-        req.session.username = '';
-        req.session.guid = '';
-        req.session.isAuthenticated = false;
-        req.session.userobj = {};
-        console.log("Unauthorized access attempt..");
-        res.status(401).send({ 
-            success: false, 
-            message: 'Unauthorized access attempted.' 
-        });
-    }
-    else{
-        getUserAuthDetails(username, userguid, function(err, response){
+    var fihToken = req.session.fih_token;
+    
+    if(fihToken && fihToken.access_token && username && userguid){
+        console.log("Getting details for user: "+username+ " | Guid: "+userguid);
+        getUserAuthDetails(username, userguid, fihToken.access_token, function(err, response){
             if (err) {
                 console.log("Error in getting user details: "+err);
                 req.session.username = '';
@@ -65,10 +56,22 @@ router.get('/user', function(req, res) {
             }
         });
     }
+    else{
+        console.log("One of the value not found: Username: "+username + " | Guid: " + userguid + " | Token: " + fihToken.access_token);
+        req.session.username = '';
+        req.session.guid = '';
+        req.session.isAuthenticated = false;
+        req.session.userobj = {};
+        console.log("Unauthorized access attempt..");
+        res.status(401).send({ 
+            success: false, 
+            message: 'Invalid access token, pleasse login again.!' 
+        });
+    }
 });
 
 
-function getUserAuthDetails(username, guid, callback){
+function getUserAuthDetails(username, guid, fihToken, callback){
     console.log('Entered getUserAuthDetails');
     async.series([
         function(callback) {
@@ -108,7 +111,8 @@ function getUserAuthDetails(username, guid, callback){
         },
         function (callback) {
             console.log("Getting user org and spaces from stackato..");
-            stackato.getUserOrgs(guid, function(err, res){
+            
+            stackato.getUserOrgs(guid, fihToken, function(err, res){
                 callback(err, res);
             });
         }

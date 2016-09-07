@@ -70,6 +70,9 @@ html(ng-app='fihApp')
                     li.divider {{name}}
                     li(role="menuitem") <strong>Orgs:</strong> {{userorgs}}
                     li(role="menuitem", style="padding-top:5px;") <strong>Spaces:</strong> {{userspaces}}
+                    li.divider {{name}}
+                    li(role="menuitem", class="btn-logout")
+                      a(href="" ng-click="logout()" target='_self' style="padding-left:5px; font-weight:600;") Logout
             li
               a(href='mailto:SOAEnterpriseTeam@fox.com?Subject=Fox%20Integration%20Hub%20Feedback' target='_top') Contact Us
             li
@@ -84,7 +87,7 @@ html(ng-app='fihApp')
               a(href='/#/') API Markeplace
             li(ng-class="{active:isActive('/apps')}", ng-show="showSidebarApps")
               a(href='/#/apps') Applications/Integration Services
-            li(ng-class="{active:isActive('/dashboard')}", ng-show="showSidebarDashboard")
+            //li(ng-class="{active:isActive('/dashboard')}", ng-show="showSidebarDashboard")
               a(href='/#/dashboard') Dashboard
             li(ng-class="{active:isActive('/dbconfig')}", ng-show="showSidebarDashboard")
               a(href='/#/dbconfig') DB Config

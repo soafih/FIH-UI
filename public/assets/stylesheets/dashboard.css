@@ -195,6 +195,10 @@ body .modal-header{
   font-family: Tahoma;
 }
 
+.btn-logout{
+  text-decoration: underline;
+}
+
 .breadcrumb > li {
   color: black;
   font-size: 16px;

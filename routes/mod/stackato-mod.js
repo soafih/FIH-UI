@@ -11,11 +11,12 @@ var USERNAME = process.env.FIH_SVC_USER;
 var PASSWORD = process.env.FIH_SVC_PASSWORD;
 
 module.exports = {
-    getUserOrgs: function (guid, callback) {
+    getUserOrgs: function (guid, accessToken, callback) {
         console.log("Retrieving orgs from stackato for user guid: "+guid);
         async.waterfall([
-            getStackatoAccessTokenAsync,
-            function getUsersOrganizations(accessToken, callbackOrg) {
+            function getUsersOrganizations(callbackOrg) {
+                
+                console.log("Access Token returned: "+accessToken);
                 var headers = {
                     'Authorization': 'Bearer ' + accessToken
                 };
@@ -58,16 +59,17 @@ module.exports = {
             console.log("###### Sending response back: " + JSON.stringify(result));
             callback(err, result);
         });
-    },
+    }
+    /*,
     getStackatoAccessTokenAsync: function(callback){
         getStackatoAccessTokenAsync(callback);
-    } 
+    } */
 };
 
 function getOrgDetails(accessToken, orgsArr, callbackOrgs) {
     async.map(orgsArr, getSpacesAndDomains, function (err, results) {
         console.log("getOrgDetails | Map completed. Error: ", err, " | result: ", JSON.stringify(results));
-        callbackOrgs(null, results);
+        callbackOrgs(err, results);
     });
 
     function getSpacesAndDomains(org, callback) {
@@ -131,9 +133,17 @@ function getOrgDetails(accessToken, orgsArr, callbackOrgs) {
     }
 }
 
-function getStackatoAccessTokenAsync(callback) {
+function getStackatoAccessTokenAsync(req, res, next) {
     console.log("Entered getStackatoAccessTokenAsync");
-
+    var fih_token = req.session.fih_token.access_token;
+    console.log("Access token from cookie: "+fih_token);
+    if(fih_token){
+        return fih_token;
+    }
+    else{
+        return {success: false, message: 'Invalid access token, pleasse login again.!'};
+    }
+    /*
     var cacheValue = STACKATO_CACHE.get("accessToken");
     if (cacheValue === undefined) {
 
@@ -182,4 +192,5 @@ function getStackatoAccessTokenAsync(callback) {
         console.log("Retrieved accessToken from cache..");
         callback(null, cacheValue);
     }
+    */
 }
