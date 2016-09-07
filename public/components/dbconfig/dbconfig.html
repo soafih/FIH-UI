@@ -1,0 +1,129 @@
+<div>
+    <h3>{{pageHeader}}</h3>
+</div>
+<hr/>
+<script type="text/ng-template" id="registerDatabase.html">
+<div class="modal-dialog modal-lg" >
+    <div class="modal-header">
+         <h3 class="modal-title">{{title}}</h3>
+    </div>
+    <div class="modal-body">
+        <form id="dbForm" name="dbForm" class="form-horizontal">
+         <div class="container-fluid">
+                        <div class="row">
+                            <div class="form-group required">
+                                <label class='control-label col-sm-2' for="Name">Database Name</label>
+                                <div class="col-sm-6">
+								  <input id="Name" name="name"   required class="form-control" ng-model="db.db_name"></input>
+                                </div>
+                            </div>
+                        </div>
+                       <div class="row">
+                            <div class="form-group required">
+                                <label class='control-label col-sm-2' for="type">Database type</label>
+                                <div class="col-sm-6">
+								  <select id="type" name="type"  required class="form-control" ng-options="item.name as item.name for item in DBType" ng-model="db.db_type"></select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="form-group required">
+                                <label class='control-label col-sm-2' for="host">Database host</label>
+                                <div class="col-sm-6">
+								  <input id="host"   required class="form-control" ng-model="db.host"></input>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="form-group required">
+                                <label class='control-label col-sm-2' for="port">Database port</label>
+                                <div class="col-sm-6">
+								  <input id="port"   required class="form-control" ng-model="db.port"></input>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row" ng-show ="db.db_type == 'as400'">
+                            <div class="form-group required">
+                                <label class='control-label col-sm-2' for="serviceName">Database Library</label>
+                                <div class="col-sm-6">
+								  <input id="serviceName" uib-tooltip=" Applicable only for AS400 ; supports comma separated libraries" tooltip-placement="top-left" tooltip-trigger="'mouseover'" required class="form-control" ng-model="db.schema"></input>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="form-group required">
+                                <label class='control-label col-sm-2' for="username">Database username</label>
+                                <div class="col-sm-6">
+								  <input id="username"   required class="form-control" ng-model="db.uname"></input>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="form-group required">
+                                <label class='control-label col-sm-2' for="password">Database passowrd</label>
+                                <div class="col-sm-6">
+								  <input id="password" type="password"  required class="form-control" ng-model="db.pwd"></input>
+                                </div>
+                            </div>
+                        </div>
+         </div>
+        </form>
+    </div>
+    <div class="modal-footer">
+         <button  class="btn {{modalActionBtnType}}" type="button" ng-click="ok()">{{action}}</button>
+          <button class="btn btn-default" type="button" ng-click="cancel()">Cancel</button>
+    </div>
+</div>
+
+    </script>
+
+<div class="container-fluid">
+    <div ng-hide='true'>
+        <input ng-model=status>
+    </div>
+
+
+    <div>
+        <button type="button" class="btn btn-danger btn-md col-md-1 pull-right" ng-click="Delete()">Delete</button>
+        <button type="button" class="btn btn-info btn-md col-md-1 pull-right " ng-click="do('Update')">Update</button>
+        <button type="button" class="btn btn-info btn-md col-md-2 pull-right" ng-click="do('Create')">Register New</button>
+    </div>
+
+</div>
+
+
+<table ng-table="databaseTable" class="table table-bordered table-striped  table-hover table-condensed" style="margin-top: 20px">
+    <colgroup>
+        <col width="5%" />
+        <col width="15%" />
+        <col width="10%" />
+        <col width="20%" />
+        <col width="7%" />
+        <col width="10%" />
+        <col width="10%" />
+    </colgroup>
+
+    <tr ng-repeat="dbconfigs in data">
+        <td data-title="'Select'">
+            <input type="radio" name="optradio" ng-model="$parent.app.dbconfig" ng-value="dbconfigs">
+        </td>
+        <td data-title="'Name'" filter="{ 'db_name': 'text'}" sortable="'db_name'">
+            {{dbconfigs.db_name}}
+        </td>
+        <td data-title="'Type'" filter="{ 'db_type': 'text'}" sortable="'db_type'">
+            {{dbconfigs.db_type}}
+        </td>
+        <td data-title="'Host'" filter="{ 'host': 'text'}" sortable="'host'">
+            {{dbconfigs.host}}
+        </td>
+        <td data-title="'Port'" filter="{ 'port': 'text'}" sortable="'port'">
+            {{dbconfigs.port}}
+        </td>
+        <td data-title="'AS400 Library'" filter="{ 'schema': 'text'}" sortable="'schema'" >
+            {{dbconfigs.schema}}
+        </td>
+        <td data-title="'Test'">
+            <button type="button" class="btn btn-info btn-md " ng-click="testQuery(dbconfigs)">Test</button>
+        </td>
+    </tr>
+</table>
