@@ -35,6 +35,7 @@ fihApp.controller('AppsCtrl', function($scope, $resource, $location, userProfile
 
     $scope.AdvSearchList = [
         { id: "name", name: "Application Name" },
+		{ id: "descr", name:"Application Description"},
         { id: "api_type", name: "API Name" },
         { id: "api_ver", name: "API Version" },
         { id: "created_by", name: "Created By" },

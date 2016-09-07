@@ -92,7 +92,7 @@ fihApp.config(['$routeProvider', '$httpProvider', function ($routeProvider, $htt
             controller: 'dbconfigctrl',
             resolve: {
                 userProfile: "UserProfile",
-                access: ["Access", function (Access) { return Access.hasRole("app_developer"); }]
+                access: ["Access", function (Access) { return Access.hasRole("app_admin"); }]
             }
         })
 		

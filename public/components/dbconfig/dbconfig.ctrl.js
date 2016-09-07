@@ -1,8 +1,22 @@
 fihApp.controller('dbconfigctrl', function ($scope, $uibModal, $filter, $resource, NgTableParams, databaseListFactory, ConnectionData, TestQuery, prompt) {
+ 
    
-    $scope.pageHeader = "Database Configurations";
+ var init = function ()
+ {
+      $scope.pageHeader = "Database Configurations";
+  var Apis = $resource('/fih/apis/name/DAAS');
+        Apis.get(function (api) {
+            if(api.name){
+                console.log("APIs Details: " + JSON.stringify(api));
+                $scope.apiDetails = api;
+            }
+            else{
+                console.log("Error getting the API details");
+            }
+        });
+ }
 
-
+ init();
     $scope.$watch('status', function () {
        
         databaseListFactory.getDatabaseList().then(function (response) {
@@ -158,7 +172,7 @@ fihApp.controller('dbconfigctrl', function ($scope, $uibModal, $filter, $resourc
         };
 
 
-        TestQuery.testQuery(testQueryRequest).then(function (resp) {
+        TestQuery.testQuery(testQueryRequest,  $scope.apiDetails.api_ep).then(function (resp) {
             console.log(resp);
             var status = resp.data.response.status;
             var detail;
@@ -254,7 +268,7 @@ fihApp.factory("ConnectionData", function () {
 fihApp.factory("TestQuery", function ($http) {
     var db = {};
 
-    db.testQuery = function (DBRequest) {
+    db.testQuery = function (DBRequest, APIendpoint) {
 
         var headerConfig = {
             headers: {
@@ -264,7 +278,7 @@ fihApp.factory("TestQuery", function ($http) {
         };
         console.log("Request: " + JSON.stringify(DBRequest));
 
-        var promise = $http.post('https://daasapi.soadev.stackato-poc.foxinc.com/FIH/service/DAASAPI/DBUtility/ValidateConnection', DBRequest, headerConfig, { dataType: "jsonp" })
+        var promise = $http.post(APIendpoint+'/FIH/service/DAASAPI/DBUtility/ValidateConnection', DBRequest, headerConfig, { dataType: "jsonp" })
             .success(function (response, status, headers, config) {
                 console.log("Successfully invoked BuildAPI with response: " + JSON.stringify(response));
 
