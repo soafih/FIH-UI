@@ -6,6 +6,7 @@ angular.module('cgPrompt').factory('prompt',['$uibModal','$q',function($uibModal
 
         var defaults = {
             title: '',
+			titleStyle:'color:red;',
             message: '',
             input: false,
             label: '',
@@ -109,7 +110,7 @@ angular.module('cgPrompt').run(['$templateCache', function($templateCache) {
     "<div class=\"modal-dialog modal-sm\">\n" +
     "    <div class=\"modal-header\">\n" +
     "        <button type=\"button\" class=\"close pull-right\" ng-click=\"$dismiss()\" aria-hidden=\"true\">×</button>\n" +
-    "        <h4 class=\"modal-title prompt red\">{{options.title}}</h4>\n" +
+    "        <h4 class=\"modal-title\" style={{options.titleStyle}}>{{options.title}}</h4>\n" +
     "    </div>\n" +
     "    <div class=\"modal-body\">\n" +
     "\n" +
