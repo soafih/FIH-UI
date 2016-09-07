@@ -136,17 +136,22 @@ fihApp.controller('MainCtrl', function ($rootScope, $scope, $window, $location, 
     $scope.loadUserData = function(){
         UserProfile.then(function (response) {
             console.log(response);
-            $scope.userfullname = response.first_name + ' ' + response.last_name;
-            $scope.useremail = response.email;
-            var userOrgs = '';
-            var userSpaces = '';
-            var orgs = response.stackato_config;
-            for(var i=0; i < orgs.length; i++){
-                userOrgs += orgs[i].name + ', ';
-                userSpaces += orgs[i].spaces + ', ';
+            if(response._id){
+                $scope.userfullname = response.first_name + ' ' + response.last_name;
+                $scope.useremail = response.email;
+                var userOrgs = '';
+                var userSpaces = '';
+                var orgs = response.stackato_config;
+                for(var i=0; i < orgs.length; i++){
+                    userOrgs += orgs[i].name + ', ';
+                    userSpaces += orgs[i].spaces + ', ';
+                }
+                $scope.userorgs = userOrgs.slice(0, -2);
+                $scope.userspaces = userSpaces.slice(0, -2);
             }
-            $scope.userorgs = userOrgs.slice(0, -2);;
-            $scope.userspaces = userSpaces.slice(0, -2);
+            else{
+                $rootScope.$broadcast('usernotfound'); 
+            }
         });
     };
 
@@ -168,7 +173,7 @@ fihApp.controller('MainCtrl', function ($rootScope, $scope, $window, $location, 
 
     $rootScope.$on('usernotfound', function(){
         $scope.openDialog('User details not found. Only API Market place will be visible to you. In case you need further access, please contact System Administrator.');
-        //$window.alert("");
+        $location.path('/');
     });
     $rootScope.$on('unauthorized', function () {
         $location.path('/forbidden');

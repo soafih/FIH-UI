@@ -117,14 +117,11 @@ fihApp.controller('AppStatusCtrl', function($scope, $resource, $window, $routePa
             $scope.barState = $scope.appStateObj[buildappstatus];
         }
         else if (buildappstatus == 'WIP') {
-            $scope.buildUrl = $sce.trustAsResourceUrl($scope.appDetails.build_url);
             if (buildStage) {
                 buildStage = "Triggered";
             }
             $scope.barState = $scope.appStateObj[buildappstatus][buildStage];
-            var logUrl = $scope.appDetails.build_url;
-            console.log("Application Build URL: " + logUrl);
-            $scope.buildUrl = $sce.trustAsResourceUrl(logUrl);
+            $scope.buildUrl = $sce.trustAsResourceUrl($scope.appDetails.build_url);
             var cancelInterval = false;
 
             $scope.RefreshIFrame = $interval(function () {

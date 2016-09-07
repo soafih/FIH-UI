@@ -11,7 +11,7 @@ module.exports = {
             //console.log("User Obj: " + JSON.stringify(req.session.userobj));
             console.log("resource: " + resource);
             var userProfile = req.session.userobj;
-            if (userProfile.permission.indexOf(resource) >= 0) {
+            if (userProfile && userProfile.permission.indexOf(resource) >= 0) {
                 console.log("Granted acccess");
                 if (next) {
                     next();
