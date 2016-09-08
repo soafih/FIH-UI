@@ -13,7 +13,6 @@ fihApp.config(['$routeProvider', '$httpProvider', function ($routeProvider, $htt
         .when('/', {
             templateUrl: 'components/marketplace/marketplace.html',
             controller: 'MarketPlaceCtrl',
-            activetab: 'APIMarketplace',
             resolve: {
                 userProfile: "UserProfile"
             }
@@ -29,7 +28,6 @@ fihApp.config(['$routeProvider', '$httpProvider', function ($routeProvider, $htt
         .when('/dashboard', {
             templateUrl: 'components/dashboard/dashboard.html',
             controller: 'DashboardCtrl',
-            activetab: 'Dashboard',
             resolve: {
                 access: ["Access", function (Access) { return Access.hasRole("app_admin"); }]
             }
@@ -48,7 +46,6 @@ fihApp.config(['$routeProvider', '$httpProvider', function ($routeProvider, $htt
         .when('/apps', {
             templateUrl: 'components/apps/apps.html',
             controller: 'AppsCtrl',
-            activetab: 'Applications',
             resolve: {
                 userProfile: "UserProfile",
                 access: ["Access", function (Access) { return Access.hasRole("app_developer"); }]
@@ -95,7 +92,22 @@ fihApp.config(['$routeProvider', '$httpProvider', function ($routeProvider, $htt
                 access: ["Access", function (Access) { return Access.hasRole("app_admin"); }]
             }
         })
-		
+		.when('/users', {
+            templateUrl: 'components/admin/users.html',
+            controller: 'UsersCtrl',
+            resolve: {
+                userProfile: "UserProfile",
+                access: ["Access", function (Access) { return Access.hasRole("fih_admin"); }]
+            }
+        })
+        .when('/roles', {
+            templateUrl: 'components/admin/roles.html',
+            controller: 'RolesCtrl',
+            resolve: {
+                userProfile: "UserProfile",
+                access: ["Access", function (Access) { return Access.hasRole("fih_admin"); }]
+            }
+        })
         .otherwise({
             redirectTo: '/'
         });
@@ -157,6 +169,16 @@ fihApp.factory('RedirectInterceptor', function($window, $location, $q) {
 
 fihApp.controller('SidebarCtrl', function ($scope, $resource, $location) {
     $scope.isActive = function (route) {
+        if(route instanceof Array){
+            var res = false;
+            for(var i=0; i<route.length;i++){
+                res = route[i] === $location.path();
+                if(res)
+                    break;
+            }
+            return res;
+        }
+        console.log("route: "+route);
         return route === $location.path();
     };
 });
