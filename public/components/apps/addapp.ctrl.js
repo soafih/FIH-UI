@@ -1,5 +1,5 @@
 fihApp.controller('AddAppCtrl', function ($scope, $window, $http, $resource, $location, $uibModal, $filter,
-    $routeParams, NgTableParams, databaseList, userProfile) {
+    $routeParams, NgTableParams, databaseList, userProfile, $sce, prompt) {
 
     $scope.pageHeader = "Application / Integration Service Configuration";
     $scope.reNamepattern = /^[a-z0-9](-*[a-z0-9]+)*$/i;
@@ -37,6 +37,13 @@ fihApp.controller('AddAppCtrl', function ($scope, $window, $http, $resource, $lo
         $scope.disableQueryText = false;
     };
 
+    function showSSLWarning() {
+        var messageSSL = $sce.trustAsHtml('Please ensure self-signed HTTPS certificate has been accepted/added to exception list! ' +
+            'Click on link below and accept certificate or contact system administrator for detail.<br><a href="' + $scope.apiDetails.api_ep + '" target="_blank">' + $scope.apiDetails.api_ep);
+        console.log(messageSSL);
+        $scope.openPrompt(messageSSL);
+    }
+
     $scope.testQuery = function () {
         $scope.spinnerData = "Loading query result.. ";
         $scope.loader.loading = true;
@@ -67,27 +74,36 @@ fihApp.controller('AddAppCtrl', function ($scope, $window, $http, $resource, $lo
             console.log("Calling Test Query service with request: " + JSON.stringify(testQueryRequest));
             $scope.queryResultColor = '';
             $scope.testQueryResult = [];
+
             $http.post($scope.apiDetails.api_ep + '/FIH/service/DAASAPI/DBUtility/ValidateQuery', testQueryRequest, headerConfig, { dataType: "jsonp" })
                 .success(function (response, status, headers, config) {
                     console.log("Successfully invoked BuildAPI with response: " + JSON.stringify(response));
-                    if (response.response.status == "Success") {
-                        $scope.queryResult = response.response.status;
-                        $scope.queryResultColor = "green";
-                        $scope.testQueryResult = response.response.DataCollection.Data;
-                        $scope.disableCreateBtn = false;
-                        $scope.showQueryLabel = false;
-                        //$scope.disableQueryText = true;
-                        $scope.loader.loading = false;
-                        $scope.openResultModal();
+                    if(response){
+                        $scope.isBuildCallCompleted = true;
+                        if (response.response.status == "Success") {
+                            $scope.queryResult = response.response.status;
+                            $scope.queryResultColor = "green";
+                            $scope.testQueryResult = response.response.DataCollection.Data;
+                            $scope.disableCreateBtn = false;
+                            $scope.showQueryLabel = false;
+                            //$scope.disableQueryText = true;
+                            $scope.loader.loading = false;
+                            $scope.openResultModal();
+                        }
+                        else {
+                            $scope.queryResponse = response.response.errorDetails;
+                            $scope.disableCreateBtn = true;
+                            $scope.showQueryLabel = true;
+                            $scope.disableQueryText = false;
+                            $scope.loader.loading = false;
+                        }
                     }
-                    else {
-                        $scope.queryResponse = response.response.errorDetails;
-                        $scope.disableCreateBtn = true;
-                        $scope.showQueryLabel = true;
-                        $scope.disableQueryText = false;
+                    else{
                         $scope.loader.loading = false;
+                        showSSLWarning();
                     }
                 }, function (error) {
+                    $scope.isBuildCallCompleted = true;
                     console.log("Failed to connect to DataSource Service: " + JSON.stringify(error));
                     $scope.queryResponse = "Error in connection with Datasource Service.";
                     $scope.disableCreateBtn = true;
@@ -179,6 +195,23 @@ fihApp.controller('AddAppCtrl', function ($scope, $window, $http, $resource, $lo
     $scope.app.dbconfig = {};
     $scope.apitype = $routeParams.apitype;
 
+    $scope.openPrompt = function(message){
+        prompt({
+            title: 'Alert!',
+            containHtml: true,
+            message: message,
+            "buttons": [
+                {
+                    "label": "Close",
+                    "cancel": false,
+                    "primary": false
+                }
+            ]
+        }).then(function(){
+            //he hit ok and not can,
+        });
+    };
+
     $scope.createApp = function () {
         console.log(userProfile.$hasRole("app.deploy"));
         if (!$scope.validate()) {
@@ -269,60 +302,68 @@ fihApp.controller('AddAppCtrl', function ($scope, $window, $http, $resource, $lo
             };
 
             console.log("Build API Request: " + JSON.stringify(buildAppRequest));
+                        
             $http.post($scope.apiDetails.api_ep + '/FIH/service/DAASAPI/BuildApp', buildAppRequest, headerConfig, { dataType: "jsonp" })
                 .success(function (response, status, headers, config) {
                     console.log("Successfully invoked BuildAPI with response: " + JSON.stringify(response));
-                    console.log("Build App status: " + response.response.status);
+                    if (response) {
+                        $scope.isBuildCallCompleted = true;
+                        console.log("Build App status: " + response.response.status);
 
-                    var buildApiResponseStatus = response.response.status;
-                    var updateObj = {
-                        appObjectId: appObjectId,
-                        endpoint: response.response.app_ep,
-                        build_url: response.response.logURL,
-                        status: buildApiResponseStatus,
-                        stage: response.response.stage,
-                        build_number: response.response.buildNumber,
-                        build_identifier: response.response.buildIdentifier
-                    };
+                        var buildApiResponseStatus = response.response.status;
+                        var updateObj = {
+                            appObjectId: appObjectId,
+                            endpoint: response.response.app_ep,
+                            build_url: response.response.logURL,
+                            status: buildApiResponseStatus,
+                            stage: response.response.stage,
+                            build_number: response.response.buildNumber,
+                            build_identifier: response.response.buildIdentifier
+                        };
 
-                    console.log("Updating app status with request: " + JSON.stringify(updateObj));
+                        console.log("Updating app status with request: " + JSON.stringify(updateObj));
 
-                    var AppUpdate = $resource('/fih/apps/updateStatus');
-                    var redirectUrl = '';
-                    switch (buildApiResponseStatus) {
-                        case "Failed":
-                            handleAppBuildFailure();
-                            break;
+                        var AppUpdate = $resource('/fih/apps/updateStatus');
+                        var redirectUrl = '';
+                        switch (buildApiResponseStatus) {
+                            case "Failed":
+                                handleAppBuildFailure();
+                                break;
 
-                        case "Queued":
-                            AppUpdate.save(updateObj, function (res) {
-                                console.log("Successfully updated App status: " + JSON.stringify(res));
-                                redirectUrl = '/#/appstatus?appId=' + appObjectId;
-                                console.log("URL to redirect: " + redirectUrl);
-                                $window.location.href = redirectUrl;
-                            },
-                                function (error) {
-                                    handleAppBuildFailure(error);
-                                });
+                            case "Queued":
+                                AppUpdate.save(updateObj, function (res) {
+                                    console.log("Successfully updated App status: " + JSON.stringify(res));
+                                    redirectUrl = '/#/appstatus?appId=' + appObjectId;
+                                    console.log("URL to redirect: " + redirectUrl);
+                                    $window.location.href = redirectUrl;
+                                },
+                                    function (error) {
+                                        handleAppBuildFailure(error);
+                                    });
 
-                            break;
+                                break;
 
-                        case "WIP":
-                            AppUpdate.save(updateObj, function (res) {
-                                console.log("Successfully updated App status: " + JSON.stringify(res));
-                                redirectUrl = '/#/appstatus?appId=' + appObjectId;
-                                console.log("URL to redirect: " + redirectUrl);
-                                $window.location.href = redirectUrl;
-                            },
-                                function (error) {
-                                    handleAppBuildFailure(error);
-                                });
+                            case "WIP":
+                                AppUpdate.save(updateObj, function (res) {
+                                    console.log("Successfully updated App status: " + JSON.stringify(res));
+                                    redirectUrl = '/#/appstatus?appId=' + appObjectId;
+                                    console.log("URL to redirect: " + redirectUrl);
+                                    $window.location.href = redirectUrl;
+                                },
+                                    function (error) {
+                                        handleAppBuildFailure(error);
+                                    });
 
-                            break;
+                                break;
+                        }
                     }
-
+                    else{
+                        $scope.loader.loading = false;
+                        showSSLWarning();
+                    }
                 })
                 .error(function (data, status, headers, config) {
+                    $scope.isBuildCallCompleted = true;
                     handleAppBuildFailure();
                 });
         }

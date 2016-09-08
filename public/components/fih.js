@@ -1,4 +1,4 @@
-var fihApp = angular.module('fihApp', ['ngAnimate','ui.bootstrap', 'cgPrompt', 'ngResource', 'ngRoute', 'ngTable', 'ngCookies', 'angular-storage','ngMaterial', 'angular-loading-bar']);
+var fihApp = angular.module('fihApp', ['ngAnimate','ui.bootstrap', 'ngSanitize', 'cgPrompt', 'ngResource', 'ngRoute', 'ngTable', 'ngCookies', 'angular-storage','ngMaterial', 'angular-loading-bar']);
 fihApp.constant('AUTH_EVENTS', {
     notAuthenticated: 'auth-not-authenticated',
     notAuthorized: 'auth-not-authorized'
