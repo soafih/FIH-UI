@@ -178,7 +178,6 @@ fihApp.controller('SidebarCtrl', function ($scope, $resource, $location) {
             }
             return res;
         }
-        console.log("route: "+route);
         return route === $location.path();
     };
 });
