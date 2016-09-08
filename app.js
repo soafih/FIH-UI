@@ -107,32 +107,43 @@ app.get('/auth/logout', function(req, res, next){
 });
 
 app.use(function (req, res, next) {
-  
-  if (req.session && req.session.fih_token && req.session.fih_token.access_token) {
-    var token = req.session.fih_token.access_token;
-    console.log("Access token found in session: " + token);
+  if(process.env.NODE_ENV !== 'local'){
+    if (req.session && req.session.fih_token && req.session.fih_token.access_token) {
+      var token = req.session.fih_token.access_token;
+      console.log("Access token found in session: " + token);
 
-    var b64string = token;
-    var buf = new Buffer(b64string.split('.')[1], 'base64');
-    var tokenDecoded = JSON.parse(buf.toString("ascii"));
-    console.log("Decoded Token: " + JSON.stringify(tokenDecoded));
+      var b64string = token;
+      var buf = new Buffer(b64string.split('.')[1], 'base64');
+      var tokenDecoded = JSON.parse(buf.toString("ascii"));
+      console.log("Decoded Token: " + JSON.stringify(tokenDecoded));
 
-    req.headers["x-authenticated-user-username"] = tokenDecoded.user_name;
-    req.headers["x-authenticated-user-id"] = tokenDecoded.user_id;
-    req.headers["x-authenticated-email"] = tokenDecoded.email;
-    next();
+      req.headers["x-authenticated-user-username"] = tokenDecoded.user_name;
+      req.headers["x-authenticated-user-id"] = tokenDecoded.user_id;
+      req.headers["x-authenticated-email"] = tokenDecoded.email;
+      next();
+    }
+    else {
+      console.log("Token not found. Redirecting to login page.");
+      console.log("Session Object Value: "+JSON.stringify(req.session));
+      if (req.query.return) {
+        req.session.oauth2return = req.query.return;
+      }
+      else{
+        req.session.oauth2return = req.originalUrl;
+      }
+      console.log("Redirect URL: "+req.session.oauth2return);
+      res.redirect("/auth/login");
+    }
   }
-  else {
-    console.log("Token not found. Redirecting to login page.");
-    console.log("Session Object Value: "+JSON.stringify(req.session));
-    if (req.query.return) {
-      req.session.oauth2return = req.query.return;
-    }
-    else{
-      req.session.oauth2return = req.originalUrl;
-    }
-    console.log("Redirect URL: "+req.session.oauth2return);
-    res.redirect("/auth/login");
+  else{
+    req.headers["x-authenticated-user-username"] = 'shadabhasana';
+    req.headers["x-authenticated-user-id"] = '6490c3a1-1950-4063-ae59-c5e49f182b0e';
+    req.headers["x-authenticated-email"] = 'shadabhasana@fox.com';
+    var fihToken = {};
+    fihToken.access_token = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJjbG91ZF9jb250cm9sbGVyIiwiaWF0IjoxNDczMzE5NzkyLCJleHAiOjE0NzM0MDYxOTIsImNsaWVudF9pZCI6ImNmIiwic2NvcGUiOlsib3BlbmlkIiwicGFzc3dvcmQud3JpdGUiLCJjbG91ZF9jb250cm9sbGVyLmFkbWluIiwiY2xvdWRfY29udHJvbGxlci5yZWFkIiwiY2xvdWRfY29udHJvbGxlci53cml0ZSIsInNjaW0ucmVhZCIsInNjaW0ud3JpdGUiXSwianRpIjoiZjllM2EzMGYtMmNlNS00NWE1LTkxZjUtYjJiY2IyYjkyMjRmIiwidXNlcl9pZCI6IjY0OTBjM2ExLTE5NTAtNDA2My1hZTU5LWM1ZTQ5ZjE4MmIwZSIsInN1YiI6IjY0OTBjM2ExLTE5NTAtNDA2My1hZTU5LWM1ZTQ5ZjE4MmIwZSIsInVzZXJfbmFtZSI6InNoYWRhYmhhc2FuYSIsImVtYWlsIjoic2hhZGFiaGFzYW5hQGZveC5jb20ifQ.GR4zLc8NT3MJer_gw76Op0lkhcpZtdJq3tr_MN1yUj4';
+
+    req.session.fih_token = fihToken;
+    next();
   }
 });
 
