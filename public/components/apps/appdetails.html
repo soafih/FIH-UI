@@ -7,7 +7,14 @@
         <div class="modal-dialog modal-sm" style="width:450px">
             <h3 class="modal-title {{modalTitleStyle}}">{{modalTitle}}</h3>
             <div style="margin: 20px 0 20px;">
-                <p>{{modalMessage}}</p>
+                <div ng-switch on="modalContainHtml">
+                    <div ng-switch-when="true">
+                        <p ng-bind-html="modalMessage"></p>
+                    </div>
+                    <div ng-switch-default>
+                        <p>{{modalMessage}}</p>
+                    </div>
+                </div>
             </div>
             <div class="modal-footer">
                 <button ng-hide="modalHideActionBtn" class="btn {{modalActionBtnType}}" type="button" ng-click="ok()">{{modalActionBtnText}}</button>

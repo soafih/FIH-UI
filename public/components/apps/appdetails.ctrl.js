@@ -1,5 +1,5 @@
 
-fihApp.controller('AppDetailsCtrl', function ($scope, $routeParams, userProfile, $timeout, $resource, $location, $anchorScroll, $filter, $uibModal, $window, $http) {
+fihApp.controller('AppDetailsCtrl', function ($scope, $routeParams, $sce, userProfile, $timeout, $resource, $location, $anchorScroll, $filter, $uibModal, $window, $http) {
     $scope.applicationName = $routeParams.appname;
     $scope.showBtnDelete = userProfile.$hasPermission('app.delete');
     $scope.showBtnRestart = userProfile.$hasPermission('app.restart');
@@ -189,66 +189,85 @@ fihApp.controller('AppDetailsCtrl', function ($scope, $routeParams, userProfile,
         };
 
         console.log("Build API Request: " + JSON.stringify(buildAppRequest));
+
+        function showSSLWarning(){
+            $timeout.cancel(timeoutBuildApi);
+            var messageSSL = $sce.trustAsHtml('Please ensure self-signed HTTPS certificate has been accepted/added to exception list! ' +
+                'Click on link below and accept certificate or contact system administrator for detail.<br><a href="' + $scope.apiDetails.api_ep + '" target="_blank">' + $scope.apiDetails.api_ep);
+                console.log(messageSSL);
+            $scope.openDialog("errorWithHtml", messageSSL);
+        }
+        var timeoutBuildApi = $timeout(function () {
+            if(!$scope.isBuildCallCompleted){
+                showSSLWarning();
+            }
+        }, 7000);
         $http.post($scope.apiDetails.api_ep + '/FIH/service/DAASAPI/BuildApp', buildAppRequest, headerConfig, { dataType: "jsonp" })
             .success(function (response, status, headers, config) {
-                console.log("Successfully invoked BuildAPI with response: " + JSON.stringify(response));
-                console.log("Build App status: " + response.response.status);
+                if (response) {
+                    $scope.isBuildCallCompleted = true;
+                    console.log("Successfully invoked BuildAPI with response: " + JSON.stringify(response));
+                    console.log("Build App status: " + response.response.status);
 
-                var buildApiResponseStatus = response.response.status;
-                var updateObj = {
-                    appObjectId: appObjectId,
-                    endpoint: response.response.app_ep,
-                    build_url: response.response.logURL,
-                    status: buildApiResponseStatus,
-                    stage: response.response.stage,
-                    build_number: response.response.buildNumber,
-                    build_identifier: response.response.buildIdentifier,
-                    dirty: true
-                };
+                    var buildApiResponseStatus = response.response.status;
+                    var updateObj = {
+                        appObjectId: appObjectId,
+                        endpoint: response.response.app_ep,
+                        build_url: response.response.logURL,
+                        status: buildApiResponseStatus,
+                        stage: response.response.stage,
+                        build_number: response.response.buildNumber,
+                        build_identifier: response.response.buildIdentifier,
+                        dirty: true
+                    };
 
-                console.log("Updating app status with request: " + JSON.stringify(updateObj));
+                    console.log("Updating app status with request: " + JSON.stringify(updateObj));
 
-                var AppUpdate = $resource('/fih/apps/updateStatus');
-                var redirectUrl = '';
-                switch (buildApiResponseStatus) {
-                    case "Failed":
-                        handleAppBuildFailure();
-                        break;
+                    var AppUpdate = $resource('/fih/apps/updateStatus');
+                    var redirectUrl = '';
+                    switch (buildApiResponseStatus) {
+                        case "Failed":
+                            handleAppBuildFailure();
+                            break;
 
-                    case "Queued":
-                        AppUpdate.save(updateObj, function (res) {
-                            $scope.loader.loading = false;
-                            console.log("Successfully updated App status: " + JSON.stringify(res));
-                            redirectUrl = '/#/appstatus?appId=' + appObjectId;
-                            console.log("URL to redirect: " + redirectUrl);
-                            $window.location.href = redirectUrl;
-                        },
-                            function (error) {
-                                handleAppBuildFailure(error);
-                            });
+                        case "Queued":
+                            AppUpdate.save(updateObj, function (res) {
+                                $scope.loader.loading = false;
+                                console.log("Successfully updated App status: " + JSON.stringify(res));
+                                redirectUrl = '/#/appstatus?appId=' + appObjectId;
+                                console.log("URL to redirect: " + redirectUrl);
+                                $window.location.href = redirectUrl;
+                            },
+                                function (error) {
+                                    handleAppBuildFailure(error);
+                                });
 
-                        break;
+                            break;
 
-                    case "WIP":
-                        AppUpdate.save(updateObj, function (res) {
-                            $scope.loader.loading = false;
-                            console.log("Successfully updated App status: " + JSON.stringify(res));
-                            redirectUrl = '/#/appstatus?appId=' + appObjectId;
-                            console.log("URL to redirect: " + redirectUrl);
-                            $window.location.href = redirectUrl;
-                        },
-                            function (error) {
-                                handleAppBuildFailure(error);
-                            });
+                        case "WIP":
+                            AppUpdate.save(updateObj, function (res) {
+                                $scope.loader.loading = false;
+                                console.log("Successfully updated App status: " + JSON.stringify(res));
+                                redirectUrl = '/#/appstatus?appId=' + appObjectId;
+                                console.log("URL to redirect: " + redirectUrl);
+                                $window.location.href = redirectUrl;
+                            },
+                                function (error) {
+                                    handleAppBuildFailure(error);
+                                });
 
-                        break;
+                            break;
+                    }
                 }
-
+                else{
+                    $scope.loader.loading = false;
+                    showSSLWarning();
+                }
             })
             .error(function (data, status, headers, config) {
+                $scope.isBuildCallCompleted = true;
                 handleAppBuildFailure();
             });
-
 
         function handleAppBuildFailure(error) {
             $scope.loader.loading = false;
@@ -366,6 +385,7 @@ fihApp.controller('AppDetailModalInstanceCtrl', function ($scope, $uibModalInsta
     console.log('Action Ctrl:' + action);
     $scope.btnCancelText = "Cancel";
     $scope.modalMessage = message;
+    $scope.modalContainHtml = false;
     if (action === 'delete') {
         $scope.modalTitleStyle = "amber";
         $scope.modalTitle = 'Delete Application';
@@ -393,6 +413,13 @@ fihApp.controller('AppDetailModalInstanceCtrl', function ($scope, $uibModalInsta
         $scope.modalTitle = 'Alert';
         $scope.modalHideActionBtn = true;
         $scope.btnCancelText = "Close";
+    }
+    else if (action === 'errorWithHtml') {
+        $scope.modalTitleStyle = "red";
+        $scope.modalTitle = 'Alert';
+        $scope.modalHideActionBtn = true;
+        $scope.btnCancelText = "Close";
+        $scope.modalContainHtml = true;
     }
 
     $scope.ok = function () {
