@@ -45,6 +45,8 @@ html(ng-app='fihApp')
     script(src='/components/help/help.ctrl.js')
     script(src='/components/apis/apidetails.ctrl.js')
     script(src='/components/dbconfig/dbconfig.ctrl.js')
+    script(src='/components/admin/users.ctrl.js')
+    script(src='/components/admin/roles.ctrl.js')
   body(ng-controller="MainCtrl")
     div.spinner(ng-show="showSpinner")
       spinner(name='spinner6', group='bar', img-src='https://s3-us-west-2.amazonaws.com/s.cdpn.io/10607/spinner3.gif')
@@ -90,15 +92,18 @@ html(ng-app='fihApp')
               a(href='/#/apps') Applications/Integration Services
             //li(ng-class="{active:isActive('/dashboard')}", ng-show="showSidebarDashboard")
               a(href='/#/dashboard') Dashboard
-            li(ng-class="{active:isActive('/dbconfig')}", ng-show="showSidebarDashboard")
-              a(href='/#/dbconfig') DB Config
-          //ul.nav.nav-sidebar
-            li
-              a(href='') Nav item
-            li
-              a(href='') Nav item again
-            li
-              a(href='') One more nav
+            li(ng-class="{active:isActive(['/dbconfig', '/users', '/roles'])}")
+              a(href='', ng-init="hideAdminOptions = true" ng-click="hideAdminOptions = hideAdminOptions ? false : true")
+                | Admin Pages 
+                span.caret
+              ul.nav.nav-sidebar(ng-hide="hideAdminOptions")
+                ul.nav
+                  li(ng-class="{active:isActive('/users')}", ng-hide="showUsersConfig")
+                    a(href='/#/users') Users
+                  li(ng-class="{active:isActive('/roles')}", ng-hide="showUsersConfig")
+                    a(href='/#/roles') Roles
+                  li(ng-class="{active:isActive('/dbconfig')}", ng-hide="showDBConfig")
+                    a(href='/#/dbconfig') Databases
                       
         .col-sm-9.col-sm-offset-3.col-md-10.col-md-offset-2.main
           div.loading-bar-container

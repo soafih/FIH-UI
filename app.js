@@ -107,7 +107,6 @@ app.get('/auth/logout', function(req, res, next){
 });
 
 app.use(function (req, res, next) {
-  
   if (req.session && req.session.fih_token && req.session.fih_token.access_token) {
     var token = req.session.fih_token.access_token;
     console.log("Access token found in session: " + token);
