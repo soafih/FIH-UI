@@ -1,5 +1,6 @@
 
-fihApp.controller('AppDetailsCtrl', function ($scope, $routeParams, $sce, userProfile, $timeout, $resource, $location, $anchorScroll, $filter, $uibModal, $window, $http) {
+fihApp.controller('AppDetailsCtrl', function ($scope, $routeParams, $sce, userProfile, $resource, $location, 
+        $anchorScroll, $filter, $uibModal, $window, $http) {
     $scope.applicationName = $routeParams.appname;
     $scope.showBtnDelete = userProfile.$hasPermission('app.delete');
     $scope.showBtnRestart = userProfile.$hasPermission('app.restart');
@@ -149,6 +150,13 @@ fihApp.controller('AppDetailsCtrl', function ($scope, $routeParams, $sce, userPr
         });
     };
 
+    function showSSLWarning() {
+        var messageSSL = $sce.trustAsHtml('Please ensure self-signed HTTPS certificate has been accepted/added to exception list! ' +
+            'Click on link below and accept certificate or contact system administrator for detail.<br><a href="' + $scope.apiDetails.api_ep + '" target="_blank">' + $scope.apiDetails.api_ep);
+        console.log(messageSSL);
+        $scope.openDialog("errorWithHtml", messageSSL);
+    }
+    
     $scope.redeployApp = function () {
         if (!$scope.apiDetails.api_ep) {
             $scope.openDialog("error", 'API endpoint is not defined. Application cannot be redeployed!\nPlease verify API type.');
@@ -189,19 +197,7 @@ fihApp.controller('AppDetailsCtrl', function ($scope, $routeParams, $sce, userPr
         };
 
         console.log("Build API Request: " + JSON.stringify(buildAppRequest));
-
-        function showSSLWarning(){
-            $timeout.cancel(timeoutBuildApi);
-            var messageSSL = $sce.trustAsHtml('Please ensure self-signed HTTPS certificate has been accepted/added to exception list! ' +
-                'Click on link below and accept certificate or contact system administrator for detail.<br><a href="' + $scope.apiDetails.api_ep + '" target="_blank">' + $scope.apiDetails.api_ep);
-                console.log(messageSSL);
-            $scope.openDialog("errorWithHtml", messageSSL);
-        }
-        var timeoutBuildApi = $timeout(function () {
-            if(!$scope.isBuildCallCompleted){
-                showSSLWarning();
-            }
-        }, 7000);
+        
         $http.post($scope.apiDetails.api_ep + '/FIH/service/DAASAPI/BuildApp', buildAppRequest, headerConfig, { dataType: "jsonp" })
             .success(function (response, status, headers, config) {
                 if (response) {

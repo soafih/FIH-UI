@@ -1,4 +1,4 @@
-fihApp.controller('AppStatusCtrl', function($scope, $resource, $window, $routeParams, $sce, $interval, $http, $location){
+fihApp.controller('AppStatusCtrl', function($scope, $resource, $window, $routeParams, $sce, $interval, $http, $location, prompt){
     
     $scope.pageHeader = "Application Deployment Status";
 
@@ -6,6 +6,7 @@ fihApp.controller('AppStatusCtrl', function($scope, $resource, $window, $routePa
         loading: false,
     };
     $scope.loader.loading = true;
+    
     $scope.appStateObj = {
         Saved: {Text: "Saved", Per: 5, Type: "info", Class: "progress-striped active"},
         Queued: {Text: "Queued", Per: 10, Type: "warning", Class: "progress-striped active"},
@@ -23,7 +24,24 @@ fihApp.controller('AppStatusCtrl', function($scope, $resource, $window, $routePa
         },
         Success: {Text: "Success", Per: 100, Type: "success", Class: ""}
     };
-    
+
+    $scope.openPrompt = function(message){
+        prompt({
+            title: 'Alert!',
+            containHtml: true,
+            message: message,
+            "buttons": [
+                {
+                    "label": "Close",
+                    "cancel": false,
+                    "primary": false
+                }
+            ]
+        }).then(function(){
+            //he hit ok and not can,
+        });
+    };
+
     $scope.toggleIFrame = false;
     $scope.toggleDisplayLogs = function(){
         $scope.toggleIFrame = !$scope.toggleIFrame;
@@ -58,6 +76,15 @@ fihApp.controller('AppStatusCtrl', function($scope, $resource, $window, $routePa
     };
     init();
 
+    function showSSLWarning() {
+        var messageSSL = $sce.trustAsHtml('Please ensure self-signed HTTPS certificate has been accepted/added to exception list! ' +
+            'Click on link below and accept certificate or contact system administrator for detail.'+
+            '<br><a href="' + $scope.apiDetails.api_ep + '" target="_blank">' + $scope.apiDetails.api_ep) +
+            '<br><a href="' + $scope.buildUrl || $scope.logURL + '" target="_blank">' + $scope.buildUrl || $scope.logURL ;
+        console.log(messageSSL);
+        $scope.openPrompt(messageSSL);
+    }
+
     var loadPageData = function () {
         console.log("Loading page data..");
         var buildappstatus = $scope.appDetails.status;
@@ -72,34 +99,40 @@ fihApp.controller('AppStatusCtrl', function($scope, $resource, $window, $routePa
             $scope.RefreshQueueStatus = $interval(function () {
 
                 $http.get(queueStatusUrl).then(function (res) {
-                    var buildNumber = 0;
-                    buildNumber = res.data.response.buildNumber;
-                    console.log("Build Number:" + buildNumber);
-                    if (buildNumber > 0) {
-                        var logURL = res.data.response.logURL;
-                        var updateObj = {
-                            appObjectId: appObjectId,
-                            status: 'WIP',
-                            stage: 'Triggered',
-                            build_number: buildNumber,
-                            build_url: logURL
-                        };
+                    if(res){
+                        var buildNumber = 0;
+                        buildNumber = res.data.response.buildNumber;
+                        console.log("Build Number:" + buildNumber);
+                        if (buildNumber > 0) {
+                            $scope.logURL = res.data.response.logURL;
+                            var updateObj = {
+                                appObjectId: appObjectId,
+                                status: 'WIP',
+                                stage: 'Triggered',
+                                build_number: buildNumber,
+                                build_url: $scope.logURL
+                            };
 
-                        AppUpdate.save(updateObj, function (res) {
-                            console.log("Updated status: " + JSON.stringify(res));
-                        },
-                            function (error) {
-                                console.log("Failed in updating app status: " + JSON.stringify(error));
-                            });
+                            AppUpdate.save(updateObj, function (res) {
+                                console.log("Updated status: " + JSON.stringify(res));
+                            },
+                                function (error) {
+                                    console.log("Failed in updating app status: " + JSON.stringify(error));
+                                });
 
-                        redirectUrl = '/#/appstatus?appId=' + appObjectId;
-                        console.log("URL to redirect: " + redirectUrl);
-                        $interval.cancel($scope.RefreshQueueStatus);
-                        //$location.path(redirectUrl);
-                        $window.location.href = redirectUrl;
+                            redirectUrl = '/#/appstatus?appId=' + appObjectId;
+                            console.log("URL to redirect: " + redirectUrl);
+                            $interval.cancel($scope.RefreshQueueStatus);
+                            //$location.path(redirectUrl);
+                            $window.location.href = redirectUrl;
+                        }
+                        else {
+                            $window.location.reload(true);
+                        }
                     }
-                    else {
-                        $window.location.reload(true);
+                    else{
+                        $scope.loader.loading = false;
+                        showSSLWarning();
                     }
                 });
 
@@ -129,71 +162,77 @@ fihApp.controller('AppStatusCtrl', function($scope, $resource, $window, $routePa
                     var statusUrl = $scope.apiDetails.api_ep + '/FIH/service/DAASAPI/JenkinUtility/GetStatus?buildNumber=' + $scope.appDetails.build_number;
                     console.log("BuildAPI Status URL:" + statusUrl);
                     $http.get(statusUrl).then(function (res) {
-                        console.log("Response Status: " + JSON.stringify(res));
-                        var appStatus = res.data.response.status;
-                        var appStage = res.data.response.stage;
-                        $scope.appCurrentState = appStatus;
+                        if(res){
+                            console.log("Response Status: " + JSON.stringify(res));
+                            var appStatus = res.data.response.status;
+                            var appStage = res.data.response.stage;
+                            $scope.appCurrentState = appStatus;
 
-                        if (appStatus == "Success") {
-                            console.log("Received " + appStatus + " For BuildAPI. Stoping page refresh..");
-                            $interval.cancel($scope.RefreshIFrame);
-                            $scope.barState = $scope.appStateObj[$scope.appCurrentState];
-                            $scope.buildUrl = $sce.trustAsResourceUrl($scope.appDetails.build_url + '?dummyVar=' + (new Date()).getTime());
+                            if (appStatus == "Success") {
+                                console.log("Received " + appStatus + " For BuildAPI. Stoping page refresh..");
+                                $interval.cancel($scope.RefreshIFrame);
+                                $scope.barState = $scope.appStateObj[$scope.appCurrentState];
+                                $scope.buildUrl = $sce.trustAsResourceUrl($scope.appDetails.build_url + '?dummyVar=' + (new Date()).getTime());
 
-                            var updateObj = {
-                                appObjectId: appObjectId,
-                                status: appStatus,
-                                stage: appStage,
-                                dirty: false
-                            };
-                            AppUpdate.save(updateObj, function (res) {
-                                console.log("Updated status: " + JSON.stringify(res));
-                            },
-                                function (error) {
-                                    console.log("Failed in updating app status: " + JSON.stringify(error));
-                                });
-                        }
-                        else if (appStatus == "Failed") {
-                            console.log("Received " + appStatus + " from BuildAPI. Stoping page refresh..");
-                            $interval.cancel($scope.RefreshIFrame);
-                            if (res.data.response.stage) {
-                                $scope.appCurrentStage = res.data.response.stage;
+                                var updateObj = {
+                                    appObjectId: appObjectId,
+                                    status: appStatus,
+                                    stage: appStage,
+                                    dirty: false
+                                };
+                                AppUpdate.save(updateObj, function (res) {
+                                    console.log("Updated status: " + JSON.stringify(res));
+                                },
+                                    function (error) {
+                                        console.log("Failed in updating app status: " + JSON.stringify(error));
+                                    });
                             }
-                            else {
-                                $scope.appCurrentStage = "QueueFailed";
+                            else if (appStatus == "Failed") {
+                                console.log("Received " + appStatus + " from BuildAPI. Stoping page refresh..");
+                                $interval.cancel($scope.RefreshIFrame);
+                                if (res.data.response.stage) {
+                                    $scope.appCurrentStage = res.data.response.stage;
+                                }
+                                else {
+                                    $scope.appCurrentStage = "QueueFailed";
+                                }
+                                $scope.barState = $scope.appStateObj[$scope.appCurrentState][$scope.appCurrentStage];
+                                $scope.buildUrl = $sce.trustAsResourceUrl($scope.appDetails.build_url + '?dummyVar=' + (new Date()).getTime());
+
+                                var updateObjFailed = {
+                                    appObjectId: appObjectId,
+                                    status: appStatus,
+                                    stage: appStage,
+                                };
+                                console.log('Updating status: ' + JSON.stringify(updateObjFailed));
+                                AppUpdate.save(updateObjFailed, function (res) {
+                                    console.log("Updated status: " + JSON.stringify(res));
+                                },
+                                    function (error) {
+                                        console.log("Failed in updating app status: " + JSON.stringify(error));
+                                    });
                             }
-                            $scope.barState = $scope.appStateObj[$scope.appCurrentState][$scope.appCurrentStage];
-                            $scope.buildUrl = $sce.trustAsResourceUrl($scope.appDetails.build_url + '?dummyVar=' + (new Date()).getTime());
+                            else if (appStatus == "WIP") {
+                                console.log("Reloading Page...");
+                                $scope.barState = $scope.appStateObj[$scope.appCurrentState][appStage];
+                                $scope.buildUrl = $sce.trustAsResourceUrl($scope.appDetails.build_url + '?dummyVar=' + (new Date()).getTime());
 
-                            var updateObjFailed = {
-                                appObjectId: appObjectId,
-                                status: appStatus,
-                                stage: appStage,
-                            };
-                            console.log('Updating status: ' + JSON.stringify(updateObjFailed));
-                            AppUpdate.save(updateObjFailed, function (res) {
-                                console.log("Updated status: " + JSON.stringify(res));
-                            },
-                                function (error) {
-                                    console.log("Failed in updating app status: " + JSON.stringify(error));
-                                });
+                                var updateObjWIP = {
+                                    appObjectId: appObjectId,
+                                    status: appStatus,
+                                    stage: appStage,
+                                };
+                                AppUpdate.save(updateObjWIP, function (res) {
+                                    console.log("Updated status: " + JSON.stringify(res));
+                                },
+                                    function (error) {
+                                        console.log("Failed in updating app status: " + JSON.stringify(error));
+                                    });
+                            }
                         }
-                        else if (appStatus == "WIP") {
-                            console.log("Reloading Page...");
-                            $scope.barState = $scope.appStateObj[$scope.appCurrentState][appStage];
-                            $scope.buildUrl = $sce.trustAsResourceUrl($scope.appDetails.build_url + '?dummyVar=' + (new Date()).getTime());
-
-                            var updateObjWIP = {
-                                appObjectId: appObjectId,
-                                status: appStatus,
-                                stage: appStage,
-                            };
-                            AppUpdate.save(updateObjWIP, function (res) {
-                                console.log("Updated status: " + JSON.stringify(res));
-                            },
-                                function (error) {
-                                    console.log("Failed in updating app status: " + JSON.stringify(error));
-                                });
+                        else{
+                            $scope.loader.loading = false;
+                            showSSLWarning();
                         }
                     });
                 }
