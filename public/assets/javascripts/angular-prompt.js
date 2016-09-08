@@ -8,6 +8,7 @@ angular.module('cgPrompt').factory('prompt',['$uibModal','$q',function($uibModal
             title: '',
 			titleStyle:'color:red;',
             message: '',
+            containHtml: false,
             input: false,
             label: '',
             value: '',
@@ -115,7 +116,13 @@ angular.module('cgPrompt').run(['$templateCache', function($templateCache) {
     "    <div class=\"modal-body\">\n" +
     "\n" +
     "        <p ng-if=\"options.message\">\n" +
-    "            {{options.message}}\n" +
+    "           <div ng-switch on=\"options.containHtml\">"+
+    "                <div ng-switch-when=\"true\">"+
+    "                   <p ng-bind-html=\"options.message\"></p>" +
+    "                </div>"+
+    "                <div ng-switch-default>"+
+    "                   {{options.message}}\n" +
+    "                </div>"+
     "        </p>\n" +
     "\n" +
     "        <form id=\"cgPromptForm\" name=\"form.cgPromptForm\" ng-if=\"options.input\" ng-submit=\"submit()\">\n" +
