@@ -58,7 +58,7 @@ fihApp.controller('AppsCtrl', function($scope, $resource, $location, userProfile
        // console.log($scope.advSearchKey);
 
         if ($scope.advSearchVal == null && ($scope.advFromDate == null || $scope.advToDate == null)) {
-             $scope.searchAlertModal();
+              $scope.openDialog('Please select the value to be searched')
 
             return;
         }
@@ -133,14 +133,20 @@ fihApp.controller('AppsCtrl', function($scope, $resource, $location, userProfile
         $scope.apps = $scope.appSearchBackup;
     };
 
-  $scope.searchAlertModal = function () {
-        var modalInstance = $uibModal.open({
-            animation: $scope.animationsEnabled,
-            templateUrl: 'serachAlertModalContent.html',
-            controller: 'ModalSearchAlertCtrl',
-            size: 'sm'
+    $scope.openDialog = function (message) {
+        prompt({
+            title: 'Alert!',
+            message: message,
+            "buttons": [
+                {
+                    "label": "Ok",
+                    "cancel": true,
+                    "primary": false
+                }
+            ]
+        }).then(function () {
+            //he hit ok and not can,
         });
-
     };
 });
 
@@ -212,9 +218,3 @@ fihApp.controller('ModalInstanceCtrl', function ($scope, $uibModalInstance, appD
     };
 });
 
-fihApp.controller('ModalSearchAlertCtrl', function ($scope, $uibModalInstance) {
-
-    $scope.cancel = function () {
-        $uibModalInstance.dismiss('cancel');
-    };
-});
