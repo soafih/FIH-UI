@@ -393,10 +393,9 @@ fihApp.controller('AddAppCtrl', function ($scope, $window, $http, $resource, $lo
     $scope.databaseTable = new NgTableParams({
         page: 1,
         count: 5
-    },
+    }, 
         {
             counts: [],
-            // determines the pager buttons (left set of buttons in demo)
             paginationMaxBlocks: 13,
             paginationMinBlocks: 2,
             total: $scope.databases.length,

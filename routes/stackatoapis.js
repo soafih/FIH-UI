@@ -205,6 +205,102 @@ function getStackatoAccessToken(callback) {
 }
 
 
+router.get('/orgs', function (req, res) {
+    console.log("Retrieving orgs from stackato..");
+    var fihToken = req.session.fih_token;
+    if (fihToken && fihToken.access_token) {
+        async.waterfall([
+            function getAllOrganizations(callback) {
+                console.log("Inside getAllOrganizations");
+                var options = {
+                    url: HOST_API_URL + '/v2/organizations',
+                    headers: {
+                        'Authorization': 'Bearer ' + fihToken.access_token,
+                    }
+                };
+
+                request(options, function resCallback(error, response, body) {
+                    if (response)
+                        console.log("Get All Stackato response code: " + response.statusCode);
+
+                    if (!error && (response.statusCode == 200)) {
+                        var info = JSON.parse(body);
+
+                        var resources = info.resources;
+                        var orgsArr = [];
+                        for (var i = 0; i < resources.length; i++) {
+                            var org = {
+                                name: resources[i].entity.name
+                            };
+                            orgsArr.push(org);
+                        }
+                        console.log("Stackato Org Response: " + JSON.stringify(orgsArr));
+
+                        callback(null, orgsArr);
+                    }
+                    else {
+                        console.log("getAllOrganizations | Generating error response: " + JSON.parse(error));
+                        callback(generateErrorResponse(response, JSON.parse(body)));
+                    }
+                });
+
+            },
+        ], function (err, result) {
+            console.log("All organization fetched: " + JSON.stringify(result));
+            res.json(result);
+        });
+    }
+});
+
+
+router.get('/spaces', function (req, res) {
+    console.log("Retrieving spaces from stackato..");
+    var fihToken = req.session.fih_token;
+    if (fihToken && fihToken.access_token) {
+        async.waterfall([
+            function getAllSpaces(callback) {
+                console.log("Inside getAllSpaces");
+                var options = {
+                    url: HOST_API_URL + '/v2/spaces',
+                    headers: {
+                        'Authorization': 'Bearer ' + fihToken.access_token,
+                    }
+                };
+
+                request(options, function resCallback(error, response, body) {
+                    if (response)
+                        console.log("Get All Spaces Stackato response code: " + response.statusCode);
+
+                    if (!error && (response.statusCode == 200)) {
+                        var info = JSON.parse(body);
+
+                        var resources = info.resources;
+                        var spacesArr = [];
+                        for (var i = 0; i < resources.length; i++) {
+                            var space = {
+                                name: resources[i].entity.name
+                            };
+                            spacesArr.push(space);
+                        }
+                        console.log("Stackato Spaces Response: " + JSON.stringify(spacesArr));
+
+                        callback(null, spacesArr);
+                    }
+                    else {
+                        console.log("getAllspaces | Generating error response: " + JSON.parse(error));
+                        callback(generateErrorResponse(response, JSON.parse(body)));
+                    }
+                });
+
+            },
+        ], function (err, result) {
+            console.log("All spaces fetched: " + JSON.stringify(result));
+            res.json(result);
+        });
+    }
+});
+
+
 router.get('/headertest', function (req, res) {
     console.log("Session: "+JSON.stringify(req.session));
     console.log("Username: "+req.session.username);
@@ -273,26 +369,6 @@ function performRequest(host, endpoint, method, dataString, headers, success) {
     req.write(dataString);
     req.end();
 }
-
-router.get('/orgs', function (req, res) {
-    var cacheValue = STACKATO_CACHE.get("orgs");
-    if (cacheValue === undefined) {
-        console.log("Retrieving orgs from stackato..");
-        async.waterfall([
-            getStackatoAccessTokenAsync,
-            getAllOrganizations,
-            getOrgDetails
-        ], function (err, result) {
-            console.log("###### Sending response back: " + JSON.stringify(result));
-            STACKATO_CACHE.set("orgs", result, DEFAULT_TTL);
-            res.json(result);
-        });
-    }
-    else {
-        console.log("Retrieved orgs from cache..");
-        res.json(cacheValue);
-    }
-});
 */
 
 /*
@@ -333,30 +409,6 @@ router.get('/userorgs/:guid', function (req, res) {
 });
 */
 
-/*
-function getAllOrganizations(accessToken, callback) {
-    
-    var headers = {
-        'Authorization': 'Bearer ' + accessToken
-    };
-
-    performRequest(hostApi, '/v2/organizations', 'GET', '', headers, function (data) {
-        var resources = data.resources;
-        var orgsArr = [];
-        for (var i = 0; i < resources.length; i++) {
-            var org = {
-                name: resources[i].entity.name,
-                spaces_url: resources[i].entity.spaces_url,
-                domains_url: resources[i].entity.domains_url
-            };
-            orgsArr.push(org);
-        }
-        console.log("Stackato Org Response: " + JSON.stringify(orgsArr));
-        
-        callback(null, accessToken, orgsArr);
-    });
-}
-*/
 /*
 function getOrgDetails(accessToken, orgsArr, callback) {
     async.map(orgsArr, getSpacesAndDomains, function(err, results) {

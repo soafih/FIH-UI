@@ -1,4 +1,99 @@
-<div>
-    <h3>{{pageHeader}}</h3>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-6"><h3>{{pageHeader}}</h3></div>
+        <div class="col-md-6"><button style="margin: 10px 30px 0 0;" class="btn btn-info btn-md btn-md-2 pull-right" ng-click="">Register new</button></div>
+    </div>
 </div>
-
+<hr />
+<div class="tab-content">
+    
+    <div class="col-md-12">
+        <div class="users-search-panel">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <p class="panel-title">
+                        <a class="accordion-toggle" ng-click="isSearchCollapsed = !isSearchCollapsed">Search Users</a>
+                    </p>
+                </div>
+                <div uib-collapse="isSearchCollapsed">
+                    <div class="panel-body">
+                        <div class="row users-search-panel-row">
+                            <div class="col-md-6">
+                                <label class='control-label col-md-3'>Roles</label>
+                                <div class="users-search-panel-select col-md-6" ng-dropdown-multiselect="" options="rolesData" selected-model="rolesModel" extra-settings="selectSettings" translation-texts="rolesCustomTexts"></div>
+                            </div>
+                            <div class="col-md-6 pull-right">
+                                <label class='control-label col-md-4'>Super User</label>
+                                <div class="col-md-6">
+                                    <div class="checkbox checkbox-success">
+                                        <input ng-init="app.exposeToApigee = false" id="checkbox1" type="checkbox" checked ng-model="app.exposeToApigee">
+                                        <label  for="checkbox1" style="font-weight: bold;"> </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row users-search-panel-row">
+                            <div class="col-md-6">
+                                <label class='control-label col-md-3'>Username</label>
+                                <div  class='col-md-9'>
+                                    <input id="txtUserName" name="UserName" placeholder="Enter username" class="form-control" />
+                                </div>
+                            </div>
+                            <div class="col-md-6 pull-right">
+                                <label class='control-label col-md-4'>Organization</label>
+                                <div class="users-search-panel-select col-md-6" ng-dropdown-multiselect="" options="orgData" selected-model="orgModel" extra-settings="selectSettings" translation-texts="orgCustomTexts"></div>
+                            </div>
+                        </div>
+                        <div class="row users-search-panel-row">
+                            <div class="col-md-6">
+                                <label class='control-label col-md-3'>Email</label>
+                                <div  class='col-md-9'>
+                                    <input id="txtUserName" name="UserName" placeholder="Enter email id" class="form-control" />
+                                </div>
+                            </div>
+                            <div class="col-md-6 pull-right">
+                                <label class='control-label col-md-4'>Space</label>
+                                <div class="users-search-panel-select col-md-6" ng-dropdown-multiselect="" options="spaceData" selected-model="spaceModel" extra-settings="selectSettings" translation-texts="spaceCustomTexts"></div>
+                            </div>
+                        </div>
+                        <div class="row users-search-panel-row" style="margin: -10px; 40px 0 0" >
+                            <button class="btn btn-info btn-md col-md-1 pull-right">Search</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="users-modify-btn">
+        <div class="container-fluid">
+            <div class="row">
+                <button class="btn btn-danger btn-md col-md-1 pull-right" ng-click="openDialog('delete', 'All user data will be deleted. This action cannot be undone!')">Delete</button>
+                <button class="btn btn-warning btn-md col-md-1 pull-right" ng-click="updateUser()">Update</button>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-12">
+        <table style="margin: 15px 0px" ng-table="userTable" class="table table-bordered table-striped table-hover table-condensed">
+            <colgroup>
+                <col width="25%" />
+                <col width="45%" />
+                <col width="10%" />
+                <col width="10%" />
+            </colgroup>
+            <tr ng-repeat="userinfo in $data" ng-class="{ 'emphasis': userinfo.superuser }">
+                <td data-title="'Username'" sortable="'username'" filter="{ 'username': 'text' }">
+                    {{userinfo.username}}
+                </td>
+                <td data-title="'Email Id'" sortable="'email'" filter="{ 'email': 'text' }">
+                    {{userinfo.email}}
+                </td>    
+                <td data-title="'Super User'" sortable="'superuser'" filter="{ 'superuser': 'text' }">
+                    {{userinfo.superuser ? 'Y' : 'N'}}
+                </td>  
+                <td data-title="'Select'">
+                    <input type="checkbox" ng-change="countCheckedBox()" ng-model="checkboxes.items[userinfo.username]">
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>
