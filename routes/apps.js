@@ -20,10 +20,10 @@ router.post('/userorgspace', permCheck.checkPermission('app.view'), function (re
 
     var collection = db.get('coll_app');
     collection.find({
-        $and: [{
+         $or: [{"visibility": {"$eq": "public"}}, {$and: [{
             "stackato_config.org": { "$in": orgs}},
             {"stackato_config.space": { "$in": spaces}}
-        ]
+        ]}]
     }, function (err, response) {
         if (err) throw err;
         var apps = {"apps": response};

@@ -148,16 +148,22 @@ fihApp.controller('dbconfigctrl', function ($scope, $uibModal, $filter, $resourc
 
         TestQuery.testQuery(testQueryRequest, $scope.apiDetails.api_ep).then(function (resp) {
 
-            if (resp.data == null) {
-                $scope.openDialog("Warning", "color:red", "data");
+            if (resp.data == null) { 
+			
+			var messageSSL = $sce.trustAsHtml('Please ensure self-signed HTTPS certificate has been accepted/added to exception list! ' +
+                    'Click on link below and accept certificate or contact system administrator for detail.<br><a href="' + $scope.apiDetails.api_ep + '" target="_blank">' + $scope.apiDetails.api_ep);
+
+                $scope.openDialog("Warning", "color:red", messageSSL, true);
             }
+			else{
+				
             var status = resp.data.response.status;
 
             if (status == "Success")
                 $scope.openDialog(status, "color:green", "Connection Successfull !!");
             else
                 $scope.openDialog(status, "color:red", resp.data.response.errorDetails);
-
+			}
         }, function (error) {
             if (error.data == null) {
                 var messageSSL = $sce.trustAsHtml('Please ensure self-signed HTTPS certificate has been accepted/added to exception list! ' +

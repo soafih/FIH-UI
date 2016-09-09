@@ -110,6 +110,10 @@
                                             </div>
                                         </label>
                                     </div>
+									 <div class="row app-details">
+                                        <label class='control-label col-sm-3'>Created</label>
+                                        <label class='control-label col-sm-9' style="font-weight:500">{{appDetails.created_date}}</label>
+                                    </div>
                                     <div class="row app-details">
                                         <label class='control-label col-sm-3'>Created</label>
                                         <label class='control-label col-sm-9' style="font-weight:500">{{appDetails.created_date}}</label>
@@ -166,11 +170,17 @@
                                             </div>
                                         </div>
                                     </div>
+									<div class="row app-details">
+                                        <label class='control-label col-md-3'>Visibility</label>
+                                        <label ng-show="!showEditableImplFields" class='control-label col-md-2' style="font-weight:500">{{appDetails.visibility}}</label>
+                                        <input ng-show="showEditableImplFields" class="control-labe col-md-2" ng-model="appVisibility" placeholder="{{appDetails.visibility}}"></input>
+                                    </div>
                                     <div class="row app-details">
                                         <label class='control-label col-md-3'>Query</label>
                                         <label ng-show="!showEditableImplFields" class='control-label col-md-9' style="font-weight:500">{{appDetails.db_config.query}}</label>
                                         <textarea ng-show="showEditableImplFields" style="font-size:12px; font-family: Tahoma; font-weight:500" class='control-label col-md-9' ng-model="txtUpdatedQuery" rows="10">{{appDetails.db_config.query}}</textarea>
                                     </div>
+									
                                     <div class="row app-details">
                                         <label class='control-label col-md-3'>Max Active</label>
                                         <label ng-show="!showEditableImplFields" class='control-label col-md-2' style="font-weight:500">{{appDetails.db_config.max_active}}</label>
