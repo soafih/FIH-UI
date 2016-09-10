@@ -26,7 +26,7 @@
     <div class="app-header">
         <div class="container-fluid">
             <div class="row">
-                <div uib-alert style="height: 25px; border: none; margin:0 0 10px 10px; padding:0 0 0 10px;" dismiss-on-timeout="20000" ng-repeat="alert in alerts" ng-class="'alert-' + (alert.type || 'danger')" close="closeAlert($index)">{{alert.msg}}</div>
+                <div uib-alert ng-show="showBtnUpdate" style="height: 25px; border: none; margin:0 0 10px 10px; padding:0 0 0 10px;" dismiss-on-timeout="20000" ng-repeat="alert in alerts" ng-class="'alert-' + (alert.type || 'danger')" close="closeAlert($index)">{{alert.msg}}</div>
                 <div class="col-md-7"><h3>{{applicationName}}</h3></div>
                 <button ng-show="showBtnDelete" class="btn btn-danger btn-md col-md-1 pull-right" ng-click="openDialog('delete', 'All application data will be deleted. This action cannot be undone!')">Delete</button>
                 <button ng-show="showBtnRestart" disabled class="btn btn-info btn-md col-md-1 pull-right" ng-click="">Restart</button>
@@ -130,6 +130,29 @@
                                         <label class='control-label col-sm-3'>Last Updated By</label>
                                         <label class='control-label col-sm-9' style="font-weight:500">{{appDetails.last_updated_by}}</label>
                                     </div>
+									 <div class="row app-details">
+                                        <div>
+                                        <label class='control-label col-md-3'>Visibility</label>
+                                        <label ng-show="!showTextAppVisibility" class='control-label col-md-2' style="font-weight:500">{{appDetails.visibility}}</label>
+                                        <select ng-show="showTextAppVisibility"  class="control-labe col-md-2"  ng-model='UpdatedappVisibility'>
+                                        <option value="private">private</option>
+                                          <option value="public">public</option>
+                                    </select>
+                                    </div>
+                                     <div ng-show="!showTextAppVisibility">
+                                       <button  ng-show="showBtnUpdate" type="button" ng-click="editAppVisibility()" class="btn btn-default btn-sm">
+                                            <span class="glyphicon glyphicon-edit"></span> Edit
+                                        </button>
+                                      </div>
+                                    <div ng-show="showTextAppVisibility">
+                                       <button type="button" ng-click="saveAppVisibility()" style="margin: 0 5px 0 5px" class="btn btn-success btn-xs">
+                                            <span class="glyphicon glyphicon-floppy-save"></span> Save
+                                        </button>
+                                        <button type="button" ng-click="cancelAppVisibility()" style="margin: 0 5px 0 0" class="btn btn-default btn-xs">
+                                            <span class="glyphicon glyphicon-floppy-remove"></span> Cancel
+                                        </button>
+                                    </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -170,12 +193,7 @@
                                             </div>
                                         </div>
                                     </div>
-									<div class="row app-details">
-                                        <label class='control-label col-md-3'>Visibility</label>
-                                        <label ng-show="!showEditableImplFields" class='control-label col-md-2' style="font-weight:500">{{appDetails.visibility}}</label>
-                                        <input ng-show="showEditableImplFields" class="control-labe col-md-2" ng-model="appVisibility" placeholder="{{appDetails.visibility}}"></input>
-                                    </div>
-                                    <div class="row app-details">
+									  <div class="row app-details">
                                         <label class='control-label col-md-3'>Query</label>
                                         <label ng-show="!showEditableImplFields" class='control-label col-md-9' style="font-weight:500">{{appDetails.db_config.query}}</label>
                                         <textarea ng-show="showEditableImplFields" style="font-size:12px; font-family: Tahoma; font-weight:500" class='control-label col-md-9' ng-model="txtUpdatedQuery" rows="10">{{appDetails.db_config.query}}</textarea>
@@ -232,7 +250,7 @@
                                 <div class="panel-body">
                                     <div class="row app-details" ng-repeat="item in dbDetails">
                                         <div ng-repeat="(key, value) in item">
-										 <div ng-show="key !='Schema' || dbDetails[1].Type =='as400' ">
+										 <div ng-show="key !='Library' || dbDetails[1].Type =='as400' ">
                                             <label class='control-label col-sm-3'>{{key}}</label>
                                             <label class='control-label col-sm-9' style="font-weight:500">
                                                 <div ng-switch on="key">

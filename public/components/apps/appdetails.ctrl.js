@@ -50,7 +50,7 @@ fihApp.controller('AppDetailsCtrl', function ($scope, $routeParams, $sce, userPr
                         { "Host": dbconfig.host },
                         { "Port": dbconfig.port },
                         { "User": dbconfig.uname },
-                        { "Schema": dbconfig.schema }
+                        { "Library": dbconfig.schema }
                     ];
                     $scope.loader.loading = false;
                 });
@@ -89,8 +89,7 @@ fihApp.controller('AppDetailsCtrl', function ($scope, $routeParams, $sce, userPr
         $scope.showEditableImplFields = true;
         $scope.showSavedMessage = false;
         $scope.editMessage = "";
-		$scope.appVisibility = $scope.appDetails.visibility;
-        $scope.txtUpdatedQuery = $scope.appDetails.db_config.query;
+	    $scope.txtUpdatedQuery = $scope.appDetails.db_config.query;
         $scope.txtMaxWait = $scope.appDetails.db_config.max_wait;
         $scope.txtMaxIdle = $scope.appDetails.db_config.max_idle;
         $scope.txtMaxActive = $scope.appDetails.db_config.max_active;
@@ -105,8 +104,7 @@ fihApp.controller('AppDetailsCtrl', function ($scope, $routeParams, $sce, userPr
         if ($scope.appDetails.db_config.query == $scope.txtUpdatedQuery &&
             $scope.appDetails.db_config.max_wait == $scope.txtMaxWait &&
             $scope.appDetails.db_config.max_idle == $scope.txtMaxIdle &&
-            $scope.appDetails.db_config.max_active == $scope.txtMaxActive&&
-			$scope.appDetails.visibility == $scope.appVisibility ) {
+            $scope.appDetails.db_config.max_active == $scope.txtMaxActive) {
             $scope.showEditableImplFields = false;
             $scope.showSavedMessage = false;
             $scope.editMessage = "";
@@ -124,7 +122,6 @@ fihApp.controller('AppDetailsCtrl', function ($scope, $routeParams, $sce, userPr
             'db_config.max_active': $scope.txtMaxActive,
             'db_config.max_wait': $scope.txtMaxWait,
             'db_config.max_idle': $scope.txtMaxIdle,
-			visibility: $scope.appVisibility,
             last_updated_by: 'System',
             last_updated_date: new Date()
         };
@@ -137,8 +134,7 @@ fihApp.controller('AppDetailsCtrl', function ($scope, $routeParams, $sce, userPr
             $scope.appDetails.db_config.max_wait = $scope.txtMaxWait;
             $scope.appDetails.db_config.max_idle = $scope.txtMaxIdle;
             $scope.appDetails.db_config.max_active = $scope.txtMaxActive;
-			$scope.appDetails.visibility = $scope.appVisibility;
-            $scope.addAlert('Updated Successfully. Redeploy application to reflect changes!');
+			$scope.addAlert('Updated Successfully. Redeploy application to reflect changes!');
             $scope.scrollTo("appheader");
             $scope.loader.loading = false;
         },
@@ -160,6 +156,10 @@ fihApp.controller('AppDetailsCtrl', function ($scope, $routeParams, $sce, userPr
         $scope.showTextAppDescr = true;
         $scope.updatedAppDesc = $scope.appDetails.descr;
     };
+	 $scope.editAppVisibility = function () {
+        $scope.showTextAppVisibility = true;
+        $scope.UpdatedappVisibility = $scope.appDetails.visibility;
+    };
 
     $scope.saveAppDescr = function () {
 
@@ -179,10 +179,33 @@ fihApp.controller('AppDetailsCtrl', function ($scope, $routeParams, $sce, userPr
                 console.log("Failed in updating app description: " + JSON.stringify(error));
             });
     };
+	
+	 $scope.saveAppVisibility = function () {
+
+        $scope.showTextAppVisibility = false;
+
+        var updateObj = {
+            appObjectId: $scope.appDetails._id,
+            visibility: $scope.UpdatedappVisibility,
+            last_updated_by: userProfile.username,
+            last_updated_date: new Date()
+        };
+        AppUpdate.save(updateObj, function (res) {
+            console.log($scope.appDetails._id + " Updated visibility: " + JSON.stringify(res));
+           $scope.appDetails.visibility = $scope.UpdatedappVisibility;
+        },
+            function (error) {
+                console.log("Failed in updating app visibility: " + JSON.stringify(error));
+            });
+    };
 
     $scope.cancelAppDescr = function () {
         $scope.showTextAppDescr = false;
         $scope.updatedAppDesc = $scope.appDetails.descr;
+    };
+	 $scope.cancelAppVisibility = function () {
+        $scope.showTextAppVisibility = false;
+        $scope.UpdatedappVisibility = $scope.appDetails.visibility;
     };
 
     $scope.openDialog = function (action, message) {
