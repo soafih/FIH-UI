@@ -1,4 +1,4 @@
-var fihApp = angular.module('fihApp', ['ngAnimate','ui.bootstrap', 'ngSanitize', 'cgPrompt', 'ngResource', 'ngRoute', 'ngTable', 'ngCookies', 'angular-storage','ngMaterial', 'angular-loading-bar']);
+var fihApp = angular.module('fihApp', ['ngAnimate','ui.bootstrap', 'ngSanitize', 'cgPrompt', 'ngResource', 'ngRoute', 'ngTable', 'ngCookies', 'angular-storage','ngMaterial', 'angular-loading-bar', 'angularjs-dropdown-multiselect']);
 fihApp.constant('AUTH_EVENTS', {
     notAuthenticated: 'auth-not-authenticated',
     notAuthorized: 'auth-not-authorized'
@@ -96,6 +96,9 @@ fihApp.config(['$routeProvider', '$httpProvider', function ($routeProvider, $htt
             templateUrl: 'components/admin/users.html',
             controller: 'UsersCtrl',
             resolve: {
+                userList: function (userListFactory) {
+                    return userListFactory.getUserList();
+                },
                 userProfile: "UserProfile",
                 access: ["Access", function (Access) { return Access.hasRole("fih_admin"); }]
             }

@@ -390,14 +390,16 @@ fihApp.controller('AddAppCtrl', function ($scope, $window, $http, $resource, $lo
 
     $scope.databases = databaseList.data;
 
-    $scope.databaseTable = new NgTableParams({},
+    $scope.databaseTable = new NgTableParams({
+        page: 1,
+        count: 5
+    }, 
         {
+            counts: [],
+            paginationMaxBlocks: 13,
+            paginationMinBlocks: 2,
             total: $scope.databases.length,
-            getData: function (params) {
-                $scope.data = params.sorting() ? $filter('orderBy')($scope.databases, params.orderBy()) : $scope.databases;
-                $scope.data = params.filter() ? $filter('filter')($scope.data, params.filter()) : $scope.data;
-                //$scope.data = $scope.data.slice((params.page() - 1) * params.count(), params.page() * params.count());
-            }
+            dataset: $scope.databases,
         });
 
     $scope.orgChange = function () {

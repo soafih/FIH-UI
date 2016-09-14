@@ -106,33 +106,35 @@ app.get('/auth/logout', function(req, res, next){
   
 });
 
+
 app.use(function (req, res, next) {
-  if (req.session && req.session.fih_token && req.session.fih_token.access_token) {
-    var token = req.session.fih_token.access_token;
-    console.log("Access token found in session: " + token);
+    if (req.session && req.session.fih_token && req.session.fih_token.access_token) {
+      var token = req.session.fih_token.access_token;
+      console.log("Access token found in session: " + token);
 
-    var b64string = token;
-    var buf = new Buffer(b64string.split('.')[1], 'base64');
-    var tokenDecoded = JSON.parse(buf.toString("ascii"));
-    console.log("Decoded Token: " + JSON.stringify(tokenDecoded));
+      var b64string = token;
+      var buf = new Buffer(b64string.split('.')[1], 'base64');
+      var tokenDecoded = JSON.parse(buf.toString("ascii"));
+      console.log("Decoded Token: " + JSON.stringify(tokenDecoded));
 
-    req.headers["x-authenticated-user-username"] = tokenDecoded.user_name;
-    req.headers["x-authenticated-user-id"] = tokenDecoded.user_id;
-    req.headers["x-authenticated-email"] = tokenDecoded.email;
-    next();
-  }
-  else {
-    console.log("Token not found. Redirecting to login page.");
-    console.log("Session Object Value: "+JSON.stringify(req.session));
-    if (req.query.return) {
-      req.session.oauth2return = req.query.return;
+      req.headers["x-authenticated-user-username"] = tokenDecoded.user_name;
+      req.headers["x-authenticated-user-id"] = tokenDecoded.user_id;
+      req.headers["x-authenticated-email"] = tokenDecoded.email;
+      next();
     }
-    else{
-      req.session.oauth2return = req.originalUrl;
+    else {
+      console.log("Token not found. Redirecting to login page.");
+      console.log("Session Object Value: "+JSON.stringify(req.session));
+      if (req.query.return) {
+        req.session.oauth2return = req.query.return;
+      }
+      else{
+        req.session.oauth2return = req.originalUrl;
+      }
+      console.log("Redirect URL: "+req.session.oauth2return);
+      res.redirect("/auth/login");
     }
-    console.log("Redirect URL: "+req.session.oauth2return);
-    res.redirect("/auth/login");
-  }
+  
 });
 
 // Make our db accessible to our router & set userId to be displayed in nav bar

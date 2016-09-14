@@ -46,6 +46,10 @@ body h4{
   color: #595959;
 }
 
+.emphasis{
+  font-weight: 600;
+}
+
 .header-userdetails {
   font-size: 12px;
   z-index: 9999;
@@ -54,6 +58,10 @@ body h4{
 
 .header-welcome-msg{
   margin: 8px 0 0 0;
+}
+
+.users-modify-btn button{
+  margin-right:20px;
 }
 
 .control-label{
@@ -77,8 +85,6 @@ body h4{
   padding-left: 0px;
   margin-right: 50px;
 }
-
-html.ng-scope body div.container-fluid div.row div.col-sm-9.col-sm-offset-3.col-md-10.col-md-offset-2.main div.ng-scope div.ng-scope div div form#appInfoForm.form-horizontal.ng-pristine.ng-invalid.ng-invalid-required div.ng-isolate-scope div.tab-content div.tab-pane.ng-scope.active div.container-fluid.ng-scope div.row div.form-group div.col-sm-1
 
 .appdetails{
   font-size: 12px;
@@ -212,6 +218,19 @@ body .modal-header{
 
 .row.app-details{
   margin-top: 10px; padding-right: 5px;
+}
+
+.row.users-search-panel-row {
+  margin-bottom: 15px; 
+  padding-right: 15px;
+}
+
+.users-search-panel-select button{
+  font-family: Tahoma;
+  font-size: 12px;
+}
+.users-search-panel-row .checkbox {
+  margin-top: 0px;
 }
 
 /*
