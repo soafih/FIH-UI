@@ -26,7 +26,7 @@
                                 <label class='control-label col-md-4'>Super User</label>
                                 <div class="col-md-6">
                                     <div class="checkbox checkbox-success">
-                                        <input ng-init="app.exposeToApigee = false" id="checkbox1" type="checkbox" checked ng-model="app.exposeToApigee">
+                                        <input ng-init="chkSuperUser = false" id="checkbox1" type="checkbox" ng-model="chkSuperUser">
                                         <label  for="checkbox1" style="font-weight: bold;"> </label>
                                     </div>
                                 </div>
@@ -36,7 +36,7 @@
                             <div class="col-md-6">
                                 <label class='control-label col-md-3'>Username</label>
                                 <div  class='col-md-9'>
-                                    <input id="txtUserName" name="UserName" placeholder="Enter username" class="form-control" />
+                                    <input ng-model="txtUserName" placeholder="Enter username" class="form-control" />
                                 </div>
                             </div>
                             <div class="col-md-6 pull-right">
@@ -48,7 +48,7 @@
                             <div class="col-md-6">
                                 <label class='control-label col-md-3'>Email</label>
                                 <div  class='col-md-9'>
-                                    <input id="txtUserName" name="UserName" placeholder="Enter email id" class="form-control" />
+                                    <input ng-model="txtEmail" placeholder="Enter email id" class="form-control" />
                                 </div>
                             </div>
                             <div class="col-md-6 pull-right">
@@ -57,7 +57,7 @@
                             </div>
                         </div>
                         <div class="row users-search-panel-row" style="margin: -10px; 40px 0 0" >
-                            <button class="btn btn-info btn-md col-md-1 pull-right">Search</button>
+                            <button class="btn btn-info btn-md col-md-1 pull-right" ng-click="searchUsers()">Search</button>
                         </div>
                     </div>
                 </div>
@@ -68,7 +68,10 @@
         <div class="container-fluid">
             <div class="row">
                 <button class="btn btn-danger btn-md col-md-1 pull-right" ng-click="openDialog('delete', 'All user data will be deleted. This action cannot be undone!')">Delete</button>
-                <button class="btn btn-warning btn-md col-md-1 pull-right" ng-click="updateUser()">Update</button>
+                <div class="col-md-1 pull-right" style="display: inline-block;" tooltip-enable="{{disableDeleteBtn}}" uib-tooltip="To enable update, select only one user">
+                    <button class="btn btn-warning btn-md" ng-disabled="disableDeleteBtn" 
+                     ng-click="updateUser()">Update</button>
+                </div>
             </div>
         </div>
     </div>
@@ -91,7 +94,7 @@
                     {{userinfo.superuser ? 'Y' : 'N'}}
                 </td>  
                 <td data-title="'Select'">
-                    <input type="checkbox" ng-change="countCheckedBox()" ng-model="checkboxes.items[userinfo.username]">
+                    <input type="checkbox" ng-change="countCheckedBox(userinfo.username)" ng-model="checkboxes.items[userinfo.username]">
                 </td>
             </tr>
         </table>
