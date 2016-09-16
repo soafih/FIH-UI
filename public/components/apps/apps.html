@@ -126,7 +126,6 @@
 						 <img style="height:20px" title="private" class="pull-right" src="assets/images/private.png" ng-show ="app.visibility == 'private'">
                           <img style="height:20px" title="public" class="pull-right" src="assets/images/public.png" ng-show ="app.visibility == 'public'">
 						   <img style="height:20px" title="editable" class="pull-right" src="assets/images/edit.png" ng-show ="hasEditAccess(app)">
-                          <img style="height:20px" title="non-editable" class="pull-right" src="assets/images/noedit.png" ng-show ="!hasEditAccess(app)">
                           <img style="height:20px" title="owned by me" class="pull-right" src="assets/images/owner.png" ng-show ="app.created_by == userID">
                                   </div>
                     <div class="panel-body" style="background: {{bcolors[$index%8]}} none repeat scroll 0% 0%; height: 120px;">

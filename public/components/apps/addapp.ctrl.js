@@ -236,9 +236,9 @@ fihApp.controller('AddAppCtrl', function ($scope, $window, $http, $resource, $lo
             servicename: $scope.app.name,
 			visibility: $scope.app.visibility,
             expose_to_apigee: $scope.app.exposeToApigee,
-            created_by: 'System',
+            created_by: userProfile.username,
             created_date: formattedDate,
-            last_updated_by: 'System',
+            last_updated_by: userProfile.username,
             last_updated_date: formattedDate,
             messages: [{ message: 'First Version' }],
             stackato_config: {

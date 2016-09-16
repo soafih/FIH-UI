@@ -122,7 +122,7 @@ fihApp.controller('AppDetailsCtrl', function ($scope, $routeParams, $sce, userPr
             'db_config.max_active': $scope.txtMaxActive,
             'db_config.max_wait': $scope.txtMaxWait,
             'db_config.max_idle': $scope.txtMaxIdle,
-            last_updated_by: 'System',
+            last_updated_by: userProfile.username,
             last_updated_date: new Date()
         };
         AppUpdate.save(updateObj, function (res) {
@@ -168,7 +168,7 @@ fihApp.controller('AppDetailsCtrl', function ($scope, $routeParams, $sce, userPr
         var updateObj = {
             appObjectId: $scope.appDetails._id,
             descr: $scope.updatedAppDesc,
-            last_updated_by: 'System',
+            last_updated_by: userProfile.username,
             last_updated_date: new Date()
         };
         AppUpdate.save(updateObj, function (res) {
