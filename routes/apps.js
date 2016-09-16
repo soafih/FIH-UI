@@ -54,6 +54,9 @@ router.get('/objectid/:objectid',  function(req, res) {
 router.post('/', permCheck.checkPermission('app.create'), function(req, res){
     var db = req.db;
     var collection = db.get('coll_app');
+    req.body.created_by = req.headers["x-authenticated-user-username"];
+    req.body.last_updated_by = req.headers["x-authenticated-user-username"];
+    
     console.log('Inserting APP: '+req.body.name);
     collection.insert(req.body, function(err, app){
         if (err) throw err;
@@ -69,6 +72,7 @@ router.post('/updateStatus', permCheck.checkPermission('app.view'), function(req
 
     var db = req.db;
     var collection = db.get('coll_app');
+    req.body.last_updated_by = req.headers["x-authenticated-user-username"];
     collection.update({_id: appObjectId}, {$set: req.body}, 
         function(err, response){
             if (err) throw err;
