@@ -55,7 +55,7 @@
         </div>
     <div><h2>{{pageHeader}}</h2></div>
     <hr/>
-    <div style="min-height: 400px; max-height: 400px;">
+    <div style="min-height: 400px; max-height: 500px;">
         <form id="appInfoForm" name="appInfoForm" class="form-horizontal">
         <uib-tabset active="activeTab">
             <uib-tab index="0" heading="App/Integration Service Info" select="changeActiveTab(0)">
@@ -117,6 +117,25 @@
                                 </div>
                             </div>
                         </div>
+						 <div class="row">
+                                <div class="form-group">
+                                    <label class='control-label col-sm-3' for="selCache">Result Caching</label>
+                                    <div class="col-sm-2">
+                                        <div class="checkbox checkbox-success">
+                                            <input ng-init="app.resultCaching = false" id="checkbox2" type="checkbox" checked ng-model="app.resultCaching">
+                                            <label for="checkbox2" style="font-weight: bold;"></label>
+                                        </div>
+                                    </div>
+                                    
+                                        <div ng-show='app.resultCaching'>
+                                            <label class='control-label col-sm-2' for="selExpiry">Cache Expiry (seconds)</label>
+                                            <div class="col-sm-3">
+                                                <input required class="form-control" name='selectedExpiry' ng-model='app.cacheExpiry'></input>
+                                            </div>
+                                        </div>
+                                   
+                                </div>
+                            </div>
                     </div>
             </uib-tab>
             <uib-tab index="1" heading="DB Connection Info" select="changeActiveTab(1)">

@@ -93,6 +93,7 @@ fihApp.controller('AppDetailsCtrl', function ($scope, $routeParams, $sce, userPr
         $scope.txtMaxWait = $scope.appDetails.db_config.max_wait;
         $scope.txtMaxIdle = $scope.appDetails.db_config.max_idle;
         $scope.txtMaxActive = $scope.appDetails.db_config.max_active;
+		$scope.cacheExpiry =  $scope.appDetails.db_config.cache_expiry;
     };
 
     $scope.scrollTo = function (id) {
@@ -101,7 +102,7 @@ fihApp.controller('AppDetailsCtrl', function ($scope, $routeParams, $sce, userPr
     };
 
     $scope.saveImplDetails = function () {
-        if ($scope.appDetails.db_config.query == $scope.txtUpdatedQuery &&
+       /* if ($scope.appDetails.db_config.query == $scope.txtUpdatedQuery &&
             $scope.appDetails.db_config.max_wait == $scope.txtMaxWait &&
             $scope.appDetails.db_config.max_idle == $scope.txtMaxIdle &&
             $scope.appDetails.db_config.max_active == $scope.txtMaxActive) {
@@ -109,15 +110,21 @@ fihApp.controller('AppDetailsCtrl', function ($scope, $routeParams, $sce, userPr
             $scope.showSavedMessage = false;
             $scope.editMessage = "";
             return;
-        }
+        }*/
         $scope.loader.loading = true;
         $scope.spinnerData = "Saving application data.. ";
         $scope.showEditableImplFields = false;
+		 if(!$scope.appDetails.db_config.result_caching)
+            {
+              $scope.cacheExpiry = "";  
+            }
         console.log("Updating query " + $scope.txtUpdatedQuery + " for " + $scope.appDetails._id);
         var updateObj = {
             appObjectId: $scope.appDetails._id,
             dirty: true,
             expose_to_apigee: $scope.appDetails.expose_to_apigee,
+			'db_config.result_caching' : $scope.appDetails.db_config.result_caching,
+            'db_config.cache_expiry' :  $scope.cacheExpiry,
             'db_config.query': $scope.txtUpdatedQuery,
             'db_config.max_active': $scope.txtMaxActive,
             'db_config.max_wait': $scope.txtMaxWait,
@@ -134,6 +141,7 @@ fihApp.controller('AppDetailsCtrl', function ($scope, $routeParams, $sce, userPr
             $scope.appDetails.db_config.max_wait = $scope.txtMaxWait;
             $scope.appDetails.db_config.max_idle = $scope.txtMaxIdle;
             $scope.appDetails.db_config.max_active = $scope.txtMaxActive;
+			$scope.appDetails.db_config.cache_expiry = $scope.cacheExpiry; 
 			$scope.addAlert('Updated Successfully. Redeploy application to reflect changes!');
             $scope.scrollTo("appheader");
             $scope.loader.loading = false;
@@ -260,6 +268,8 @@ fihApp.controller('AppDetailsCtrl', function ($scope, $routeParams, $sce, userPr
             "domain": $scope.appDetails.stackato_config.domain,
             "applicationName": $scope.appDetails.name,
             "query": $scope.appDetails.db_config.query,
+			"resultCaching": $scope.appDetails.db_config.result_caching,
+            "cacheExpiry": $scope.appDetails.db_config.cache_expiry,
             "databaseInfo":
             {
                 "databaseType": $scope.databaseInfo.db_type,

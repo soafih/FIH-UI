@@ -217,6 +217,10 @@ fihApp.controller('AddAppCtrl', function ($scope, $window, $http, $resource, $lo
         if (!$scope.validate()) {
             return;
         }
+		 if(!$scope.app.resultCaching)
+            {
+              $scope.app.cacheExpiry = "";  
+            }
         console.log("Domain selected:" + $scope.app.selectedOrg.domain);
         $scope.spinnerData = "Processing application data.. ";
         $scope.loader.loading = true;
@@ -251,7 +255,9 @@ fihApp.controller('AddAppCtrl', function ($scope, $window, $http, $resource, $lo
                 query: $scope.app.db_query,
                 max_active: maxActive,
                 max_idle: maxIdle,
-                max_wait: maxWait
+                max_wait: maxWait,
+			    result_caching: $scope.app.resultCaching,
+                cache_expiry: $scope.app.cacheExpiry
             }
         };
 
@@ -277,6 +283,8 @@ fihApp.controller('AddAppCtrl', function ($scope, $window, $http, $resource, $lo
                 "domain": $scope.app.selectedOrg.domain,
                 "applicationName": $scope.app.name,
                 "query": $scope.app.db_query,
+				"resultCaching": $scope.app.resultCaching,
+                "cacheExpiry": $scope.app.cacheExpiry,
                 "databaseInfo":
                 {
                     "databaseType": $scope.app.dbconfig.db_type,
