@@ -7,24 +7,6 @@ var permCheck = require('./mod/permission-check');
 
 var db = {};
 
-router.get('/users', function(req, res) {
-    var db = req.db;
-    var collection = db.get('coll_user');
-    collection.find({}, function(err, users){
-        if (err) throw err;
-      	res.json(users);
-    });
-});
-
-router.get('/roles', function(req, res) {
-    var db = req.db;
-    var collection = db.get('coll_role');
-    collection.find({}, function(err, roles){
-        if (err) throw err;
-      	res.json(roles);
-    });
-});
-
 router.get('/userdetail/:username/:guid', function(req, res) {
     console.log('Getting details for: '+req.params.username);
     db = req.db;

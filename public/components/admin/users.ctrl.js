@@ -1,4 +1,4 @@
-angular.module('fihApp').controller('UsersCtrl', function ($scope, $resource, userList, NgTableParams, $filter) {
+angular.module('fihApp').controller('UsersCtrl', function ($scope, $resource, $location, userList, NgTableParams, $filter) {
     $scope.pageHeader = "Users";
 
     $scope.rolesModel = [];
@@ -34,7 +34,6 @@ angular.module('fihApp').controller('UsersCtrl', function ($scope, $resource, us
 
     $scope.countChecked = 0;
     $scope.countCheckedBox = function (username) {
-        console.log("entered countCheckBox:"+username);
         console.log("Object: "+JSON.stringify($scope.checkboxes));
         
         if ($scope.checkboxes.items[username]) { //If it is checked
@@ -59,6 +58,10 @@ angular.module('fihApp').controller('UsersCtrl', function ($scope, $resource, us
             }
         });
     });
+
+    $scope.userRegister = function(){
+        $location.path('/user-register');
+    };
 
     $scope.searchUsers = function(){
         console.log("Applying filter..");
@@ -91,7 +94,7 @@ angular.module('fihApp').controller('UsersCtrl', function ($scope, $resource, us
     };
 
     var init = function () {
-        var SecurityAPI = $resource('/fih/security/roles');
+        var SecurityAPI = $resource('/fih/users/roles');
         SecurityAPI.query(function (roles) {
             if (roles) {
                 $scope.roles = roles;
@@ -134,7 +137,7 @@ fihApp.factory('userListFactory', function ($http) {
         getUserList: function () {
             var promise = $http({
                 method: 'GET',
-                url: '/fih/security/users'
+                url: '/fih/users'
             }).success(function (data, status, headers, config) {
                 return data;
             });
