@@ -303,7 +303,8 @@ fihApp.controller('AppDetailsCtrl', function ($scope, $routeParams, $sce, userPr
                         stage: response.response.stage,
                         build_number: response.response.buildNumber,
                         build_identifier: response.response.buildIdentifier,
-                        dirty: true
+                        dirty: true,
+                        last_updated_date: new Date()
                     };
 
                     console.log("Updating app status with request: " + JSON.stringify(updateObj));
@@ -437,11 +438,13 @@ fihApp.controller('AppDetailModalInstanceCtrl', function ($scope, $uibModalInsta
     else if (action === 'deleteCompleted') {
         $scope.modalTitleStyle = "green";
         $scope.modalTitle = 'Alert';
+        $scope.btnCancelText = "Close";
         $scope.modalHideActionBtn = true;
     }
     else if (action === 'deleteFailed') {
         $scope.modalTitleStyle = "red";
         $scope.modalTitle = 'Alert';
+        $scope.btnCancelText = "Close";
         $scope.modalHideActionBtn = true;
     }
     else if (action === 'error') {

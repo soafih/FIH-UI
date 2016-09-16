@@ -110,7 +110,8 @@ fihApp.controller('AppStatusCtrl', function($scope, $resource, $window, $routePa
                                 status: 'WIP',
                                 stage: 'Triggered',
                                 build_number: buildNumber,
-                                build_url: $scope.logURL
+                                build_url: $scope.logURL,
+                                last_updated_date: new Date()
                             };
 
                             AppUpdate.save(updateObj, function (res) {
@@ -178,7 +179,8 @@ fihApp.controller('AppStatusCtrl', function($scope, $resource, $window, $routePa
                                     appObjectId: appObjectId,
                                     status: appStatus,
                                     stage: appStage,
-                                    dirty: false
+                                    dirty: false,
+                                    last_updated_date: new Date()
                                 };
                                 AppUpdate.save(updateObj, function (res) {
                                     console.log("Updated status: " + JSON.stringify(res));
@@ -203,6 +205,7 @@ fihApp.controller('AppStatusCtrl', function($scope, $resource, $window, $routePa
                                     appObjectId: appObjectId,
                                     status: appStatus,
                                     stage: appStage,
+                                    last_updated_date: new Date()
                                 };
                                 console.log('Updating status: ' + JSON.stringify(updateObjFailed));
                                 AppUpdate.save(updateObjFailed, function (res) {
@@ -221,6 +224,7 @@ fihApp.controller('AppStatusCtrl', function($scope, $resource, $window, $routePa
                                     appObjectId: appObjectId,
                                     status: appStatus,
                                     stage: appStage,
+                                    last_updated_date: new Date()
                                 };
                                 AppUpdate.save(updateObjWIP, function (res) {
                                     console.log("Updated status: " + JSON.stringify(res));

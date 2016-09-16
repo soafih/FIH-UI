@@ -97,11 +97,22 @@ fihApp.config(['$routeProvider', '$httpProvider', function ($routeProvider, $htt
             templateUrl: 'components/admin/users.html',
             controller: 'UsersCtrl',
             resolve: {
+                userProfile: "UserProfile",
+                access: ["Access", function (Access) { return Access.hasRole("fih_admin"); }],
                 userList: function (userListFactory) {
                     return userListFactory.getUserList();
-                },
+                }
+            }
+        })
+        .when('/user-register', {
+            templateUrl: 'components/admin/userregister.html',
+            controller: 'UserRegisterCtrl',
+            resolve: {
                 userProfile: "UserProfile",
-                access: ["Access", function (Access) { return Access.hasRole("fih_admin"); }]
+                access: ["Access", function (Access) { return Access.hasRole("fih_admin"); }],
+                roleList: function (roleListFactory) {
+                    return roleListFactory.getRoleList();
+                }
             }
         })
         .when('/roles', {
@@ -183,6 +194,10 @@ fihApp.controller('SidebarCtrl', function ($scope, $resource, $location) {
             return res;
         }
         return route === $location.path();
+    };
+
+    $scope.isAuthorized = function(route){
+
     };
 });
 
