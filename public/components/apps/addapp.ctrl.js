@@ -234,10 +234,11 @@ fihApp.controller('AddAppCtrl', function ($scope, $window, $http, $resource, $lo
             version: '1.0',
             status: 'Saved',
             servicename: $scope.app.name,
+			visibility: $scope.app.visibility,
             expose_to_apigee: $scope.app.exposeToApigee,
-            created_by: 'System',
+            created_by: userProfile.username,
             created_date: formattedDate,
-            last_updated_by: 'System',
+            last_updated_by: userProfile.username,
             last_updated_date: formattedDate,
             messages: [{ message: 'First Version' }],
             stackato_config: {
@@ -411,6 +412,7 @@ fihApp.controller('AddAppCtrl', function ($scope, $window, $http, $resource, $lo
 
     var init = function () {
         $scope.spinnerData = "Loading page data..";
+		$scope.app.visibility = "private";
         $scope.loader.loading = true;
         var orgs = userProfile.stackato_config;
         console.log("orgs: " + JSON.stringify(orgs));

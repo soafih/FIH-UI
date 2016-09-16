@@ -4,9 +4,11 @@ fihApp.controller('AppsCtrl', function($scope, $resource, $location, userProfile
     $scope.isActive = function(route) {
         return route === $location.path();
     };
-    
+    $scope.userID = userProfile.username;
     $scope.showBtnView = userProfile.$hasPermission('app.view');
-
+    $scope.advSearchVal_visibility = "private";
+	
+	
     // Generate random colors for API Panel
     $scope.Math = window.Math;
     $scope.hcolors = new Array("#009688","#D50000","#2962FF","#2E7D32","#006064","#607D8B","#4E342E","#E64A19");
@@ -31,6 +33,11 @@ fihApp.controller('AppsCtrl', function($scope, $resource, $location, userProfile
         }
     );
 
+	$scope.hasEditAccess = function(app)
+	{
+		return (orgs.indexOf(app.stackato_config.org)>=0 && spaces.indexOf(app.stackato_config.space)>=0)
+	}
+	
     $scope.advKeyVal = [];
 
     $scope.AdvSearchList = [
@@ -38,6 +45,7 @@ fihApp.controller('AppsCtrl', function($scope, $resource, $location, userProfile
 		{ id: "descr", name:"Application Description"},
         { id: "api_type", name: "API Name" },
         { id: "api_ver", name: "API Version" },
+		{ id: "visibility", name: "visibility" },
         { id: "created_by", name: "Created By" },
         { id: "created_date", name: "Created Date" },
         { id: "last_updated_date", name: "Modified Date" },
@@ -57,14 +65,16 @@ fihApp.controller('AppsCtrl', function($scope, $resource, $location, userProfile
     $scope.advkeyValUpdate = function () {
        // console.log($scope.advSearchKey);
 
-        if ($scope.advSearchVal == null && ($scope.advFromDate == null || $scope.advToDate == null)) {
-             $scope.searchAlertModal();
-
+        if ($scope.advSearchKey.id != "visibility" && $scope.advSearchVal == null && ($scope.advFromDate == null || $scope.advToDate == null)) {
+            $scope.openDialog('Please select the value to be searched')
             return;
         }
-        if ($scope.advSearchVal == null) {
+        if ($scope.advSearchKey.id == "visibility")
+            $scope.advKeyVal.push({ id: $scope.advSearchKey.id, key: $scope.advSearchKey.name, val: $scope.advSearchVal_visibility });
+
+        else if ($scope.advSearchKey.id == "created_date" || $scope.advSearchKey.id == "last_updated_date")
             $scope.advKeyVal.push({ id: $scope.advSearchKey.id, key: $scope.advSearchKey.name, val: $filter('date')($scope.advFromDate, "yyyy-MM-dd") + ',' + $filter('date')($scope.advToDate, "yyyy-MM-dd") });
-        }
+
         else
             $scope.advKeyVal.push({ id: $scope.advSearchKey.id, key: $scope.advSearchKey.name, val: $scope.advSearchVal });
 
@@ -133,14 +143,20 @@ fihApp.controller('AppsCtrl', function($scope, $resource, $location, userProfile
         $scope.apps = $scope.appSearchBackup;
     };
 
-  $scope.searchAlertModal = function () {
-        var modalInstance = $uibModal.open({
-            animation: $scope.animationsEnabled,
-            templateUrl: 'serachAlertModalContent.html',
-            controller: 'ModalSearchAlertCtrl',
-            size: 'sm'
+    $scope.openDialog = function (message) {
+        prompt({
+            title: 'Alert!',
+            message: message,
+            "buttons": [
+                {
+                    "label": "Ok",
+                    "cancel": true,
+                    "primary": false
+                }
+            ]
+        }).then(function () {
+            //he hit ok and not can,
         });
-
     };
 });
 
@@ -212,9 +228,3 @@ fihApp.controller('ModalInstanceCtrl', function ($scope, $uibModalInstance, appD
     };
 });
 
-fihApp.controller('ModalSearchAlertCtrl', function ($scope, $uibModalInstance) {
-
-    $scope.cancel = function () {
-        $uibModalInstance.dismiss('cancel');
-    };
-});

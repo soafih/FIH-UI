@@ -55,7 +55,7 @@ router.get('/dbtype', function(req, res) {
 router.post('/', function(req, res){
     var db = req.db;
     var collection = db.get('coll_dbconfig');
-    console.log('Inserting DB: '+req.body.name);
+    console.log('Inserting DB: '+req.body.db_name);
     collection.insert(req.body, function(err, app){
         if (err) throw err;
         res.send(app);

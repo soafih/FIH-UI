@@ -1,26 +1,25 @@
-fihApp.controller('dbconfigctrl', function ($scope, $uibModal, $filter, $resource, NgTableParams, databaseListFactory, ConnectionData, TestQuery, prompt) {
- 
-   
- var init = function ()
- {
-      $scope.pageHeader = "Database Configurations";
-  var Apis = $resource('/fih/apis/name/DAAS');
+fihApp.controller('dbconfigctrl', function ($scope, $uibModal, $filter, $resource, NgTableParams, databaseListFactory, ConnectionData, TestQuery, prompt, $sce) {
+
+
+    var init = function () {
+        $scope.pageHeader = "Database Configurations";
+        var Apis = $resource('/fih/apis/name/DAAS');
         Apis.get(function (api) {
-            if(api.name){
+            if (api.name) {
                 console.log("APIs Details: " + JSON.stringify(api));
                 $scope.apiDetails = api;
             }
-            else{
+            else {
                 console.log("Error getting the API details");
             }
         });
- }
+    }
 
- init();
+    init();
     $scope.$watch('status', function () {
-       
+
         databaseListFactory.getDatabaseList().then(function (response) {
-             $scope.app.dbconfig = {};
+            $scope.app.dbconfig = {};
             $scope.databases = response.data;
             $scope.databaseTable = new NgTableParams({},
                 {
@@ -47,20 +46,7 @@ fihApp.controller('dbconfigctrl', function ($scope, $uibModal, $filter, $resourc
         else {
 
             if ($scope.app.dbconfig.db_name == undefined) {
-                prompt({
-                    title: 'Warning',
-                    message: 'Please select the database connection to be updated',
-                    buttons: [
-                        {
-                            "label": "Ok",
-                            "cancel": true,
-                            "primary": true
-                        }
-                    ]
-                }).then(function (result) {
-
-                });
-
+                $scope.openDialog("Warning", "color:red", "Please select the database connection to be updated");
                 return;
             }
         }
@@ -85,7 +71,7 @@ fihApp.controller('dbconfigctrl', function ($scope, $uibModal, $filter, $resourc
                 var db = $resource('/fih/dbconfig');
                 db.save(ConnectionData.message, function (app) {
                 }, function (error) {
-                    console.log("Error occured");
+                    $scope.openDialog("Error", "color:red", "Error while creating the Database connection. Please contact Administrator");
                 });
             }
 
@@ -93,12 +79,13 @@ fihApp.controller('dbconfigctrl', function ($scope, $uibModal, $filter, $resourc
                 var db = $resource('/fih/dbconfig/update');
                 db.save(ConnectionData.message, function (app) {
                 }, function (error) {
-                    console.log("Error occured");
+                    $scope.openDialog("Error", "color:red", "Error while updating the Database connection. Please contact Administrator");
+
                 });
             }
 
             $scope.status = 'update' + (new Date()).getTime();
-          
+
         }, function () {
             console.log('Modal Action dismissed');
         });
@@ -109,20 +96,7 @@ fihApp.controller('dbconfigctrl', function ($scope, $uibModal, $filter, $resourc
     $scope.Delete = function () {
 
         if ($scope.app.dbconfig.db_name == undefined) {
-            prompt({
-                title: 'Warning',
-                message: 'Please select the database connection to be deleted',
-                buttons: [
-                    {
-                        "label": "Ok",
-                        "cancel": true,
-                        "primary": true
-                    }
-                ]
-            }).then(function (result) {
-
-            });
-
+            $scope.openDialog("Warning", "color:red", "Please select the database connection to be deleted");
             return;
         }
 
@@ -157,7 +131,7 @@ fihApp.controller('dbconfigctrl', function ($scope, $uibModal, $filter, $resourc
     }
 
     $scope.testQuery = function (dbconfigs) {
-       
+
         var testQueryRequest = {
 
             "databaseInfo": {
@@ -172,33 +146,52 @@ fihApp.controller('dbconfigctrl', function ($scope, $uibModal, $filter, $resourc
         };
 
 
-        TestQuery.testQuery(testQueryRequest,  $scope.apiDetails.api_ep).then(function (resp) {
-            console.log(resp);
+        TestQuery.testQuery(testQueryRequest, $scope.apiDetails.api_ep).then(function (resp) {
+
+            if (resp.data == null) { 
+			
+			var messageSSL = $sce.trustAsHtml('Please ensure self-signed HTTPS certificate has been accepted/added to exception list! ' +
+                    'Click on link below and accept certificate or contact system administrator for detail.<br><a href="' + $scope.apiDetails.api_ep + '" target="_blank">' + $scope.apiDetails.api_ep);
+
+                $scope.openDialog("Warning", "color:red", messageSSL, true);
+            }
+			else{
+				
             var status = resp.data.response.status;
-            var detail;
-            if (status == "Success") {
-                details = "Connection Successfull !!";
-                titleStyle = "color:green";
-            }
-            else {
-                details = resp.data.response.errorDetails;
-                titleStyle = "color:red";
+
+            if (status == "Success")
+                $scope.openDialog(status, "color:green", "Connection Successfull !!");
+            else
+                $scope.openDialog(status, "color:red", resp.data.response.errorDetails);
+			}
+        }, function (error) {
+            if (error.data == null) {
+                var messageSSL = $sce.trustAsHtml('Please ensure self-signed HTTPS certificate has been accepted/added to exception list! ' +
+                    'Click on link below and accept certificate or contact system administrator for detail.<br><a href="' + $scope.apiDetails.api_ep + '" target="_blank">' + $scope.apiDetails.api_ep);
+
+                $scope.openDialog("Warning", "color:red", messageSSL, true);
             }
 
-            prompt({
-                title: status,
-                titleStyle: titleStyle,
-                message: details,
-                buttons: [
-                    {
-                        "label": "Ok",
-                        "cancel": true,
-                        "primary": true
-                    }
-                ]
-            }).then(function (result) {
+            else
+                $scope.openDialog("Error", "color:red", "Error while testing the Database connection. Please contact Administrator");
 
-            });
+        });
+    }
+
+    $scope.openDialog = function (title, titleStyle, details, containsHtml) {
+        prompt({
+            title: title,
+            titleStyle: titleStyle,
+            message: details,
+            containHtml: containsHtml,
+            buttons: [
+                {
+                    "label": "Ok",
+                    "cancel": true,
+                    "primary": true
+                }
+            ]
+        }).then(function (result) {
 
         });
     }
@@ -265,6 +258,8 @@ fihApp.factory("ConnectionData", function () {
 
 });
 
+
+
 fihApp.factory("TestQuery", function ($http) {
     var db = {};
 
@@ -278,18 +273,17 @@ fihApp.factory("TestQuery", function ($http) {
         };
         console.log("Request: " + JSON.stringify(DBRequest));
 
-        var promise = $http.post(APIendpoint+'/FIH/service/DAASAPI/DBUtility/ValidateConnection', DBRequest, headerConfig, { dataType: "jsonp" })
+        var promise = $http.post(APIendpoint + '/FIH/service/DAASAPI/DBUtility/ValidateConnection', DBRequest, headerConfig, { dataType: "jsonp" })
             .success(function (response, status, headers, config) {
                 console.log("Successfully invoked BuildAPI with response: " + JSON.stringify(response));
-
                 return response;
             }, function (error) {
-                console.log("Failed to connect to DataSource Service: " + JSON.stringify(error));
+                return error;
             });
 
         return promise;
     }
-    
+
     return db;
 
 });

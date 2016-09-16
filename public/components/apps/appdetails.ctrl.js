@@ -2,12 +2,7 @@
 fihApp.controller('AppDetailsCtrl', function ($scope, $routeParams, $sce, userProfile, $resource, $location, 
         $anchorScroll, $filter, $uibModal, $window, $http) {
     $scope.applicationName = $routeParams.appname;
-    $scope.showBtnDelete = userProfile.$hasPermission('app.delete');
-    $scope.showBtnRestart = userProfile.$hasPermission('app.restart');
-    $scope.showBtnRedeploy = userProfile.$hasPermission('app.deploy');
-    $scope.showBtnUpdate = userProfile.$hasPermission('app.update');
-
-    $scope.loader = {
+	$scope.loader = {
         loading: false,
     };
     $scope.loader.loading = true;
@@ -22,12 +17,79 @@ fihApp.controller('AppDetailsCtrl', function ($scope, $routeParams, $sce, userPr
     $scope.closeAlert = function (index) {
         $scope.alerts.splice(index, 1);
     };
+	
+	var init = function () {
+
+        var AppService = $resource('/fih/apps/name/' + $scope.applicationName);
+        AppService.get(function (appDetails) {
+            console.log("Fetched app details: " + JSON.stringify(appDetails));
+            if (appDetails._id) {
+                var Apis = $resource('/fih/apis/name/' + appDetails.api_type);
+                Apis.get(function (api) {
+                    $scope.apiDetails = api;
+                    console.log("Fetched api details: " + JSON.stringify($scope.apiDetails));
+                });
+
+                var StackatoService = $resource('/fih/stackatoapis/apps/' + $scope.applicationName);
+                StackatoService.get(function (app) {
+                    console.log("APP GUID: " + app.guid);
+                    $scope.appGUID = app.guid;
+                });
+
+                appDetails.created_date = $filter('date')(appDetails.created_date, "yyyy-MM-dd HH:mm:ss");
+                appDetails.last_updated_date = $filter('date')(appDetails.last_updated_date, "yyyy-MM-dd HH:mm:ss");
+                $scope.appDetails = appDetails;
+
+                var DBService = $resource('/fih/dbconfig/name/' + appDetails.db_config.db_name);
+                DBService.get(function (dbconfig) {
+                    console.log("Fetched database details: " + JSON.stringify(dbconfig));
+                    $scope.databaseInfo = dbconfig;
+                    $scope.dbDetails = [
+                        { "Name": dbconfig.db_name },
+                        { "Type": dbconfig.db_type },
+                        { "Host": dbconfig.host },
+                        { "Port": dbconfig.port },
+                        { "User": dbconfig.uname },
+                        { "Library": dbconfig.schema }
+                    ];
+                    $scope.loader.loading = false;
+                });
+                console.log("appDetails.dirty: " + $scope.appDetails.dirty);
+                if ($scope.appDetails.dirty === true) {
+                    console.log('Dirty App');
+                    $scope.addAlert('App changes pending. Redeploy to reflect changes!');
+                }
+				
+				var appAccess = $scope.appDetails.stackato_config.org +","+ $scope.appDetails.stackato_config.space;
+	var orgspace = [];
+        for (i = 0; i < userProfile.stackato_config.length; i++) {
+            for (j = 0; j < userProfile.stackato_config[i].spaces.length; j++) {
+                orgspace.push(userProfile.stackato_config[i].name + "," + userProfile.stackato_config[i].spaces[j]);
+            }
+        }
+	var hasEditAccess = orgspace.indexOf(appAccess)>=0 ;
+    $scope.showBtnDelete = userProfile.$hasPermission('app.delete') && hasEditAccess;
+    $scope.showBtnRestart = userProfile.$hasPermission('app.restart') && hasEditAccess;
+    $scope.showBtnRedeploy = userProfile.$hasPermission('app.deploy')&& hasEditAccess;
+    $scope.showBtnUpdate = userProfile.$hasPermission('app.update') && hasEditAccess;
+
+            }
+            else{
+                $scope.openDialog("error", "Application not found! Please selected one of listed Applications / Integration Services");
+                $location.path('/apps');
+                return;
+            }
+        });
+    };
+    init();
+	
+	
 
     $scope.editImplDetails = function () {
         $scope.showEditableImplFields = true;
         $scope.showSavedMessage = false;
         $scope.editMessage = "";
-        $scope.txtUpdatedQuery = $scope.appDetails.db_config.query;
+	    $scope.txtUpdatedQuery = $scope.appDetails.db_config.query;
         $scope.txtMaxWait = $scope.appDetails.db_config.max_wait;
         $scope.txtMaxIdle = $scope.appDetails.db_config.max_idle;
         $scope.txtMaxActive = $scope.appDetails.db_config.max_active;
@@ -60,7 +122,7 @@ fihApp.controller('AppDetailsCtrl', function ($scope, $routeParams, $sce, userPr
             'db_config.max_active': $scope.txtMaxActive,
             'db_config.max_wait': $scope.txtMaxWait,
             'db_config.max_idle': $scope.txtMaxIdle,
-            last_updated_by: 'System',
+            last_updated_by: userProfile.username,
             last_updated_date: new Date()
         };
         AppUpdate.save(updateObj, function (res) {
@@ -72,7 +134,7 @@ fihApp.controller('AppDetailsCtrl', function ($scope, $routeParams, $sce, userPr
             $scope.appDetails.db_config.max_wait = $scope.txtMaxWait;
             $scope.appDetails.db_config.max_idle = $scope.txtMaxIdle;
             $scope.appDetails.db_config.max_active = $scope.txtMaxActive;
-            $scope.addAlert('Updated Successfully. Redeploy application to reflect changes!');
+			$scope.addAlert('Updated Successfully. Redeploy application to reflect changes!');
             $scope.scrollTo("appheader");
             $scope.loader.loading = false;
         },
@@ -94,6 +156,10 @@ fihApp.controller('AppDetailsCtrl', function ($scope, $routeParams, $sce, userPr
         $scope.showTextAppDescr = true;
         $scope.updatedAppDesc = $scope.appDetails.descr;
     };
+	 $scope.editAppVisibility = function () {
+        $scope.showTextAppVisibility = true;
+        $scope.UpdatedappVisibility = $scope.appDetails.visibility;
+    };
 
     $scope.saveAppDescr = function () {
 
@@ -102,7 +168,7 @@ fihApp.controller('AppDetailsCtrl', function ($scope, $routeParams, $sce, userPr
         var updateObj = {
             appObjectId: $scope.appDetails._id,
             descr: $scope.updatedAppDesc,
-            last_updated_by: 'System',
+            last_updated_by: userProfile.username,
             last_updated_date: new Date()
         };
         AppUpdate.save(updateObj, function (res) {
@@ -113,10 +179,33 @@ fihApp.controller('AppDetailsCtrl', function ($scope, $routeParams, $sce, userPr
                 console.log("Failed in updating app description: " + JSON.stringify(error));
             });
     };
+	
+	 $scope.saveAppVisibility = function () {
+
+        $scope.showTextAppVisibility = false;
+
+        var updateObj = {
+            appObjectId: $scope.appDetails._id,
+            visibility: $scope.UpdatedappVisibility,
+            last_updated_by: userProfile.username,
+            last_updated_date: new Date()
+        };
+        AppUpdate.save(updateObj, function (res) {
+            console.log($scope.appDetails._id + " Updated visibility: " + JSON.stringify(res));
+           $scope.appDetails.visibility = $scope.UpdatedappVisibility;
+        },
+            function (error) {
+                console.log("Failed in updating app visibility: " + JSON.stringify(error));
+            });
+    };
 
     $scope.cancelAppDescr = function () {
         $scope.showTextAppDescr = false;
         $scope.updatedAppDesc = $scope.appDetails.descr;
+    };
+	 $scope.cancelAppVisibility = function () {
+        $scope.showTextAppVisibility = false;
+        $scope.UpdatedappVisibility = $scope.appDetails.visibility;
     };
 
     $scope.openDialog = function (action, message) {
@@ -325,56 +414,7 @@ fihApp.controller('AppDetailsCtrl', function ($scope, $routeParams, $sce, userPr
         //$window.location.href = redirectUrl;
     };
 
-    var init = function () {
-
-        var AppService = $resource('/fih/apps/name/' + $scope.applicationName);
-        AppService.get(function (appDetails) {
-            console.log("Fetched app details: " + JSON.stringify(appDetails));
-            if (appDetails._id) {
-                var Apis = $resource('/fih/apis/name/' + appDetails.api_type);
-                Apis.get(function (api) {
-                    $scope.apiDetails = api;
-                    console.log("Fetched api details: " + JSON.stringify($scope.apiDetails));
-                });
-
-                var StackatoService = $resource('/fih/stackatoapis/apps/' + $scope.applicationName);
-                StackatoService.get(function (app) {
-                    console.log("APP GUID: " + app.guid);
-                    $scope.appGUID = app.guid;
-                });
-
-                appDetails.created_date = $filter('date')(appDetails.created_date, "yyyy-MM-dd HH:mm:ss");
-                appDetails.last_updated_date = $filter('date')(appDetails.last_updated_date, "yyyy-MM-dd HH:mm:ss");
-                $scope.appDetails = appDetails;
-
-                var DBService = $resource('/fih/dbconfig/name/' + appDetails.db_config.db_name);
-                DBService.get(function (dbconfig) {
-                    console.log("Fetched database details: " + JSON.stringify(dbconfig));
-                    $scope.databaseInfo = dbconfig;
-                    $scope.dbDetails = [
-                        { "Name": dbconfig.db_name },
-                        { "Type": dbconfig.db_type },
-                        { "Host": dbconfig.host },
-                        { "Port": dbconfig.port },
-                        { "User": dbconfig.uname },
-                        { "Schema": dbconfig.schema }
-                    ];
-                    $scope.loader.loading = false;
-                });
-                console.log("appDetails.dirty: " + $scope.appDetails.dirty);
-                if ($scope.appDetails.dirty === true) {
-                    console.log('Dirty App');
-                    $scope.addAlert('App changes pending. Redeploy to reflect changes!');
-                }
-            }
-            else{
-                $scope.openDialog("error", "Application not found! Please selected one of listed Applications / Integration Services");
-                $location.path('/apps');
-                return;
-            }
-        });
-    };
-    init();
+    
 });
 
 fihApp.controller('AppDetailModalInstanceCtrl', function ($scope, $uibModalInstance, action, message) {
