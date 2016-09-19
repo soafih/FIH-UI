@@ -153,55 +153,7 @@ function getStackatoAccessToken(callback) {
     else{
         callback({success: false, message: 'Invalid access token, pleasse login again.!'});
     }
-    /*var cacheValue = STACKATO_CACHE.get("accessToken");
-    if (cacheValue === undefined) {
-
-        var inputOAuth = {
-            "grant_type": "password",
-            "username": USERNAME,
-            "password": PASSWORD
-        };
-
-        var dataString = querystring.stringify(inputOAuth);
-        var headers = {
-            'Authorization': 'Basic Y2Y6',
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'Content-Length': Buffer.byteLength(dataString)
-        };
-
-        var options = {
-            headers: headers,
-            method: 'POST',
-            url: HOST_AOK_URL + '/uaa/oauth/token',
-            form: inputOAuth,
-            timeout: STACKATO_API_TIMEOUT
-        };
-
-        request(options, function (error, response, body) {
-            if (error && error.code === 'ETIMEDOUT') {
-                console.log("Cannot establish connection with stackato. Connection timeout: " + error.connect === true);
-            }
-            else {
-                if (response)
-                    console.log("Stackato access token response code: " + JSON.parse(response.statusCode));
-            }
-
-            if (!error && (response.statusCode == 200)) {
-                var info = JSON.parse(body);
-                console.log("Access Token: " + JSON.stringify(info));
-                callback(info.access_token);
-            }
-            else {
-                console.log("Generating error response: " + error);
-                callback(error);
-            }
-        });
-    }
-    else {
-        console.log("Retrieved accessToken from cache..");
-        callback(cacheValue);
-    }
-    */
+    
 }
 
 
@@ -230,7 +182,8 @@ router.get('/orgs', function (req, res) {
                         var orgsArr = [];
                         for (var i = 0; i < resources.length; i++) {
                             var org = {
-                                name: resources[i].entity.name
+                                name: resources[i].entity.name,
+                                guid: resources[i].metadata.guid
                             };
                             orgsArr.push(org);
                         }
@@ -278,7 +231,8 @@ router.get('/spaces', function (req, res) {
                         var spacesArr = [];
                         for (var i = 0; i < resources.length; i++) {
                             var space = {
-                                name: resources[i].entity.name
+                                name: resources[i].entity.name,
+                                guid: resources[i].metadata.guid
                             };
                             spacesArr.push(space);
                         }

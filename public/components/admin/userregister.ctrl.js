@@ -154,7 +154,7 @@ angular.module('fihApp').controller('UserRegisterCtrl', function ($scope, $resou
             if (orgs) {
                 $scope.orgs = orgs;
                 for (var i = 0; i < orgs.length; i++) {
-                    $scope.orgData.push({ id: orgs[i].name, label: orgs[i].name });
+                    $scope.orgData.push({ id: orgs[i], label: orgs[i].name });
                 }
             }
         });
@@ -165,7 +165,7 @@ angular.module('fihApp').controller('UserRegisterCtrl', function ($scope, $resou
             if (spaces) {
                 $scope.spaces = spaces;
                 for (var i = 0; i < spaces.length; i++) {
-                    $scope.spaceData.push({ id: spaces[i].name, label: spaces[i].name });
+                    $scope.spaceData.push({ id: spaces[i], label: spaces[i].name });
                 }
             }
         });

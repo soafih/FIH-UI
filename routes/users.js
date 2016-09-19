@@ -41,6 +41,7 @@ router.post('/', permCheck.checkPermission('user.create'), function (req, res) {
   var db = req.db;
 
   async.waterfall([
+    // Save details in database
     function (callback) {
       console.log("Inserting data");
       console.log("body: "+req.body);
@@ -83,8 +84,8 @@ router.post('/', permCheck.checkPermission('user.create'), function (req, res) {
           callback(null, userdata);
         }
       });
-      
     },
+    // Generate guid for user creation input for stackato api
     function (user, callback) {
       console.log("Stackato UAA Create user | Start.");
 
@@ -116,9 +117,9 @@ router.post('/', permCheck.checkPermission('user.create'), function (req, res) {
             if (response.statusCode == 201) {
               console.log("Body: "+JSON.stringify(body));
               var userData = body;
-              userData._id = user._id;
-              console.log("Stackato UAA Create user | Response: " + body);
-              callback(null, userData);
+              user.guid = userData.id;
+              console.log("Stackato UAA Create user | Response: " + user);
+              callback(null, user);
             }
             if (response.statusCode == 409) {
               callback("Duplicate User Found", null);
@@ -134,9 +135,11 @@ router.post('/', permCheck.checkPermission('user.create'), function (req, res) {
         });
       }
     },
+
+    // Call stackato api to create user
     function (user, callback) {
       console.log("Stackato Create user | Start.");
-      console.log("Creating user with Guid: "+user.id);
+      console.log("Creating user with Guid: "+user.guid);
       var fihToken = req.session.fih_token;
       if (fihToken && fihToken.access_token) {
 
@@ -147,7 +150,7 @@ router.post('/', permCheck.checkPermission('user.create'), function (req, res) {
           },
           method: 'POST',
           json: {
-            'guid': user.id
+            'guid': user.guid
           }
         };
 
@@ -176,10 +179,105 @@ router.post('/', permCheck.checkPermission('user.create'), function (req, res) {
         });
       }
     },
+
+    // Associate User with the Organization
+    function (user, callback) {
+      console.log("Stackato Associate Organizations | User: "+JSON.stringify(user));
+      console.log("Processing: "+JSON.stringify(user.orgs));
+      async.eachSeries(user.orgs, function (org, callback) {
+        var fihToken = req.session.fih_token;
+        if (fihToken && fihToken.access_token) {
+          console.log("Calling service: "+HOST_API_URL + '/v2/organizations/'+org.guid+'/users/'+user.guid);
+          var options = {
+            url: HOST_API_URL + '/v2/organizations/'+org.guid+'/users/'+user.guid,
+            headers: {
+              'Authorization': 'Bearer ' + fihToken.access_token,
+            },
+            method: 'PUT'
+          };
+
+          request(options, function resCallback(error, response, body) {
+            console.log("Response from Stackato Associate Org service: " + response);
+            if (response)
+              console.log("Stackato | Response code: " + response.statusCode);
+
+            if (!error) {
+              if (response.statusCode == 201) {
+                console.log("Body: " + JSON.stringify(body));
+                console.log("Stackato | Response: " + body);
+                callback(null);
+              }
+            }
+            else {
+              console.log("Stackato | Generating error response: " + error);
+              callback("Cannot associate user with the Organization");
+            }
+          });
+        }
+
+      }, function (err) {
+        if (err) {
+          console.log('Failed to associate user with the Organization');
+          callback(err, null);
+        } else {
+          console.log('Successfully associated user with all organizations');
+          callback(null, user);
+        }
+      });
+
+    },
+
+    // Associate Space with the User
+    function (user, callback) {
+      console.log("Stackato Associate Spaces | Start.");
+      console.log("Processing: "+JSON.stringify(user.spaces));
+      async.each(user.spaces, function (space, callback) {
+        var fihToken = req.session.fih_token;
+        if (fihToken && fihToken.access_token) {
+          console.log("Calling service: "+HOST_API_URL + '/v2/users/'+user.guid+'/spaces/'+space.guid);
+          var options = {
+            url: HOST_API_URL + '/v2/users/'+user.guid+'/spaces/'+space.guid,
+            headers: {
+              'Authorization': 'Bearer ' + fihToken.access_token,
+            },
+            method: 'PUT'
+          };
+
+          request(options, function resCallback(error, response, body) {
+            console.log("Response from Stackato Associate Space service: " + response);
+            if (response)
+              console.log("Stackato | Response code: " + response.statusCode);
+
+            if (!error) {
+              if (response.statusCode == 201) {
+                console.log("Body: " + JSON.stringify(body));
+                console.log("Stackato | Response: " + body);
+                callback(null);
+              }
+            }
+            else {
+              console.log("Stackato | Generating error response: " + error);
+              callback("Cannot associate user with the Spaces");
+            }
+          });
+        }
+
+      }, function (err) {
+        if (err) {
+          console.log('Failed to associate user with the Spaces');
+          callback(err, null);
+        } else {
+          console.log('Successfully associated user with all spaces');
+          callback(null, user);
+        }
+      });
+    },
+
+    // Update user state in database
     function(user, callback){
       var collection = db.get('coll_user');
       console.log("Updating User: "+user._id);
-      collection.update({_id: user._id}, {$set: {status: 'active', guid: user.id}}, 
+      collection.update({_id: user._id}, {$set: {status: 'active', guid: user.guid}}, 
           function(err, response){
               if (err) callback(err, null);
               console.log("Successfully updated user status: "+JSON.stringify(response));
