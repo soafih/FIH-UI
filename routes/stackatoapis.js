@@ -90,7 +90,7 @@ function deleteStackatoApp(accessToken, appGuid, callback) {
         if (!error && (response.statusCode == 200 || response.statusCode == 404)) {
             var info = JSON.parse(body);
             console.log("Deleted Stackato App: " +info);
-            callback(generateSuccessResponse(response, JSON.parse(body)));
+            callback(generateSuccessResponse(response, info));
         }
         else{
             console.log("Generating error response: " + JSON.parse(error));

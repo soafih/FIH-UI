@@ -76,18 +76,67 @@ router.post('/', permCheck.checkPermission('user.create'), function (req, res) {
         }
         else {
           console.log("Received response:");
-          if(user)
-            console.log("Inserted Data: "+JSON.stringify(user));
-          callback(null, user);
+          if(user){
+            userdata._id = user._id;
+            console.log("Inserted Data: "+JSON.stringify(userdata));
+          }
+          callback(null, userdata);
         }
       });
       
     },
     function (user, callback) {
-      console.log("Stackato Create user | Start.");
+      console.log("Stackato UAA Create user | Start.");
 
       var newGuid = uuid.v4();
+      var userData = {
+        "userName": user.username,
+        "name": { "formatted": user.first_name + ' ' + user.last_name, "familyName": user.last_name, "givenName": user.first_name }, 
+        "emails": [{ "value": user.email }]
+      };
       
+      var fihToken = req.session.fih_token;
+      if (fihToken && fihToken.access_token) {
+
+        var options = {
+          url: HOST_API_URL + '/aok/uaa/Users',
+          headers: {
+            'Authorization': 'Bearer ' + fihToken.access_token,
+          },
+          method: 'POST',
+          json: userData
+        };
+
+        request(options, function resCallback(error, response, body) {
+          console.log("Response from Stackato UAA Users service: "+response);
+          if (response)
+            console.log("Stackato UAA Create user | Response code: " + response.statusCode);
+
+          if (!error) { 
+            if (response.statusCode == 201) {
+              console.log("Body: "+JSON.stringify(body));
+              var userData = body;
+              userData._id = user._id;
+              console.log("Stackato UAA Create user | Response: " + body);
+              callback(null, userData);
+            }
+            if (response.statusCode == 409) {
+              callback("Duplicate User Found", null);
+            }
+          }
+          else {
+            console.log("Stackato UAA Create User | Generating error response: " + error);
+            if (response.statusCode == 409) {
+              callback("Error : Duplicate User Found", null);
+            }
+            callback(error, null);
+          }
+        });
+      }
+    },
+    function (user, callback) {
+      console.log("Stackato Create user | Start.");
+      console.log("Creating user with Guid: "+user.id);
       var fihToken = req.session.fih_token;
       if (fihToken && fihToken.access_token) {
 
@@ -98,34 +147,39 @@ router.post('/', permCheck.checkPermission('user.create'), function (req, res) {
           },
           method: 'POST',
           json: {
-            'guid': newGuid,
-            'username':  req.body.username,
-            'emails':  req.body.email
+            'guid': user.id
           }
         };
 
         request(options, function resCallback(error, response, body) {
+          console.log("Response from Stackato Users service: "+response);
           if (response)
             console.log("Stackato Create user | Response code: " + response.statusCode);
 
-          if (!error && (response.statusCode == 201)) {
-
-            console.log("Stackato Create user | Response: " + body);
-            callback(null, user);
+          if (!error) { 
+            if (response.statusCode == 201) {
+              console.log("Body: "+JSON.stringify(body));
+              console.log("Stackato Create user | Response: " + body);
+              callback(null, user);
+            }
+            if (response.statusCode == 409) {
+              callback("Duplicate User Found", null);
+            }
           }
           else {
             console.log("Stackato Create User | Generating error response: " + error);
+            if (response.statusCode == 409) {
+              callback("Error : Duplicate User Found", null);
+            }
             callback(error, null);
           }
         });
-
       }
-        
     },
     function(user, callback){
       var collection = db.get('coll_user');
       console.log("Updating User: "+user._id);
-      collection.update({_id: user._id}, {$set: {status: 'active'}}, 
+      collection.update({_id: user._id}, {$set: {status: 'active', guid: user.id}}, 
           function(err, response){
               if (err) callback(err, null);
               console.log("Successfully updated user status: "+JSON.stringify(response));

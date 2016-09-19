@@ -75,28 +75,30 @@
             </div>
         </div>
     </div>
-    <div class="col-md-12">
-        <table style="margin: 15px 0px" ng-table="userTable" class="table table-bordered table-striped table-hover table-condensed">
-            <colgroup>
-                <col width="25%" />
-                <col width="45%" />
-                <col width="10%" />
-                <col width="10%" />
-            </colgroup>
-            <tr ng-repeat="userinfo in $data" ng-class="{ 'emphasis': userinfo.superuser }">
-                <td data-title="'Username'" sortable="'username'" filter="{ 'username': 'text' }">
-                    {{userinfo.username}}
-                </td>
-                <td data-title="'Email Id'" sortable="'email'" filter="{ 'email': 'text' }">
-                    {{userinfo.email}}
-                </td>    
-                <td data-title="'Super User'" sortable="'superuser'" filter="{ 'superuser': 'text' }">
-                    {{userinfo.superuser ? 'Y' : 'N'}}
-                </td>  
-                <td data-title="'Select'">
-                    <input type="checkbox" ng-change="countCheckedBox(userinfo.username)" ng-model="checkboxes.items[userinfo.username]">
-                </td>
-            </tr>
-        </table>
+    <div class="row users-search-panel-row">
+        <div class="col-md-12">
+            <table ng-table="userTable" class="table table-bordered table-striped table-hover table-condensed">
+                <colgroup>
+                    <col width="25%" />
+                    <col width="45%" />
+                    <col width="10%" />
+                    <col width="10%" />
+                </colgroup>
+                <tr ng-repeat="userinfo in $data" ng-class="{ 'emphasis': userinfo.superuser }">
+                    <td data-title="'Username'" sortable="'username'" filter="{ 'username': 'text' }">
+                        {{userinfo.username}}
+                    </td>
+                    <td data-title="'Email Id'" sortable="'email'" filter="{ 'email': 'text' }">
+                        {{userinfo.email}}
+                    </td>    
+                    <td data-title="'Super User'" sortable="'superuser'" filter="{ 'superuser': 'text' }">
+                        {{userinfo.superuser ? 'Y' : 'N'}}
+                    </td>  
+                    <td data-title="'Select'">
+                        <input type="checkbox" ng-change="countCheckedBox(userinfo.username)" ng-model="checkboxes.items[userinfo.username]">
+                    </td>
+                </tr>
+            </table>
+        </div>
     </div>
 </div>

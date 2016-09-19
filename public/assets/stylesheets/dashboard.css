@@ -221,16 +221,31 @@ body .modal-header{
 }
 
 .row.users-search-panel-row {
-  margin-bottom: 15px; 
+  font-size: 12px;
+  margin-bottom: 7px; 
   padding-right: 15px;
 }
-
 .users-search-panel-select button{
   font-family: Tahoma;
   font-size: 12px;
 }
 .users-search-panel-row .checkbox {
   margin-top: 0px;
+}
+.row.users-search-panel-row .table {
+  margin: 15px 0px;
+  font-size: 12px;
+}
+
+.row.users-register-panel-row {
+  font-size: 12px;
+  margin-bottom: 0px; 
+  padding-right: 15px;
+}
+
+.row.users-register-panel-row .table {
+  margin: 15px 15px;
+  font-size: 12px;
 }
 
 /*
