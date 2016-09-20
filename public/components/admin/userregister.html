@@ -1,93 +1,154 @@
-
-<div class="tab-content">
-    
-    <div class="col-md-12">
-        <div class="users-search-panel">
-            <div class="panel panel-default">
-                <div class="panel-heading">
-                    <p class="panel-title">
-                        <a class="accordion-toggle" ng-click="isSearchCollapsed = !isSearchCollapsed">Register User</a>
-                    </p>
-                </div>
-                <div uib-collapse="isSearchCollapsed">
-                    <div class="panel-body">
-                        <div class="row users-search-panel-row">
-                            <div class="col-md-6">
-                                <label class='control-label col-md-3'>Username</label>
-                                <div class='col-md-9'>
-                                    <div class="row">
-                                        <div class='col-md-10'><input ng-model="txtUserName" placeholder="Enter username" class="form-control" /></div>
-                                        <div class='col-md-1' style="margin-left:-20px;"><a href="#"><img src="/assets/images/searchuser.png" width="30px" height="30px"></a></div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6 pull-right">
-                                <label class='control-label col-md-4'>Super User</label>
-                                <div class="col-md-6">
-                                    <div class="checkbox checkbox-success">
-                                        <input ng-init="chkSuperUser = false" id="checkbox1" type="checkbox" ng-model="chkSuperUser">
-                                        <label for="checkbox1" style="font-weight: bold;"> </label>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row users-search-panel-row">
-                            <div class="col-md-6">
-                                <label class='control-label col-md-3'>Full Name</label>
-                                <div  class='col-md-9'>
-                                    <input ng-model="txtFullName" placeholder="" class="form-control" />
-                                </div>
-                            </div>
-                            <div class="col-md-6 pull-right">
-                                <label class='control-label col-md-4'>Organization</label>
-                                <div class="users-search-panel-select col-md-6" ng-dropdown-multiselect="" options="orgData" selected-model="orgModel" extra-settings="selectSettings" translation-texts="orgCustomTexts"></div>
-                            </div>
-                        </div>
-                        <div class="row users-search-panel-row">
-                            <div class="col-md-6">
-                                <label class='control-label col-md-3'>Email</label>
-                                <div  class='col-md-9'>
-                                    <input ng-model="txtEmail" placeholder="" class="form-control" />
-                                </div>
-                            </div>
-                            <div class="col-md-6 pull-right">
-                                <label class='control-label col-md-4'>Space</label>
-                                <div class="users-search-panel-select col-md-6" ng-dropdown-multiselect="" options="spaceData" selected-model="spaceModel" extra-settings="selectSettings" translation-texts="spaceCustomTexts"></div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-11">
-                                <table style="margin: 25px 15px;" ng-table="roleTable" class="table table-bordered table-striped table-hover table-condensed">
-                                    <colgroup>
-                                        <col width="30%" />
-                                        <col width="60%" />
-                                        <col width="10%" />
-                                    </colgroup>
-                                    <tr ng-repeat="role in $data" ng-class="{ 'emphasis': role.superuser }">
-                                        <td data-title="'Role'" sortable="'name'" filter="{ 'name': 'text' }">
-                                            {{role.name}}
-                                        </td>
-                                        <td data-title="'Description'" sortable="'descr'" filter="{ 'descr': 'text' }">
-                                            {{role.descr}}
-                                        </td>
-                                        <td data-title="'Select'">
-                                            <input type="checkbox" ng-model="checkboxes.items[role.name]">
-                                        </td>
-                                    </tr>
-                                </table>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div style="margin: 25px" class="users-modify-btn">
-                                <div class="container-fluid">
-                                    <div class="row">
-                                        <button class="btn btn-success btn-md col-md-1" ng-click="createUser()">Create</button>
-                                        <button class="btn btn-default btn-md col-md-1" ng-click="reset()">Reset</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+<div>
+    <h3>{{pageHeader}}</h3>
+</div>
+<hr />
+<script type="text/ng-template" id="myModalContent.html">
+    <div class="modal-header">
+        <h3 class="modal-title" id="modal-title">Select User from AD</h3>
+    </div>
+    <div class="modal-body" id="modal-body">
+        <div class="form-group" ng-form name="modalForm">
+            <div class="row users-register-panel-row">
+                <div class="form-group required col-md-8">
+                    <label class='control-label col-md-3'>Username</label>
+                    <div class='col-md-6'>
+                        <input ng-disabled="true" name="username" required ng-model="selectedUser.username" placeholder="Select user from table below" class="form-control" />
                     </div>
+                </div>
+            </div>
+            <div class="row users-register-panel-row">
+                <div class="form-group required col-md-8">
+                    <label class='control-label col-md-3'>Full Name</label>
+                    <div class='col-md-6'>
+                        <input ng-disabled="true" name="fullname" ng-model="selectedUser.fullname" required placeholder="Select user from table below" class="form-control" />
+                    </div>
+                </div>
+            </div>
+            <div class="row users-register-panel-row">
+                <div class="form-group required col-md-8">
+                    <label class='control-label col-md-3'>Email</label>
+                    <div class='col-md-6'>
+                        <input ng-disabled="true" name="email" ng-model="selectedUser.email" placeholder="Select user from table below" type="email" class="form-control" />
+                    </div>
+                    <span style="color:red" ng-show="modalForm.email.$dirty && modalForm.email.$invalid">
+                            <span ng-show="modalForm.email.$error.required">Email is required.</span>
+                    <span ng-show="modalForm.email.$error.email">Invalid email address.</span>
+                    </span>
+                </div>
+                <div class="col-md-2 pull-right">
+                    <button class="btn btn-default btn-warning" type="button" ng-click="resetModal()">Reset</button>
+                </div>
+            </div>
+            <div class="row users-register-panel-row">
+                <div class="col-md-11">
+                    <table ng-table="adUserTable" class="table table-bordered table-striped table-hover table-condensed">
+                        <colgroup>
+                            <col width="10%" />
+                            <col width="25%" />
+                            <col width="25%" />
+                            <col width="40%" />
+                        </colgroup>
+                        <tr ng-repeat="userConfig in $data">
+                            <td data-title="'Select'">
+                                <input type="radio" ng-change="rdbChanged(userConfig)" name="optradio" ng-model="$parent.rdbSelectedUser" ng-value="userConfig">
+                            </td>
+                            <td data-title="'UserName'" sortable="'username'" filter="{ 'username': 'text' }">
+                                {{userConfig.username}}
+                            </td>
+                            <td data-title="'Full Name'" sortable="'fullname'" filter="{ 'fullname': 'text' }">
+                                {{userConfig.fullname}}
+                            </td>
+                            <td data-title="'Email'" sortable="'email'" filter="{ 'email': 'text' }">
+                                {{userConfig.email}}
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-success pull-left" type="button" ng-click="modalOk()">Select</button>
+        <button class="btn btn-default pull-left" type="button" ng-click="modalCancel()">Cancel</button>
+    </div>
+</script>
+<div class="container-fluid">
+    <div class="row users-register-panel-row">
+        <div class="form-group required col-md-6">
+            <label class='control-label col-md-3'>Username</label>
+            <div class='col-md-9'>
+                <div class="row">
+                    <div class='col-md-10'>
+                        <input ng-minlength="3" required ng-model="txtUserName" placeholder="Enter min 3 char and search" class="form-control" />
+                    </div>
+                    <div class='col-md-1' style="margin-left:-20px;" uib-tooltip="Search/Select User from Active Directory">
+                        <a href="#" ng-click="$event.preventDefault();openSearch()"><img alt="Search/Select User from Active Directory" src="/assets/images/searchuser.png" width="30px" height="30px"></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 pull-right">
+            <label class='control-label col-md-4'>Super User</label>
+            <div class="col-md-6">
+                <div class="checkbox checkbox-success">
+                    <input ng-init="chkSuperUser = false" id="checkbox1" type="checkbox" ng-model="chkSuperUser">
+                    <label for="checkbox1" style="font-weight: bold;"> </label>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row users-register-panel-row">
+        <div class="form-group required col-md-6">
+            <label class='control-label col-md-3'>Full Name</label>
+            <div class='col-md-9'>
+                <input ng-disabled="true" ng-model="txtFullName" required placeholder="" class="form-control" />
+            </div>
+        </div>
+        <div ng-hide="chkSuperUser" class="form-group required col-md-6 pull-right">
+            <label class='control-label col-md-4'>Organization</label>
+            <div class="users-search-panel-select col-md-6" ng-dropdown-multiselect="" options="orgData" selected-model="orgModel" extra-settings="selectSettings" translation-texts="orgCustomTexts"></div>
+        </div>
+    </div>
+    <div class="row users-register-panel-row">
+        <div class="form-group required col-md-6">
+            <label class='control-label col-md-3'>Email</label>
+            <div class='col-md-9'>
+                <input ng-disabled="true" ng-model="txtEmail" placeholder="" type="email" class="form-control" />
+            </div>
+        </div>
+        <div ng-hide="chkSuperUser" class="form-group required col-md-6 pull-right">
+            <label class='control-label col-md-4'>Space</label>
+            <div class="users-search-panel-select col-md-6" ng-dropdown-multiselect="" options="spaceData" selected-model="spaceModel" extra-settings="selectSettings" translation-texts="spaceCustomTexts"></div>
+        </div>
+    </div>
+    <div ng-hide="chkSuperUser" class="row users-register-panel-row">
+        <div class="col-md-11">
+            <table ng-table="roleTable" class="table table-bordered table-striped table-hover table-condensed">
+                <colgroup>
+                    <col width="30%" />
+                    <col width="60%" />
+                    <col width="10%" />
+                </colgroup>
+                <tr ng-repeat="role in $data" ng-class="{ 'emphasis': role.superuser }">
+                    <td data-title="'Role'" sortable="'name'" filter="{ 'name': 'text' }">
+                        {{role.name}}
+                    </td>
+                    <td data-title="'Description'" sortable="'descr'" filter="{ 'descr': 'text' }">
+                        {{role.descr}}
+                    </td>
+                    <td data-title="'Select'">
+                        <input type="checkbox" ng-model="checkboxes.items[role.name]">
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <div class="row">
+        <div style="margin: 10px 25px" class="users-modify-btn">
+            <div class="container-fluid">
+                <div class="row">
+                    <button class="btn btn-success btn-md col-md-1" ng-click="createUser()">Create</button>
+                    <button class="btn btn-default btn-md col-md-1" ng-click="reset()">Reset</button>
                 </div>
             </div>
         </div>

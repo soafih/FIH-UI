@@ -1,0 +1,83 @@
+<div>
+    <h3>{{pageHeader}}</h3>
+</div>
+<hr />
+<div class="container-fluid">
+    <div class="row users-register-panel-row">
+        <div class="form-group col-md-6">
+            <label class='control-label col-md-3'>Username</label>
+            <div class='col-md-9'>
+                <div class="row">
+                    <div class='col-md-10'>
+                        <input ng-disabled="true" ng-model="txtUserName" placeholder="Enter username and search" class="form-control" />
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 pull-right">
+            <label class='control-label col-md-4'>Super User</label>
+            <div class="col-md-6">
+                <div class="checkbox checkbox-success">
+                    <input id="checkbox1" type="checkbox" ng-model="chkSuperUser">
+                    <label for="checkbox1" style="font-weight: bold;"> </label>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row users-register-panel-row">
+        <div class="form-group col-md-6">
+            <label class='control-label col-md-3'>Full Name</label>
+            <div class='col-md-9'>
+                <input ng-disabled="true" ng-model="txtFullName" placeholder="" class="form-control" />
+            </div>
+        </div>
+        <div ng-hide="chkSuperUser" class="form-group required col-md-6 pull-right">
+            <label class='control-label col-md-4'>Organization</label>
+            <div class="users-search-panel-select col-md-6" ng-dropdown-multiselect="" options="orgData" selected-model="orgModel" extra-settings="selectSettings" translation-texts="orgCustomTexts"></div>
+        </div>
+    </div>
+    <div class="row users-register-panel-row">
+        <div class="form-group col-md-6">
+            <label class='control-label col-md-3'>Email</label>
+            <div class='col-md-9'>
+                <input ng-disabled="true" ng-model="txtEmail" placeholder="" type="email" class="form-control" />
+            </div>
+        </div>
+        <div ng-hide="chkSuperUser" class="form-group required col-md-6 pull-right">
+            <label class='control-label col-md-4'>Space</label>
+            <div class="users-search-panel-select col-md-6" ng-dropdown-multiselect="" options="spaceData" selected-model="spaceModel" extra-settings="selectSettings" translation-texts="spaceCustomTexts"></div>
+        </div>
+    </div>
+    <div ng-hide="chkSuperUser" class="row users-register-panel-row">
+        <div class="col-md-11">
+            <table ng-table="roleTable" class="table table-bordered table-striped table-hover table-condensed">
+                <colgroup>
+                    <col width="30%" />
+                    <col width="60%" />
+                    <col width="10%" />
+                </colgroup>
+                <tr ng-repeat="role in $data" ng-class="{ 'emphasis': role.superuser }">
+                    <td data-title="'Role'" sortable="'name'" filter="{ 'name': 'text' }">
+                        {{role.name}}
+                    </td>
+                    <td data-title="'Description'" sortable="'descr'" filter="{ 'descr': 'text' }">
+                        {{role.descr}}
+                    </td>
+                    <td data-title="'Select'">
+                        <input ng-change="countCheckedBox(userinfo._id)" type="checkbox" ng-model="checkboxes.items[role.name]">
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <div class="row">
+        <div style="margin: 10px 25px" class="users-modify-btn">
+            <div class="container-fluid">
+                <div class="row">
+                    <button class="btn btn-warning btn-md col-md-1" ng-click="updateUser()">Update</button>
+                    <button class="btn btn-default btn-md col-md-1" ng-click="reset()">Reset</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

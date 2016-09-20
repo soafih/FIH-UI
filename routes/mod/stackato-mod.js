@@ -31,7 +31,11 @@ module.exports = {
                     if (error && error.code === 'ETIMEDOUT') {
                         console.log("Cannot establish connection with stackato. Connection timeout: " + error.connect === true);
                     }
-                    if (!error && (response.statusCode == 200)) {
+                    
+                    if(response && response.statusCode == 401){
+                        callbackOrg(generateErrorResponse(response, "Unauthorized. Access Token has expired"), null, null);
+                    }
+                    else if (!error && (response.statusCode == 200)) {
                         var data = JSON.parse(body);
                         console.log("getUsersOrganizations | body: "+data)
                         var resources = data.resources;
@@ -89,7 +93,11 @@ function getOrgDetails(accessToken, orgsArr, callbackOrgs) {
             if (error && error.code === 'ETIMEDOUT') {
                 console.log("Cannot establish connection with stackato. Connection timeout: " + error.connect === true);
             }
-            if (!error && (response.statusCode == 200)) {
+            
+            if(response && response.statusCode == 401){
+                callback(generateErrorResponse(response, "Unauthorized. Access Token has expired"), null);
+            }
+            else if (!error && (response.statusCode == 200)) {
                 var data = JSON.parse(body);
                 var resources = data.resources;
 
@@ -131,6 +139,16 @@ function getOrgDetails(accessToken, orgsArr, callbackOrgs) {
             }
         });
     }
+}
+
+function generateSuccessResponse(response, resData){
+
+    return {success: true, data: resData}; 
+}
+
+function generateErrorResponse(response, resData){
+
+    return {success: false, status_code: response.statusCode, data: resData}; 
 }
 
 function getStackatoAccessTokenAsync(req, res, next) {

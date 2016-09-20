@@ -49,6 +49,7 @@ html(ng-app='fihApp')
     script(src='/components/dbconfig/dbconfig.ctrl.js')
     script(src='/components/admin/users.ctrl.js')
     script(src='/components/admin/userregister.ctrl.js')
+    script(src='/components/admin/userupdate.ctrl.js')
     script(src='/components/admin/roles.ctrl.js')
   body(ng-controller="MainCtrl")
     div.spinner(ng-show="showSpinner")
@@ -97,7 +98,7 @@ html(ng-app='fihApp')
               a(href='/#/dashboard') Dashboard
             li(ng-class="{active:isActive(['/dbconfig', '/users', '/roles'])}")
               a(href='', ng-init="hideAdminOptions = true" ng-click="hideAdminOptions = hideAdminOptions ? false : true")
-                | Admin Pages 
+                | Administration 
                 span.caret
               ul.nav.nav-sidebar(ng-hide="hideAdminOptions")
                 ul.nav

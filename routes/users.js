@@ -18,14 +18,77 @@ var PASSWORD = process.env.FIH_SVC_PASSWORD;
 
 var db = {};
 
-router.get('/', permCheck.checkPermission('user.view'), function(req, res) {
+router.get('/objectid/:objectid',  function(req, res) {
     var db = req.db;
+    var collection = db.get('coll_user');
+    console.log("Fetching user data with object id: "+req.params.objectid);
+    collection.findOne(req.params.objectid, function(err, app){
+        if (err) throw err;
+      	res.json(app);
+    });
+});
+
+router.get('/', permCheck.checkPermission('user.view'), function(req, res) {
+    db = req.db;
     var collection = db.get('coll_user');
     collection.find({}, function(err, users){
         if (err) throw err;
-      	res.json(users);
+        async.map(users, getUserRoles, function (err, users) {
+          if (err) console.log("(0) Users - Main | Map Error while fetching users roles: " + err);
+          if (users) {
+            console.log("(0) Users - Main | Map Result inherited users roles: " + JSON.stringify(users));
+            res.json(users);
+          }
+        });
     });
 });
+
+function getUserRoles(user, callback) {
+  var roles = user.roles;
+  user.roles = [];
+  console.log("(1) Users - getUserRoles | Processing user: " + JSON.stringify(user));
+  async.doWhilst(
+    function (callback) {
+      console.log("(1) Users - getUserRoles | DoWhilst Calling map with roles: " + roles);
+      async.map(roles, getInheritedRoles, function (err, results) {
+        console.log("(1) Users - getUserRoles | DoWhilst map completed. Error: ", err, " | result: ", JSON.stringify(results));
+        roles = roles.concat(results[0].inherits);
+        //console.log("1. mapInheriredRoles | Current Role in Arr: "+JSON.stringify(roles));
+        delete results[0].inherits;
+        //console.log("1. mapInheriredRoles | Pushing role: "+JSON.stringify(results[0]));
+        user.roles.push(results[0].name);
+        var index = roles.indexOf(results[0].name);
+        roles.splice(index, 1);
+        //console.log("1. mapInheriredRoles | Current Role in Arr after cleaning: "+JSON.stringify(roles));
+        //console.log("(1) Users - getUserRoles | DoWhilst map User: " + JSON.stringify(user));
+        callback(null, roles);
+      });
+    },
+    function () {
+      console.log("(1) Users - getUserRoles | DoWhilst Length: " + roles.length);
+      return roles.length > 0;
+    },
+    function (err, roles) {
+      if (err) console.log("(1) Users - getUserRoles | DoWhilst Error while fetching inherited roles: " + err);
+      if (roles) console.log("(1) Users - getUserRoles | DoWhilst Result inherited user: " + JSON.stringify(roles));
+      user.roles = user.roles.filter(function(item, pos) {
+          return user.roles.indexOf(item) == pos;
+      });
+      callback(err, user);
+    }
+  );
+}
+
+function getInheritedRoles(role, callback){
+    //console.log('(2) Users - getInheritedRoles | Getting inherited roles for: ' +role);
+    var collection = db.get('coll_role');
+    collection.findOne({name: role}, function(err, roleData){
+        if (err) throw err;
+        var roleObj = { name: roleData.name, inherits: roleData.inherits };
+        //console.log("(2) Users - getInheritedRoles | Role Obj:"+JSON.stringify(roleObj));
+        callback(err, roleObj);
+    });
+}
 
 router.get('/roles', permCheck.checkPermission('user.view'), function(req, res) {
     var db = req.db;
@@ -41,6 +104,7 @@ router.post('/', permCheck.checkPermission('user.create'), function (req, res) {
   var db = req.db;
 
   async.waterfall([
+    // Save details in database
     function (callback) {
       console.log("Inserting data");
       console.log("body: "+req.body);
@@ -76,18 +140,69 @@ router.post('/', permCheck.checkPermission('user.create'), function (req, res) {
         }
         else {
           console.log("Received response:");
-          if(user)
-            console.log("Inserted Data: "+JSON.stringify(user));
-          callback(null, user);
+          if(user){
+            userdata._id = user._id;
+            console.log("Inserted Data: "+JSON.stringify(userdata));
+          }
+          callback(null, userdata);
         }
       });
-      
     },
+    // Generate guid for user creation input for stackato api
     function (user, callback) {
-      console.log("Stackato Create user | Start.");
+      console.log("Stackato UAA Create user | Start.");
 
       var newGuid = uuid.v4();
+      var userData = {
+        "userName": user.username,
+        "name": { "formatted": user.first_name + ' ' + user.last_name, "familyName": user.last_name, "givenName": user.first_name }, 
+        "emails": [{ "value": user.email }]
+      };
       
+      var fihToken = req.session.fih_token;
+      if (fihToken && fihToken.access_token) {
+
+        var options = {
+          url: HOST_API_URL + '/aok/uaa/Users',
+          headers: {
+            'Authorization': 'Bearer ' + fihToken.access_token,
+          },
+          method: 'POST',
+          json: userData
+        };
+
+        request(options, function resCallback(error, response, body) {
+          console.log("Response from Stackato UAA Users service: "+response);
+          if (response)
+            console.log("Stackato UAA Create user | Response code: " + response.statusCode);
+
+          if (!error) { 
+            if (response.statusCode == 201) {
+              console.log("Body: "+JSON.stringify(body));
+              var userData = body;
+              user.guid = userData.id;
+              console.log("Stackato UAA Create user | Response: " + user);
+              callback(null, user);
+            }
+            if (response.statusCode == 409) {
+              callback("Duplicate User Found", null);
+            }
+          }
+          else {
+            console.log("Stackato UAA Create User | Generating error response: " + error);
+            if (response.statusCode == 409) {
+              callback("Error : Duplicate User Found", null);
+            }
+            callback(error, null);
+          }
+        });
+      }
+    },
+
+    // Call stackato api to create user
+    function (user, callback) {
+      console.log("Stackato Create user | Start.");
+      console.log("Creating user with Guid: "+user.guid);
       var fihToken = req.session.fih_token;
       if (fihToken && fihToken.access_token) {
 
@@ -98,34 +213,134 @@ router.post('/', permCheck.checkPermission('user.create'), function (req, res) {
           },
           method: 'POST',
           json: {
-            'guid': newGuid,
-            'username':  req.body.username,
-            'emails':  req.body.email
+            'guid': user.guid
           }
         };
 
         request(options, function resCallback(error, response, body) {
+          console.log("Response from Stackato Users service: "+response);
           if (response)
             console.log("Stackato Create user | Response code: " + response.statusCode);
 
-          if (!error && (response.statusCode == 201)) {
-
-            console.log("Stackato Create user | Response: " + body);
-            callback(null, user);
+          if (!error) { 
+            if (response.statusCode == 201) {
+              console.log("Body: "+JSON.stringify(body));
+              console.log("Stackato Create user | Response: " + body);
+              callback(null, user);
+            }
+            if (response.statusCode == 409) {
+              callback("Duplicate User Found", null);
+            }
           }
           else {
             console.log("Stackato Create User | Generating error response: " + error);
+            if (response.statusCode == 409) {
+              callback("Error : Duplicate User Found", null);
+            }
             callback(error, null);
           }
         });
-
       }
-        
     },
+
+    // Associate User with the Organization
+    function (user, callback) {
+      console.log("Stackato Associate Organizations | User: "+JSON.stringify(user));
+      console.log("Processing: "+JSON.stringify(user.orgs));
+      async.eachSeries(user.orgs, function (org, callback) {
+        var fihToken = req.session.fih_token;
+        if (fihToken && fihToken.access_token) {
+          console.log("Calling service: "+HOST_API_URL + '/v2/organizations/'+org.guid+'/users/'+user.guid);
+          var options = {
+            url: HOST_API_URL + '/v2/organizations/'+org.guid+'/users/'+user.guid,
+            headers: {
+              'Authorization': 'Bearer ' + fihToken.access_token,
+            },
+            method: 'PUT'
+          };
+
+          request(options, function resCallback(error, response, body) {
+            console.log("Response from Stackato Associate Org service: " + response);
+            if (response)
+              console.log("Stackato | Response code: " + response.statusCode);
+
+            if (!error) {
+              if (response.statusCode == 201) {
+                console.log("Body: " + JSON.stringify(body));
+                console.log("Stackato | Response: " + body);
+                callback(null);
+              }
+            }
+            else {
+              console.log("Stackato | Generating error response: " + error);
+              callback("Cannot associate user with the Organization");
+            }
+          });
+        }
+
+      }, function (err) {
+        if (err) {
+          console.log('Failed to associate user with the Organization');
+          callback(err, null);
+        } else {
+          console.log('Successfully associated user with all organizations');
+          callback(null, user);
+        }
+      });
+
+    },
+
+    // Associate Space with the User
+    function (user, callback) {
+      console.log("Stackato Associate Spaces | Start.");
+      console.log("Processing: "+JSON.stringify(user.spaces));
+      async.each(user.spaces, function (space, callback) {
+        var fihToken = req.session.fih_token;
+        if (fihToken && fihToken.access_token) {
+          console.log("Calling service: "+HOST_API_URL + '/v2/users/'+user.guid+'/spaces/'+space.guid);
+          var options = {
+            url: HOST_API_URL + '/v2/users/'+user.guid+'/spaces/'+space.guid,
+            headers: {
+              'Authorization': 'Bearer ' + fihToken.access_token,
+            },
+            method: 'PUT'
+          };
+
+          request(options, function resCallback(error, response, body) {
+            console.log("Response from Stackato Associate Space service: " + response);
+            if (response)
+              console.log("Stackato | Response code: " + response.statusCode);
+
+            if (!error) {
+              if (response.statusCode == 201) {
+                console.log("Body: " + JSON.stringify(body));
+                console.log("Stackato | Response: " + body);
+                callback(null);
+              }
+            }
+            else {
+              console.log("Stackato | Generating error response: " + error);
+              callback("Cannot associate user with the Spaces");
+            }
+          });
+        }
+
+      }, function (err) {
+        if (err) {
+          console.log('Failed to associate user with the Spaces');
+          callback(err, null);
+        } else {
+          console.log('Successfully associated user with all spaces');
+          callback(null, user);
+        }
+      });
+    },
+
+    // Update user state in database
     function(user, callback){
       var collection = db.get('coll_user');
       console.log("Updating User: "+user._id);
-      collection.update({_id: user._id}, {$set: {status: 'active'}}, 
+      collection.update({_id: user._id}, {$set: {status: 'active', guid: user.guid}}, 
           function(err, response){
               if (err) callback(err, null);
               console.log("Successfully updated user status: "+JSON.stringify(response));

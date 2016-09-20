@@ -221,16 +221,31 @@ body .modal-header{
 }
 
 .row.users-search-panel-row {
-  margin-bottom: 15px; 
+  font-size: 12px;
+  margin-bottom: 7px; 
   padding-right: 15px;
 }
-
 .users-search-panel-select button{
   font-family: Tahoma;
   font-size: 12px;
 }
 .users-search-panel-row .checkbox {
   margin-top: 0px;
+}
+.row.users-search-panel-row .table {
+  margin: 15px 0px;
+  font-size: 12px;
+}
+
+.row.users-register-panel-row {
+  font-size: 12px;
+  margin-bottom: 0px; 
+  padding-right: 15px;
+}
+
+.row.users-register-panel-row .table {
+  margin: 15px 15px;
+  font-size: 12px;
 }
 
 /*
@@ -274,6 +289,11 @@ table.table.table-hover.table-condensed tbody {
 
 body > div.container-fluid > div > div.col-sm-3.col-md-2.sidebar > ul > li.active > a {
   background-color: #4d4d4d;
+}
+
+ul.nav.nav-sidebar li.active ul.nav.nav-sidebar ul.nav li.active a {
+  background-color: #a6a6a6;
+  color: black;
 }
 
 div.panel.panel-default.ng-scope div.panel-heading.ng-binding{
