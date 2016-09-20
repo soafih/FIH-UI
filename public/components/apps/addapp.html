@@ -126,11 +126,13 @@
                                             <label for="checkbox2" style="font-weight: bold;"></label>
                                         </div>
                                     </div>
-                                    
+                                     <span ng-show="appInfoForm.selectedExpiry.$error.number || appInfoForm.selectedExpiry.$error.max || appInfoForm.selectedExpiry.$error.pattern" style="margin-left: 200px;color:red; font-size: 80%">This field allows only the numbers and should be in the range of [0 - 10800]</span>
+									 
                                         <div ng-show='app.resultCaching'>
                                             <label class='control-label col-sm-2' for="selExpiry">Cache Expiry (seconds)</label>
                                             <div class="col-sm-3">
-                                                <input required class="form-control" name='selectedExpiry' ng-model='app.cacheExpiry'></input>
+											
+                                                <input type="number" required ng-init="app.cacheExpiry = 300" class="form-control" name='selectedExpiry' ng-model='app.cacheExpiry' min="0" max="10800" ng-pattern="reCacheExpPattern"></input>
                                             </div>
                                         </div>
                                    

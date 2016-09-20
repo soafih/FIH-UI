@@ -3,6 +3,7 @@ fihApp.controller('AddAppCtrl', function ($scope, $window, $http, $resource, $lo
 
     $scope.pageHeader = "Application / Integration Service Configuration";
     $scope.reNamepattern = /^[a-z0-9](-*[a-z0-9]+)*$/i;
+	$scope.reCacheExpPattern =  /^[0-9]+$/;
     $scope.previousBtnDisabled = true;
     $scope.changeActiveTab = function (selectedTab) {
         switch (selectedTab) {
@@ -179,6 +180,10 @@ fihApp.controller('AddAppCtrl', function ($scope, $window, $http, $resource, $lo
         if ($scope.app.descr == null) {
             $scope.errorMsgs.push({ error: "Application description can not be blank" });
         }
+		
+		if($scope.app.cacheExpiry == null) {
+			$scope.errorMsgs.push({ error: "Cache Expiry time should be a number and should not exceed 10800 seconds" });
+		}
 
         if ($scope.app.db_query == null) {
             $scope.errorMsgs.push({ error: "Query can not be blank" });
