@@ -56,7 +56,8 @@
                                 <div class="users-search-panel-select col-md-6" ng-dropdown-multiselect="" options="spaceData" selected-model="spaceModel" extra-settings="selectSettings" translation-texts="spaceCustomTexts"></div>
                             </div>
                         </div>
-                        <div class="row users-search-panel-row" style="margin: -10px; 40px 0 0" >
+                        <div class="row users-search-panel-row" style="margin: 10px; 40px 0px 0px" >
+                            <button style="margin-left: 10px;" class="btn btn-default btn-md col-md-1 pull-right" ng-click="reset()">Reset</button>
                             <button class="btn btn-info btn-md col-md-1 pull-right" ng-click="searchUsers()">Search</button>
                         </div>
                     </div>
@@ -68,8 +69,8 @@
         <div class="container-fluid">
             <div class="row">
                 <button class="btn btn-danger btn-md col-md-1 pull-right" ng-click="openDialog('delete', 'All user data will be deleted. This action cannot be undone!')">Delete</button>
-                <div class="col-md-1 pull-right" style="margin-right:15px;" tooltip-enable="{{disableDeleteBtn}}" uib-tooltip="To enable update, select only one user">
-                    <button class="btn btn-warning btn-md" ng-disabled="disableDeleteBtn" 
+                <div class="col-md-1 pull-right" style="margin-right:15px;" tooltip-enable="{{disableUpdateBtn}}" uib-tooltip="To enable update, select only one user">
+                    <button class="btn btn-warning btn-md" ng-disabled="disableUpdateBtn" 
                      ng-click="updateUser()">Update</button>
                 </div>
             </div>
@@ -95,7 +96,7 @@
                         {{userinfo.superuser ? 'Y' : 'N'}}
                     </td>  
                     <td data-title="'Select'">
-                        <input type="checkbox" ng-change="countCheckedBox(userinfo.username)" ng-model="checkboxes.items[userinfo.username]">
+                        <input type="checkbox" ng-change="countCheckedBox(userinfo._id)" ng-model="checkboxes.items[userinfo._id]">
                     </td>
                 </tr>
             </table>
