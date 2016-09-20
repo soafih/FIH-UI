@@ -33,10 +33,8 @@ angular.module('fihApp').controller('UsersCtrl', function ($scope, $resource, $l
     $scope.checkboxes = { 'checked': false, items: {} };
 
     $scope.countChecked = 0;
-    $scope.countCheckedBox = function (username) {
-        console.log("Object: "+JSON.stringify($scope.checkboxes));
-        
-        if ($scope.checkboxes.items[username]) { //If it is checked
+    $scope.countCheckedBox = function (_id) {
+        if ($scope.checkboxes.items[_id]) { //If it is checked
             $scope.countChecked++;
             console.log("Checkbox checked: " + $scope.countChecked);
         }
@@ -44,17 +42,19 @@ angular.module('fihApp').controller('UsersCtrl', function ($scope, $resource, $l
             $scope.countChecked--;
             console.log("Checkbox unchecked: " + $scope.countChecked);
         }
-        if($scope.countChecked > 1)
-            $scope.disableDeleteBtn = true;
-        else
-            $scope.disableDeleteBtn = false;
+        if($scope.countChecked > 1){
+            $scope.disableUpdateBtn = true;
+        }
+        else{
+            $scope.disableUpdateBtn = false;
+        }
     };
     // watch for check all checkbox
     $scope.$watch('checkboxes.checked', function (value) {
         console.log("Checkbox changed: ");
         angular.forEach($scope.users, function (item) {
-            if (angular.isDefined(item.username)) {
-                $scope.checkboxes.items[item.username] = value;
+            if (angular.isDefined(item._id)) {
+                $scope.checkboxes.items[item._id] = value;
             }
         });
     });
@@ -64,7 +64,19 @@ angular.module('fihApp').controller('UsersCtrl', function ($scope, $resource, $l
     };
 
     $scope.updateUser = function(){
-        
+        var userList = $scope.checkboxes.items;
+        console.log("All users items: "+JSON.stringify($scope.checkboxes.items));
+        var selectedUserId = ""; 
+        for (var key in userList) {
+            if (userList.hasOwnProperty(key)) {
+                if(userList[key]){
+                    selectedUserId = key;
+                    break;
+                }
+            }
+        }
+        console.log("Updating user: "+selectedUserId);
+        $location.path('/user-update/'+selectedUserId);
     };
     
     $scope.searchUsers = function(){
@@ -73,10 +85,11 @@ angular.module('fihApp').controller('UsersCtrl', function ($scope, $resource, $l
         $scope.users = $filter('filter')(userList.data, {username:$scope.txtUserName, email: $scope.txtEmail, superuser:$scope.chkSuperUser});
         console.log("Users: "+JSON.stringify($scope.users));
         if($scope.rolesModel.length > 0){
+            var selectedRoles = [];
             for(var i=0; i<$scope.rolesModel.length; i++){
-                console.log("Selected Role: "+$scope.rolesModel[i].id);
-                $scope.users = $filter('filter')($scope.users, {roles: $scope.rolesModel[i].id});
+                selectedRoles.push($scope.rolesModel[i].id);
             }
+            $scope.users = $filter('roleFilter')($scope.users, selectedRoles);
         }
         if($scope.orgModel.length > 0){
             var selectedOrgs = [];
@@ -97,6 +110,19 @@ angular.module('fihApp').controller('UsersCtrl', function ($scope, $resource, $l
         $scope.userTable.reload();
         console.log("Filtered Users: "+JSON.stringify($scope.users));
         
+    };
+    
+    $scope.reset = function(){
+        $scope.txtUserName = "";
+        $scope.txtEmail = "";
+        $scope.orgModel = [];
+        $scope.spaceModel = [];
+        $scope.rolesModel = [];
+        $scope.checkboxes = { 'checked': false, items: {} };
+        $scope.users = userList.data;
+        $scope.userTable.total($scope.users.length);
+        $scope.userTable.settings().dataset = $scope.users;
+        $scope.userTable.reload();
     };
 
     var init = function () {
@@ -137,10 +163,24 @@ angular.module('fihApp').controller('UsersCtrl', function ($scope, $resource, $l
     init();
 });
 
-fihApp.filter('orgFilter', function () {
+fihApp.filter('roleFilter', function () {
     return function (inputs, filterValues) {
         console.log("Filter Input: "+JSON.stringify(inputs));
         console.log("Filter Values: "+JSON.stringify(filterValues));
+        var output = [];
+        angular.forEach(inputs, function (input) {
+            angular.forEach(input.roles, function (role) {
+                if (filterValues.indexOf(role) !== -1){
+                    output.push(input);
+                }
+            });
+        });
+        return removeArrayDuplicate(output);
+    };
+});
+
+fihApp.filter('orgFilter', function () {
+    return function (inputs, filterValues) {
         var output = [];
         angular.forEach(inputs, function (input) {
             angular.forEach(input.orgs, function (org) {
@@ -155,8 +195,6 @@ fihApp.filter('orgFilter', function () {
 
 fihApp.filter('spaceFilter', function () {
     return function (inputs, filterValues) {
-        console.log("Filter Input: "+JSON.stringify(inputs));
-        console.log("Filter Values: "+JSON.stringify(filterValues));
         var output = [];
         angular.forEach(inputs, function (input) {
             angular.forEach(input.spaces, function (space) {
