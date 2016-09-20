@@ -20,8 +20,13 @@ router.get('/apps', permCheck.checkPermission('app.view'), function (req, res) {
     console.log("Retrieving apps from stackato..");
     var fihToken = req.session.fih_token;
     if(fihToken && fihToken.access_token){
-        getAllApplications(fihToken.access_token, function (response) {
-            res.json(response.data.apps);
+        getAllApplications(fihToken.access_token, function (err, response) {
+            if(err){
+                res.status(err.status_code).send(err);
+            }
+            else{
+                res.json(response.data.apps);
+            }
         });
     }
     else{
@@ -38,12 +43,17 @@ router.get('/apps/:appname', permCheck.checkPermission('app.view'), function (re
     console.log("Retrieving apps from stackato..");
     var fihToken = req.session.fih_token;
     if(fihToken && fihToken.access_token){
-        getAllApplications(fihToken.access_token, function (response) {
-            console.log("Array response: "+JSON.stringify(response));
-            var app = response.data.apps.filter(function (apps) {
-                return apps.name == appName;
-            });
-            res.json(app[0]);
+        getAllApplications(fihToken.access_token, function (err, response) {
+            if(err){
+                res.status(err.status_code).send(err);
+            }
+            else{
+                console.log("Array response: "+JSON.stringify(response));
+                var app = response.data.apps.filter(function (apps) {
+                    return apps.name == appName;
+                });
+                res.json(app[0]);
+            }
         });
     }
     else{
@@ -61,9 +71,15 @@ router.delete('/apps/:appguid', permCheck.checkPermission('app.delete'), functio
     
     var fihToken = req.session.fih_token;
     if(fihToken && fihToken.access_token){
-        deleteStackatoApp(fihToken.access_token, appGuid, function (response) {
-            console.log("Delete response: "+JSON.stringify(response));
-            res.json(response);
+        deleteStackatoApp(fihToken.access_token, appGuid, function (err, response) {
+            if(err){
+                console.log("Error in deleting app: " + JSON.stringify(err));
+                res.status(err.status_code).send(err);
+            }
+            else{
+                console.log("Delete response: "+JSON.stringify(response));
+                res.json(response);
+            }
         });
     }
     else{
@@ -90,11 +106,11 @@ function deleteStackatoApp(accessToken, appGuid, callback) {
         if (!error && (response.statusCode == 200 || response.statusCode == 404)) {
             var info = JSON.parse(body);
             console.log("Deleted Stackato App: " +info);
-            callback(generateSuccessResponse(response, info));
+            callback(null, generateSuccessResponse(response, info));
         }
         else{
             console.log("Generating error response: " + JSON.parse(error));
-            callback(generateErrorResponse(response, JSON.parse(body)));
+            callback(generateErrorResponse(response, JSON.parse(body)), null);
         }
     });
 }
@@ -120,7 +136,7 @@ function getAllApplications(accessToken, callback) {
 
     request(options, function resCallback(error, response, body) {
         if(response)
-            console.log("Get All Stackato response code: "+response.statusCode);
+            console.log("Get All App Stackato response code: "+response.statusCode);
         
         if (!error && (response.statusCode == 200)) {
             var info = JSON.parse(body);
@@ -134,11 +150,11 @@ function getAllApplications(accessToken, callback) {
                 };
                 resArr.push(app);
             }
-            callback(generateSuccessResponse(response, {apps: resArr}));
+            callback(null, generateSuccessResponse(response, {apps: resArr}));
         }
         else{
             console.log("getAllApplications | Generating error response: "+JSON.parse(error));
-            callback(generateErrorResponse(response, JSON.parse(body)));
+            callback(generateErrorResponse(response, JSON.parse(body)), null);
         }
     });
 }
@@ -173,9 +189,12 @@ router.get('/orgs', function (req, res) {
 
                 request(options, function resCallback(error, response, body) {
                     if (response)
-                        console.log("Get All Stackato response code: " + response.statusCode);
+                        console.log("Get All Org Stackato response code: " + response.statusCode);
 
-                    if (!error && (response.statusCode == 200)) {
+                    if(response && response.statusCode == 401){
+                        callback(generateErrorResponse(response, "Unauthorized. Access Token has expired"), null);
+                    }
+                    else if (!error && (response.statusCode == 200)) {
                         var info = JSON.parse(body);
 
                         var resources = info.resources;
@@ -193,14 +212,21 @@ router.get('/orgs', function (req, res) {
                     }
                     else {
                         console.log("getAllOrganizations | Generating error response: " + JSON.parse(error));
-                        callback(generateErrorResponse(response, JSON.parse(body)));
+                        callback(generateErrorResponse(response, JSON.parse(body)), null);
                     }
                 });
 
             },
         ], function (err, result) {
-            console.log("All organization fetched: " + JSON.stringify(result));
-            res.json(result);
+            if(err){
+                console.log("Error in fetching ORG: " + JSON.stringify(err));
+                var errArr = []; errArr.push(err);
+                res.status(err.status_code).send(errArr);
+            }
+            else{
+                console.log("All organization fetched: " + JSON.stringify(result));
+                res.json(result);
+            }
         });
     }
 });
@@ -224,7 +250,10 @@ router.get('/spaces', function (req, res) {
                     if (response)
                         console.log("Get All Spaces Stackato response code: " + response.statusCode);
 
-                    if (!error && (response.statusCode == 200)) {
+                    if(response && response.statusCode == 401){
+                        callback(generateErrorResponse(response, "Unauthorized. Access Token has expired"), null);
+                    }
+                    else if (!error && (response.statusCode == 200)) {
                         var info = JSON.parse(body);
 
                         var resources = info.resources;
@@ -242,14 +271,21 @@ router.get('/spaces', function (req, res) {
                     }
                     else {
                         console.log("getAllspaces | Generating error response: " + JSON.parse(error));
-                        callback(generateErrorResponse(response, JSON.parse(body)));
+                        callback(generateErrorResponse(response, JSON.parse(body)), null);
                     }
                 });
 
             },
         ], function (err, result) {
-            console.log("All spaces fetched: " + JSON.stringify(result));
-            res.json(result);
+            if(err){
+                console.log("Error in fetching Spaces: " + JSON.stringify(err));
+                var errArr = []; errArr.push(err);
+                res.status(err.status_code).send(errArr);
+            }
+            else{
+                console.log("All spaces fetched: " + JSON.stringify(result));
+                res.json(result);
+            }
         });
     }
 });

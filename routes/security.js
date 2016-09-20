@@ -39,10 +39,18 @@ router.get('/user', function(req, res) {
                         message: 'User Not Found!'
                     });
                 }
-                res.status(503).send({
-                    success: false,
-                    message: 'Service Unavailable!'
-                });
+                else if(err.status_code == 401){
+                    res.status(err.status_code).send({
+                        success: false,
+                        message: 'Unauthorized access attempted!'
+                    });
+                }
+                else {
+                    res.status(503).send({
+                        success: false,
+                        message: 'Service Unavailable!'
+                    });
+                }
             }
             else {
                 if (userguid) {
