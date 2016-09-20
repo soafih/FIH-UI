@@ -1,5 +1,5 @@
 angular.module('fihApp').controller('UserRegisterCtrl', function ($scope, $resource, $location, $uibModal, prompt, roleList, NgTableParams) {
-    $scope.pageHeader = "Register User";
+    $scope.pageHeader = "Register New User";
     
     $scope.orgModel = [];
     $scope.orgData = [];
