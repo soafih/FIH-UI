@@ -12,7 +12,14 @@ angular.module('fihApp').controller('UserRegisterCtrl', function ($scope, $resou
     $scope.selectSettings = {
         smartButtonMaxItems: 3
     };
-    $scope.roles = roleList.data;
+    
+    $scope.roles = [];
+    for(var i=0; i<roleList.data.length;i++){
+        if(roleList.data[i].name !== "fih_admin"){
+            $scope.roles.push(roleList.data[i]);
+        }
+    }
+    roleList.data = $scope.roles;
     $scope.roleTable = new NgTableParams(
         {
             page: 1,
@@ -54,11 +61,11 @@ angular.module('fihApp').controller('UserRegisterCtrl', function ($scope, $resou
             isValid = false;
             $scope.openPromptFailure("Please select user details by clicking search button adjacent to UserName field!");
         }
-        else if ($scope.orgModel.length < 1) {
+        else if (!$scope.chkSuperUser && $scope.orgModel.length < 1) {
             isValid = false;
             $scope.openPromptFailure("Please select user's organization from dropdown. You may select multiple organization!");
         }
-        else if ($scope.spaceModel.length < 1) {
+        else if (!$scope.chkSuperUser && $scope.spaceModel.length < 1) {
             isValid = false;
             $scope.openPromptFailure("Please select user's space from dropdown. You may select multiple space!");
         }
@@ -67,15 +74,27 @@ angular.module('fihApp').controller('UserRegisterCtrl', function ($scope, $resou
     $scope.createUser = function(){
         if(validateForm()){
             var selectedOrgs = [];
-            for(var i=0; i<$scope.orgModel.length;i++){
-                selectedOrgs.push($scope.orgModel[i].id);
-            }
             var selectedSpace = [];
-            for(var i=0; i<$scope.spaceModel.length;i++){
-                selectedSpace.push($scope.spaceModel[i].id);
+            var selectedRoles = [];
+
+            if($scope.chkSuperUser){
+                selectedRoles = ["fih_admin"];
+                for(var i=0; i<$scope.orgData.length;i++){
+                    selectedOrgs.push($scope.orgData[i].id);
+                }
+                for(var i=0; i<$scope.spaceData.length;i++){
+                    selectedSpace.push($scope.spaceData[i].id);
+                }
             }
-            var selectedRoles = generateRolesArray($scope.checkboxes.items);
-            
+            else {
+                for(var i=0; i<$scope.orgModel.length;i++){
+                    selectedOrgs.push($scope.orgModel[i].id);
+                }
+                for(var i=0; i<$scope.spaceModel.length;i++){
+                    selectedSpace.push($scope.spaceModel[i].id);
+                }
+                selectedRoles = generateRolesArray($scope.checkboxes.items);
+            }
             var user = {
                 username: $scope.txtUserName,
                 email: $scope.txtEmail,
@@ -111,38 +130,44 @@ angular.module('fihApp').controller('UserRegisterCtrl', function ($scope, $resou
         $scope.txtFullName = "";
         $scope.orgModel = [];
         $scope.spaceModel = [];
+        $scope.chkSuperUser = false;
         $scope.checkboxes = { 'checked': false, items: {} };
     };
 
     $scope.animationsEnabled = false;
     $scope.openSearch = function(){
         console.log("Opening openSearchDialog");
-        var modalInstance = $uibModal.open({
-            animation: $scope.animationsEnabled,
-            templateUrl: 'myModalContent.html',
-            controller: 'ModalInstanceCtrl',
-            size: 'lg',
-            resolve: {
-                usernameParam: function () {
-                    return $scope.txtUserName;
-                },
-                adUsers : function () {
-                    users = [
-                        {username: "testuser1", fullname:"testuser1", email:"testuser1@fox.com"},
-                        {username: "testuser2", fullname:"testuser2", email:"testuser2@fox.com"},
-                        {username: "testuser3", fullname:"testuser3", email:"testuser3@fox.com"},
-                    ];
-                    return users;
+        if($scope.txtUserName && $scope.txtUserName.length >= 3){
+            var modalInstance = $uibModal.open({
+                animation: $scope.animationsEnabled,
+                templateUrl: 'myModalContent.html',
+                controller: 'ModalInstanceCtrl',
+                size: 'lg',
+                resolve: {
+                    usernameParam: function () {
+                        return $scope.txtUserName;
+                    },
+                    adUsers : function () {
+                        users = [
+                            {username: "testuser1", fullname:"testuser 1", email:"testuser1@fox.com"},
+                            {username: "testuser2", fullname:"testuser 2", email:"testuser2@fox.com"},
+                            {username: "testuser3", fullname:"testuser 3", email:"testuser3@fox.com"},
+                        ];
+                        return users;
+                    }
                 }
-            }
-        });
-        modalInstance.result.then(function (selectedUser) {
-            $scope.txtUserName = selectedUser.username;
-            $scope.txtFullName = selectedUser.fullname;
-            $scope.txtEmail = selectedUser.email;
-        }, function () {
-            console.log('Modal dismissed at: ' + new Date());
-        });
+            });
+            modalInstance.result.then(function (selectedUser) {
+                $scope.txtUserName = selectedUser.username;
+                $scope.txtFullName = selectedUser.fullname;
+                $scope.txtEmail = selectedUser.email;
+            }, function () {
+                console.log('Modal dismissed at: ' + new Date());
+            });
+        }
+        else{
+            $scope.openPromptFailure("Enter atleast 3 char in username field and try again!");
+        }
     };
     
     
@@ -247,13 +272,14 @@ fihApp.controller('ModalInstanceCtrl', function ($uibModalInstance, $scope, $fil
   }
 
   $scope.resetModal = function(){
-      $scope.adUserTable.total(adUsers.length);
-      $scope.adUserTable.settings().dataset = adUsers;
-      $scope.adUserTable.reload();
       $scope.rdbSelectedUser = undefined;
-      $scope.selectedUser.username = "";
+      $scope.selectedUser.username = usernameParam;
       $scope.selectedUser.fullname = "";
       $scope.selectedUser.email = "";
+      $scope.users = $filter('filter')(adUsers, {username:$scope.selectedUser.username});
+      $scope.adUserTable.total($scope.users);
+      $scope.adUserTable.settings().dataset = $scope.users;
+      $scope.adUserTable.reload();
   };
 
   $scope.adUserTable = new NgTableParams(

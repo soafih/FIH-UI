@@ -24,11 +24,8 @@
                             </div>
                             <div class="col-md-6 pull-right">
                                 <label class='control-label col-md-4'>Super User</label>
-                                <div class="col-md-6">
-                                    <div class="checkbox checkbox-success">
-                                        <input ng-init="chkSuperUser = false" id="checkbox1" type="checkbox" ng-model="chkSuperUser">
-                                        <label  for="checkbox1" style="font-weight: bold;"> </label>
-                                    </div>
+                                <div class="col-md-3">
+                                    <select class="form-control" ng-model='selectedSuperUser' ng-options='opt for opt in superUserOption'></select>
                                 </div>
                             </div>
                         </div>

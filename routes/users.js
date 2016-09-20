@@ -18,14 +18,77 @@ var PASSWORD = process.env.FIH_SVC_PASSWORD;
 
 var db = {};
 
-router.get('/', permCheck.checkPermission('user.view'), function(req, res) {
+router.get('/objectid/:objectid',  function(req, res) {
     var db = req.db;
+    var collection = db.get('coll_user');
+    console.log("Fetching user data with object id: "+req.params.objectid);
+    collection.findOne(req.params.objectid, function(err, app){
+        if (err) throw err;
+      	res.json(app);
+    });
+});
+
+router.get('/', permCheck.checkPermission('user.view'), function(req, res) {
+    db = req.db;
     var collection = db.get('coll_user');
     collection.find({}, function(err, users){
         if (err) throw err;
-      	res.json(users);
+        async.map(users, getUserRoles, function (err, users) {
+          if (err) console.log("(0) Users - Main | Map Error while fetching users roles: " + err);
+          if (users) {
+            console.log("(0) Users - Main | Map Result inherited users roles: " + JSON.stringify(users));
+            res.json(users);
+          }
+        });
     });
 });
+
+function getUserRoles(user, callback) {
+  var roles = user.roles;
+  user.roles = [];
+  console.log("(1) Users - getUserRoles | Processing user: " + JSON.stringify(user));
+  async.doWhilst(
+    function (callback) {
+      console.log("(1) Users - getUserRoles | DoWhilst Calling map with roles: " + roles);
+      async.map(roles, getInheritedRoles, function (err, results) {
+        console.log("(1) Users - getUserRoles | DoWhilst map completed. Error: ", err, " | result: ", JSON.stringify(results));
+        roles = roles.concat(results[0].inherits);
+        //console.log("1. mapInheriredRoles | Current Role in Arr: "+JSON.stringify(roles));
+        delete results[0].inherits;
+        //console.log("1. mapInheriredRoles | Pushing role: "+JSON.stringify(results[0]));
+        user.roles.push(results[0].name);
+        var index = roles.indexOf(results[0].name);
+        roles.splice(index, 1);
+        //console.log("1. mapInheriredRoles | Current Role in Arr after cleaning: "+JSON.stringify(roles));
+        //console.log("(1) Users - getUserRoles | DoWhilst map User: " + JSON.stringify(user));
+        callback(null, roles);
+      });
+    },
+    function () {
+      console.log("(1) Users - getUserRoles | DoWhilst Length: " + roles.length);
+      return roles.length > 0;
+    },
+    function (err, roles) {
+      if (err) console.log("(1) Users - getUserRoles | DoWhilst Error while fetching inherited roles: " + err);
+      if (roles) console.log("(1) Users - getUserRoles | DoWhilst Result inherited user: " + JSON.stringify(roles));
+      user.roles = user.roles.filter(function(item, pos) {
+          return user.roles.indexOf(item) == pos;
+      });
+      callback(err, user);
+    }
+  );
+}
+
+function getInheritedRoles(role, callback){
+    //console.log('(2) Users - getInheritedRoles | Getting inherited roles for: ' +role);
+    var collection = db.get('coll_role');
+    collection.findOne({name: role}, function(err, roleData){
+        if (err) throw err;
+        var roleObj = { name: roleData.name, inherits: roleData.inherits };
+        //console.log("(2) Users - getInheritedRoles | Role Obj:"+JSON.stringify(roleObj));
+        callback(err, roleObj);
+    });
+}
 
 router.get('/roles', permCheck.checkPermission('user.view'), function(req, res) {
     var db = req.db;

@@ -79,7 +79,7 @@
             <div class='col-md-9'>
                 <div class="row">
                     <div class='col-md-10'>
-                        <input required ng-model="txtUserName" placeholder="Enter username and search" class="form-control" />
+                        <input ng-minlength="3" required ng-model="txtUserName" placeholder="Enter min 3 char and search" class="form-control" />
                     </div>
                     <div class='col-md-1' style="margin-left:-20px;" uib-tooltip="Search/Select User from Active Directory">
                         <a href="#" ng-click="$event.preventDefault();openSearch()"><img alt="Search/Select User from Active Directory" src="/assets/images/searchuser.png" width="30px" height="30px"></a>

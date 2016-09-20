@@ -115,6 +115,17 @@ fihApp.config(['$routeProvider', '$httpProvider', function ($routeProvider, $htt
                 }
             }
         })
+        .when('/user-update/:userid', {
+            templateUrl: 'components/admin/userupdate.html',
+            controller: 'UserUpdateCtrl',
+            resolve: {
+                userProfile: "UserProfile",
+                access: ["Access", function (Access) { return Access.hasRole("fih_admin"); }],
+                roleList: function (roleListFactory) {
+                    return roleListFactory.getRoleList();
+                }
+            }
+        })
         .when('/roles', {
             templateUrl: 'components/admin/roles.html',
             controller: 'RolesCtrl',

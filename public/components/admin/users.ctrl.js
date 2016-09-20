@@ -1,6 +1,8 @@
-angular.module('fihApp').controller('UsersCtrl', function ($scope, $resource, $location, userList, NgTableParams, $filter) {
+angular.module('fihApp').controller('UsersCtrl', function ($scope, $resource, $location, userList, NgTableParams, $filter, prompt) {
     $scope.pageHeader = "Users";
 
+    $scope.superUserOption = ["Select", "Yes", "No"];
+    $scope.selectedSuperUser = "Select";
     $scope.rolesModel = [];
     $scope.rolesData = [];
     $scope.orgModel = [];
@@ -66,24 +68,36 @@ angular.module('fihApp').controller('UsersCtrl', function ($scope, $resource, $l
     $scope.updateUser = function(){
         var userList = $scope.checkboxes.items;
         console.log("All users items: "+JSON.stringify($scope.checkboxes.items));
-        var selectedUserId = ""; 
-        for (var key in userList) {
-            if (userList.hasOwnProperty(key)) {
-                if(userList[key]){
-                    selectedUserId = key;
-                    break;
+        if($scope.countChecked === 1){
+            var selectedUserId = ""; 
+            for (var key in userList) {
+                if (userList.hasOwnProperty(key)) {
+                    if(userList[key]){
+                        selectedUserId = key;
+                        break;
+                    }
                 }
             }
+            console.log("Updating user: "+selectedUserId);
+            $location.path('/user-update/'+selectedUserId);
         }
-        console.log("Updating user: "+selectedUserId);
-        $location.path('/user-update/'+selectedUserId);
+        else{
+            $scope.openPromptFailure("Please select exactly one user to update.!");
+        }
     };
     
     $scope.searchUsers = function(){
         console.log("Applying filter..");
-
-        $scope.users = $filter('filter')(userList.data, {username:$scope.txtUserName, email: $scope.txtEmail, superuser:$scope.chkSuperUser});
-        console.log("Users: "+JSON.stringify($scope.users));
+        
+        $scope.users = $filter('filter')(userList.data, {username:$scope.txtUserName, email: $scope.txtEmail});
+        
+        if($scope.selectedSuperUser !== 'Select'){
+            var isSuperUser = false;
+            if($scope.selectedSuperUser === 'Yes')
+                isSuperUser = true;
+            $scope.users = $filter('filter')(userList.data, {username:$scope.txtUserName, email: $scope.txtEmail, superuser:isSuperUser});
+        }
+        
         if($scope.rolesModel.length > 0){
             var selectedRoles = [];
             for(var i=0; i<$scope.rolesModel.length; i++){
@@ -92,6 +106,7 @@ angular.module('fihApp').controller('UsersCtrl', function ($scope, $resource, $l
             $scope.users = $filter('roleFilter')($scope.users, selectedRoles);
         }
         if($scope.orgModel.length > 0){
+            console.log("Selected Org: "+JSON.stringify($scope.orgModel));
             var selectedOrgs = [];
             for(var i=0; i<$scope.orgModel.length;i++){
                 selectedOrgs.push($scope.orgModel[i].id);
@@ -118,6 +133,7 @@ angular.module('fihApp').controller('UsersCtrl', function ($scope, $resource, $l
         $scope.orgModel = [];
         $scope.spaceModel = [];
         $scope.rolesModel = [];
+        $scope.selectedSuperUser = 'Select';
         $scope.checkboxes = { 'checked': false, items: {} };
         $scope.users = userList.data;
         $scope.userTable.total($scope.users.length);
@@ -131,7 +147,9 @@ angular.module('fihApp').controller('UsersCtrl', function ($scope, $resource, $l
             if (roles) {
                 $scope.roles = roles;
                 for (var i = 0; i < roles.length; i++) {
-                    $scope.rolesData.push({ id: roles[i].name, label: roles[i].name });
+                    if(roles[i].name !== "fih_admin"){
+                        $scope.rolesData.push({ id: roles[i].name, label: roles[i].name });
+                    }
                 }
             }
         });
@@ -161,6 +179,24 @@ angular.module('fihApp').controller('UsersCtrl', function ($scope, $resource, $l
     };
 
     init();
+    
+    $scope.openPromptFailure = function(message){
+        prompt({
+            title: 'Alert!',
+            titleStyle: 'color: red;',
+            containHtml: true,
+            message: message,
+            "buttons": [
+                {
+                    "label": "Close",
+                    "cancel": false,
+                    "primary": false
+                }
+            ]
+        }).then(function(){
+            //he hit ok and not can,
+        });
+    };
 });
 
 fihApp.filter('roleFilter', function () {
