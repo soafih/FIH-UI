@@ -90,6 +90,123 @@ router.delete('/apps/:appguid', permCheck.checkPermission('app.delete'), functio
     }
 });
 
+router.get('/orgs', function (req, res) {
+    console.log("Retrieving orgs from stackato..");
+    var fihToken = req.session.fih_token;
+    if (fihToken && fihToken.access_token) {
+        async.waterfall([
+            function getAllOrganizations(callback) {
+                console.log("Inside getAllOrganizations");
+                var options = {
+                    url: HOST_API_URL + '/v2/organizations',
+                    headers: {
+                        'Authorization': 'Bearer ' + fihToken.access_token,
+                    }
+                };
+
+                request(options, function resCallback(error, response, body) {
+                    if (response)
+                        console.log("Get All Org Stackato response code: " + response.statusCode);
+
+                    if(response && response.statusCode == 401){
+                        callback(generateErrorResponse(response, "Unauthorized. Access Token has expired"), null);
+                    }
+                    else if (!error && (response.statusCode == 200)) {
+                        var info = JSON.parse(body);
+
+                        var resources = info.resources;
+                        var orgsArr = [];
+                        for (var i = 0; i < resources.length; i++) {
+                            var org = {
+                                name: resources[i].entity.name,
+                                guid: resources[i].metadata.guid
+                            };
+                            orgsArr.push(org);
+                        }
+                        console.log("Stackato Org Response: " + JSON.stringify(orgsArr));
+
+                        callback(null, orgsArr);
+                    }
+                    else {
+                        console.log("getAllOrganizations | Generating error response: " + JSON.parse(error));
+                        callback(generateErrorResponse(response, JSON.parse(body)), null);
+                    }
+                });
+
+            },
+        ], function (err, result) {
+            if(err){
+                console.log("Error in fetching ORG: " + JSON.stringify(err));
+                var errArr = []; errArr.push(err);
+                res.status(err.status_code).send(errArr);
+            }
+            else{
+                console.log("All organization fetched: " + JSON.stringify(result));
+                res.json(result);
+            }
+        });
+    }
+});
+
+router.get('/spaces', function (req, res) {
+    console.log("Retrieving spaces from stackato..");
+    var fihToken = req.session.fih_token;
+    if (fihToken && fihToken.access_token) {
+        async.waterfall([
+            function getAllSpaces(callback) {
+                console.log("Inside getAllSpaces");
+                var options = {
+                    url: HOST_API_URL + '/v2/spaces',
+                    headers: {
+                        'Authorization': 'Bearer ' + fihToken.access_token,
+                    }
+                };
+
+                request(options, function resCallback(error, response, body) {
+                    if (response)
+                        console.log("Get All Spaces Stackato response code: " + response.statusCode);
+
+                    if(response && response.statusCode == 401){
+                        callback(generateErrorResponse(response, "Unauthorized. Access Token has expired"), null);
+                    }
+                    else if (!error && (response.statusCode == 200)) {
+                        var info = JSON.parse(body);
+
+                        var resources = info.resources;
+                        var spacesArr = [];
+                        for (var i = 0; i < resources.length; i++) {
+                            var space = {
+                                name: resources[i].entity.name,
+                                guid: resources[i].metadata.guid
+                            };
+                            spacesArr.push(space);
+                        }
+                        console.log("Stackato Spaces Response: " + JSON.stringify(spacesArr));
+
+                        callback(null, spacesArr);
+                    }
+                    else {
+                        console.log("getAllspaces | Generating error response: " + JSON.parse(error));
+                        callback(generateErrorResponse(response, JSON.parse(body)), null);
+                    }
+                });
+
+            },
+        ], function (err, result) {
+            if(err){
+                console.log("Error in fetching Spaces: " + JSON.stringify(err));
+                var errArr = []; errArr.push(err);
+                res.status(err.status_code).send(errArr);
+            }
+            else{
+                console.log("All spaces fetched: " + JSON.stringify(result));
+                res.json(result);
+            }
+        });
+    }
+});
+
+
 function deleteStackatoApp(accessToken, appGuid, callback) {
     var options = {
         url: HOST_API_URL + '/v2/apps/',
@@ -169,127 +286,7 @@ function getStackatoAccessToken(callback) {
     else{
         callback({success: false, message: 'Invalid access token, pleasse login again.!'});
     }
-    
 }
-
-
-router.get('/orgs', function (req, res) {
-    console.log("Retrieving orgs from stackato..");
-    var fihToken = req.session.fih_token;
-    if (fihToken && fihToken.access_token) {
-        async.waterfall([
-            function getAllOrganizations(callback) {
-                console.log("Inside getAllOrganizations");
-                var options = {
-                    url: HOST_API_URL + '/v2/organizations',
-                    headers: {
-                        'Authorization': 'Bearer ' + fihToken.access_token,
-                    }
-                };
-
-                request(options, function resCallback(error, response, body) {
-                    if (response)
-                        console.log("Get All Org Stackato response code: " + response.statusCode);
-
-                    if(response && response.statusCode == 401){
-                        callback(generateErrorResponse(response, "Unauthorized. Access Token has expired"), null);
-                    }
-                    else if (!error && (response.statusCode == 200)) {
-                        var info = JSON.parse(body);
-
-                        var resources = info.resources;
-                        var orgsArr = [];
-                        for (var i = 0; i < resources.length; i++) {
-                            var org = {
-                                name: resources[i].entity.name,
-                                guid: resources[i].metadata.guid
-                            };
-                            orgsArr.push(org);
-                        }
-                        console.log("Stackato Org Response: " + JSON.stringify(orgsArr));
-
-                        callback(null, orgsArr);
-                    }
-                    else {
-                        console.log("getAllOrganizations | Generating error response: " + JSON.parse(error));
-                        callback(generateErrorResponse(response, JSON.parse(body)), null);
-                    }
-                });
-
-            },
-        ], function (err, result) {
-            if(err){
-                console.log("Error in fetching ORG: " + JSON.stringify(err));
-                var errArr = []; errArr.push(err);
-                res.status(err.status_code).send(errArr);
-            }
-            else{
-                console.log("All organization fetched: " + JSON.stringify(result));
-                res.json(result);
-            }
-        });
-    }
-});
-
-
-router.get('/spaces', function (req, res) {
-    console.log("Retrieving spaces from stackato..");
-    var fihToken = req.session.fih_token;
-    if (fihToken && fihToken.access_token) {
-        async.waterfall([
-            function getAllSpaces(callback) {
-                console.log("Inside getAllSpaces");
-                var options = {
-                    url: HOST_API_URL + '/v2/spaces',
-                    headers: {
-                        'Authorization': 'Bearer ' + fihToken.access_token,
-                    }
-                };
-
-                request(options, function resCallback(error, response, body) {
-                    if (response)
-                        console.log("Get All Spaces Stackato response code: " + response.statusCode);
-
-                    if(response && response.statusCode == 401){
-                        callback(generateErrorResponse(response, "Unauthorized. Access Token has expired"), null);
-                    }
-                    else if (!error && (response.statusCode == 200)) {
-                        var info = JSON.parse(body);
-
-                        var resources = info.resources;
-                        var spacesArr = [];
-                        for (var i = 0; i < resources.length; i++) {
-                            var space = {
-                                name: resources[i].entity.name,
-                                guid: resources[i].metadata.guid
-                            };
-                            spacesArr.push(space);
-                        }
-                        console.log("Stackato Spaces Response: " + JSON.stringify(spacesArr));
-
-                        callback(null, spacesArr);
-                    }
-                    else {
-                        console.log("getAllspaces | Generating error response: " + JSON.parse(error));
-                        callback(generateErrorResponse(response, JSON.parse(body)), null);
-                    }
-                });
-
-            },
-        ], function (err, result) {
-            if(err){
-                console.log("Error in fetching Spaces: " + JSON.stringify(err));
-                var errArr = []; errArr.push(err);
-                res.status(err.status_code).send(errArr);
-            }
-            else{
-                console.log("All spaces fetched: " + JSON.stringify(result));
-                res.json(result);
-            }
-        });
-    }
-});
-
 
 router.get('/headertest', function (req, res) {
     console.log("Session: "+JSON.stringify(req.session));
