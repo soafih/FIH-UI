@@ -63,11 +63,15 @@ angular.module('fihApp').controller('UsersCtrl', function ($scope, $resource, $l
         $location.path('/user-register');
     };
 
+    $scope.updateUser = function(){
+        
+    };
+    
     $scope.searchUsers = function(){
         console.log("Applying filter..");
 
         $scope.users = $filter('filter')(userList.data, {username:$scope.txtUserName, email: $scope.txtEmail, superuser:$scope.chkSuperUser});
-        console.log("Selected Roles: "+JSON.stringify($scope.rolesModel));
+        console.log("Users: "+JSON.stringify($scope.users));
         if($scope.rolesModel.length > 0){
             for(var i=0; i<$scope.rolesModel.length; i++){
                 console.log("Selected Role: "+$scope.rolesModel[i].id);
@@ -75,16 +79,18 @@ angular.module('fihApp').controller('UsersCtrl', function ($scope, $resource, $l
             }
         }
         if($scope.orgModel.length > 0){
-            for(var i=0; i<$scope.orgModel.length; i++){
-                console.log("Selected Role: "+$scope.orgModel[i].id);
-                $scope.users = $filter('filter')($scope.users, {orgs: $scope.orgModel[i].id});
+            var selectedOrgs = [];
+            for(var i=0; i<$scope.orgModel.length;i++){
+                selectedOrgs.push($scope.orgModel[i].id);
             }
+            $scope.users = $filter('orgFilter')($scope.users, selectedOrgs);
         }
         if($scope.spaceModel.length > 0){
-            for(var i=0; i<$scope.spaceModel.length; i++){
-                console.log("Selected Role: "+$scope.spaceModel[i].id);
-                $scope.users = $filter('filter')($scope.users, {spaces: $scope.spaceModel[i].id});
+            var selectedSpace = [];
+            for(var i=0; i<$scope.spaceModel.length;i++){
+                selectedSpace.push($scope.spaceModel[i].id);
             }
+            $scope.users = $filter('spaceFilter')($scope.users, selectedSpace);
         }
         $scope.userTable.total($scope.users.length);
         $scope.userTable.settings().dataset = $scope.users;
@@ -131,6 +137,48 @@ angular.module('fihApp').controller('UsersCtrl', function ($scope, $resource, $l
     init();
 });
 
+fihApp.filter('orgFilter', function () {
+    return function (inputs, filterValues) {
+        console.log("Filter Input: "+JSON.stringify(inputs));
+        console.log("Filter Values: "+JSON.stringify(filterValues));
+        var output = [];
+        angular.forEach(inputs, function (input) {
+            angular.forEach(input.orgs, function (org) {
+                if (filterValues.indexOf(org.name) !== -1){
+                    output.push(input);
+                }
+            });
+        });
+        return removeArrayDuplicate(output);
+    };
+});
+
+fihApp.filter('spaceFilter', function () {
+    return function (inputs, filterValues) {
+        console.log("Filter Input: "+JSON.stringify(inputs));
+        console.log("Filter Values: "+JSON.stringify(filterValues));
+        var output = [];
+        angular.forEach(inputs, function (input) {
+            angular.forEach(input.spaces, function (space) {
+                if (filterValues.indexOf(space.name) !== -1)
+                    output.push(input);
+            });
+        });
+        return removeArrayDuplicate(output);
+    };
+});
+
+function removeArrayDuplicate(output){
+        var arr = {};
+        for (var i=0; i < output.length; i++ )
+            arr[output[i]._id] = output[i];
+
+        output = [];
+        for ( var key in arr )
+            output.push(arr[key]);
+        console.log("Returning: "+output);
+        return output;
+}
 
 fihApp.factory('userListFactory', function ($http) {
     var factoryResult = {
