@@ -291,6 +291,11 @@ body > div.container-fluid > div > div.col-sm-3.col-md-2.sidebar > ul > li.activ
   background-color: #4d4d4d;
 }
 
+ul.nav.nav-sidebar li.active ul.nav.nav-sidebar ul.nav li.active a {
+  background-color: #a6a6a6;
+  color: black;
+}
+
 div.panel.panel-default.ng-scope div.panel-heading.ng-binding{
   background-color: #4d4d4d;
   border: none;
