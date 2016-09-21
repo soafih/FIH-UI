@@ -351,7 +351,9 @@ router.post('/', permCheck.checkPermission('user.create'), function (req, res) {
       });
     }
     
-  ], function (err, result) {
+  ],
+  // waterfall callback
+  function (err, result) {
     console.log("Stackato Create User | Result: "+result);
     if(err){
       res.status(401).send({success: false, data: err});
@@ -360,8 +362,224 @@ router.post('/', permCheck.checkPermission('user.create'), function (req, res) {
       res.send({success: true, data: result});
     }
   });
+});
 
-  
+router.post('/update', permCheck.checkPermission('user.create'), function(req, res) {
+    var user = req.body;
+    console.log("Updating user data: "+JSON.stringify(user));
+
+    var objectid = req.body.objectid;
+    var changeInOrgs = req.body.changeInOrgs;
+    var changeInSpaces = req.body.changeInSpaces;
+
+    delete req.body.objectid;
+    delete req.body.changeInOrgs;
+    delete req.body.changeInSpaces;
+    
+    var db = req.db;
+    async.series([
+      // Save details in database
+      function (callback) {
+        var collection = db.get('coll_user');
+        req.body.last_updated_by = req.headers["x-authenticated-user-username"];
+        collection.update({ _id: objectid }, { $set: req.body },
+          function (err, response) {
+            if (err) callback(err, null);
+            console.log("Successfully updated app status: " + JSON.stringify(response));
+            callback(null, {success: "updatedb"});
+          });
+      },
+
+      // Associate added Organization with user
+      function (callback) {
+      console.log("Stackato Associate Organizations | Orgs: "+changeInOrgs.added);
+      async.eachSeries(changeInOrgs.added, function (org, callbackOrg) {
+        var fihToken = req.session.fih_token;
+        if (fihToken && fihToken.access_token) {
+          var options = {
+            url: HOST_API_URL + '/v2/organizations/'+ org +'/users/'+user.guid,
+            headers: {
+              'Authorization': 'Bearer ' + fihToken.access_token,
+            },
+            method: 'PUT'
+          };
+
+          request(options, function resCallback(error, response, body) {
+            console.log("Response from Stackato Associate Org service: " + response);
+            if (response)
+              console.log("Stackato | Response code: " + response.statusCode);
+
+            if (!error) {
+              if (response.statusCode == 201) {
+                console.log("Body: " + JSON.stringify(body));
+                console.log("Stackato | Response: " + body);
+                callbackOrg(null);
+              }
+            }
+            else {
+              console.log("Stackato | Generating error response: " + error);
+              callbackOrg("Cannot associate user with the Organization");
+            }
+          });
+        }
+
+      }, function (err) {
+        if (err) {
+          console.log('Failed to associate user with the Organization');
+          callback(err, null);
+        } else {
+          console.log('Successfully associated user with all organizations');
+          callback(null,  {success: "addedOrg"});
+        }
+      });
+
+    },
+
+    // Associate Space with the User
+    function (callback) {
+      console.log("Stackato Associate Spaces | Spaces: "+changeInSpaces.added);
+      async.each(changeInSpaces.added, function (space, callback) {
+        var fihToken = req.session.fih_token;
+        if (fihToken && fihToken.access_token) {
+          console.log("Calling service: "+HOST_API_URL + '/v2/users/'+user.guid+'/spaces/'+space);
+          var options = {
+            url: HOST_API_URL + '/v2/users/'+user.guid+'/spaces/'+space,
+            headers: {
+              'Authorization': 'Bearer ' + fihToken.access_token,
+            },
+            method: 'PUT'
+          };
+
+          request(options, function resCallback(error, response, body) {
+            console.log("Response from Stackato Associate Space service: " + response);
+            if (response)
+              console.log("Stackato | Response code: " + response.statusCode);
+
+            if (!error) {
+              if (response.statusCode == 201) {
+                console.log("Body: " + JSON.stringify(body));
+                console.log("Stackato | Response: " + body);
+                callback(null);
+              }
+            }
+            else {
+              console.log("Stackato | Generating error response: " + error);
+              callback("Cannot associate user with the Spaces");
+            }
+          });
+        }
+
+      }, function (err) {
+        if (err) {
+          console.log('Failed to associate user with the Spaces');
+          callback(err, null);
+        } else {
+          console.log('Successfully associated user with all spaces');
+          callback(null, {success: "addedSpaces"});
+        }
+      });
+    },
+    // Delete User from Organization
+    function (callback) {
+      console.log("Stackato Delete Organizations | Orgs: "+changeInOrgs.deleted);
+      async.eachSeries(changeInOrgs.deleted, function (org, callback) {
+        var fihToken = req.session.fih_token;
+        if (fihToken && fihToken.access_token) {
+          console.log("Calling service: "+HOST_API_URL + '/v2/users/'+user.guid+'/organizations/'+org);
+          var options = {
+            url: HOST_API_URL + '/v2/users/'+user.guid+'/organizations/'+org,
+            headers: {
+              'Authorization': 'Bearer ' + fihToken.access_token,
+            },
+            method: 'DELETE'
+          };
+
+          request(options, function resCallback(error, response, body) {
+            console.log("Response from Stackato Associate Org service: " + response);
+            if (response)
+              console.log("Stackato | Response code: " + response.statusCode);
+
+            if (!error) {
+              if (response.statusCode == 201) {
+                console.log("Body: " + JSON.stringify(body));
+                console.log("Stackato | Response: " + body);
+                callback(null);
+              }
+            }
+            else {
+              console.log("Stackato | Generating error response: " + error);
+              callback("Cannot associate user with the Organization");
+            }
+          });
+        }
+
+      }, function (err) {
+        if (err) {
+          console.log('Failed to associate user with the Organization');
+          callback(err, null);
+        } else {
+          console.log('Successfully associated user with all organizations');
+          callback(null, {success: "deleteOrgs"});
+        }
+      });
+
+    },
+
+    // Delete Space for User
+    function (callback) {
+      console.log("Stackato Associate Spaces | Space:"+changeInSpaces.deleted);
+      async.each(changeInSpaces.deleted, function (space, callback) {
+        var fihToken = req.session.fih_token;
+        if (fihToken && fihToken.access_token) {
+          console.log("Calling service: "+HOST_API_URL + '/v2/users/'+user.guid+'/spaces/'+space);
+          var options = {
+            url: HOST_API_URL + '/v2/users/'+user.guid+'/spaces/'+space,
+            headers: {
+              'Authorization': 'Bearer ' + fihToken.access_token,
+            },
+            method: 'DELETE'
+          };
+
+          request(options, function resCallback(error, response, body) {
+            console.log("Response from Stackato Delete Space service: " + response);
+            if (response)
+              console.log("Stackato | Response code: " + response.statusCode);
+
+            if (!error) {
+              if (response.statusCode == 201) {
+                console.log("Body: " + JSON.stringify(body));
+                console.log("Stackato | Response: " + body);
+                callback(null);
+              }
+            }
+            else {
+              console.log("Stackato | Generating error response: " + error);
+              callback("Cannot delete user with the Spaces");
+            }
+          });
+        }
+
+      }, function (err) {
+        if (err) {
+          console.log('Failed to delete user with the Spaces');
+          callback(err, null);
+        } else {
+          console.log('Successfully delete user with all spaces');
+          callback(null, {success: "deleteSpaces"});
+        }
+      });
+    }
+    ],
+    // series callback
+    function (err, result) {
+      console.log("Stackato Update User | Result: "+JSON.stringify(result));
+      if(err){
+        res.status(401).send({success: false, data: err});
+      }
+      else{
+        res.send({success: true, data: result});
+      }
+    });
 });
 
 module.exports = router;
