@@ -3,16 +3,13 @@ angular.module('fihApp').controller('UserRegisterCtrl', function ($scope, $resou
     
     $scope.orgModel = [];
     $scope.orgData = [];
-    $scope.spaceModel = [];
-    $scope.spaceData = [];
 
-    $scope.orgCustomTexts = { buttonDefaultText: 'Select Organizations' };
-    $scope.spaceCustomTexts = { buttonDefaultText: 'Select Spaces' };
-
+    $scope.orgCustomTexts = { buttonDefaultText: 'Select Org/Spaces' };
+    
     $scope.selectSettings = {
         smartButtonMaxItems: 3
     };
-    
+
     $scope.roles = [];
     for(var i=0; i<roleList.data.length;i++){
         if(roleList.data[i].name !== "fih_admin"){
@@ -63,15 +60,13 @@ angular.module('fihApp').controller('UserRegisterCtrl', function ($scope, $resou
         }
         else if (!$scope.chkSuperUser && $scope.orgModel.length < 1) {
             isValid = false;
-            $scope.openPromptFailure("Please select user's organization from dropdown. You may select multiple organization!");
-        }
-        else if (!$scope.chkSuperUser && $scope.spaceModel.length < 1) {
-            isValid = false;
-            $scope.openPromptFailure("Please select user's space from dropdown. You may select multiple space!");
+            $scope.openPromptFailure("Please select user's org/spaces from dropdown. You may select multiple org/space combination!");
         }
         return isValid;
     };
+
     $scope.createUser = function(){
+        console.log("Selected Org/Spaces: "+JSON.stringify($scope.orgModel));
         if(validateForm()){
             var selectedOrgs = [];
             var selectedSpace = [];
@@ -79,19 +74,15 @@ angular.module('fihApp').controller('UserRegisterCtrl', function ($scope, $resou
 
             if($scope.chkSuperUser){
                 selectedRoles = ["fih_admin"];
-                for(var i=0; i<$scope.orgData.length;i++){
-                    selectedOrgs.push($scope.orgData[i].id);
-                }
-                for(var i=0; i<$scope.spaceData.length;i++){
-                    selectedSpace.push($scope.spaceData[i].id);
-                }
+                /*for(var i=0; i<$scope.orgData.length;i++){
+                    selectedOrgs.push($scope.orgData[i].id.org);
+                    selectedSpace.push($scope.orgData[i].id);
+                }*/
             }
             else {
                 for(var i=0; i<$scope.orgModel.length;i++){
-                    selectedOrgs.push($scope.orgModel[i].id);
-                }
-                for(var i=0; i<$scope.spaceModel.length;i++){
-                    selectedSpace.push($scope.spaceModel[i].id);
+                    selectedOrgs.push($scope.orgModel[i].id.org);
+                    selectedSpace.push($scope.orgModel[i].id);
                 }
                 selectedRoles = generateRolesArray($scope.checkboxes.items);
             }
@@ -129,7 +120,6 @@ angular.module('fihApp').controller('UserRegisterCtrl', function ($scope, $resou
         $scope.txtEmail = "";
         $scope.txtFullName = "";
         $scope.orgModel = [];
-        $scope.spaceModel = [];
         $scope.chkSuperUser = false;
         $scope.checkboxes = { 'checked': false, items: {} };
     };
@@ -137,6 +127,7 @@ angular.module('fihApp').controller('UserRegisterCtrl', function ($scope, $resou
     $scope.animationsEnabled = false;
     $scope.openSearch = function(){
         console.log("Opening openSearchDialog");
+        console.log("Selected Org/Spaces: "+JSON.stringify($scope.orgModel));
         if($scope.txtUserName && $scope.txtUserName.length >= 3){
             var modalInstance = $uibModal.open({
                 animation: $scope.animationsEnabled,
@@ -169,32 +160,23 @@ angular.module('fihApp').controller('UserRegisterCtrl', function ($scope, $resou
             $scope.openPromptFailure("Enter atleast 3 char in username field and try again!");
         }
     };
-    
-    
-    var init = function () {
         
+    var init = function () {
         var OrgAPI = $resource('/fih/stackatoapis/orgs');
         OrgAPI.query(function (orgs) {
             console.log("Fetched orgs: " + JSON.stringify(orgs));
             if (orgs) {
-                $scope.orgs = orgs;
+                var spaceData = [];
                 for (var i = 0; i < orgs.length; i++) {
-                    $scope.orgData.push({ id: orgs[i], label: orgs[i].name });
+                    var spaces = orgs[i].spaces;
+                    for (var j = 0; j < spaces.length; j++) {
+                        spaces[j].org = {name: orgs[i].name, guid: orgs[i].guid};
+                        spaceData.push({ id: spaces[j], label: spaces[j].name, orgName: orgs[i].name });
+                    }
                 }
+                $scope.orgData = spaceData;
             }
         });
-
-        var SpaceAPI = $resource('/fih/stackatoapis/spaces');
-        SpaceAPI.query(function (spaces) {
-            console.log("Fetched orgs: " + JSON.stringify(spaces));
-            if (spaces) {
-                $scope.spaces = spaces;
-                for (var i = 0; i < spaces.length; i++) {
-                    $scope.spaceData.push({ id: spaces[i], label: spaces[i].name });
-                }
-            }
-        });
-
     };
 
     init();

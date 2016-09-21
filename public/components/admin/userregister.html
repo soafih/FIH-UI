@@ -110,8 +110,10 @@
             </div>
         </div>
         <div ng-hide="chkSuperUser" class="form-group required col-md-6 pull-right">
-            <label class='control-label col-md-4'>Organization</label>
-            <div class="users-search-panel-select col-md-6" ng-dropdown-multiselect="" options="orgData" selected-model="orgModel" extra-settings="selectSettings" translation-texts="orgCustomTexts"></div>
+            <label class='control-label col-md-4'>Org/Spaces</label>
+            <div class="users-search-panel-select col-md-6" ng-dropdown-multiselect="" options="orgData" 
+                selected-model="orgModel" extra-settings="selectSettings" group-by="orgName" translation-texts="orgCustomTexts">
+            </div>
         </div>
     </div>
     <div class="row users-register-panel-row">
@@ -120,10 +122,6 @@
             <div class='col-md-9'>
                 <input ng-disabled="true" ng-model="txtEmail" placeholder="" type="email" class="form-control" />
             </div>
-        </div>
-        <div ng-hide="chkSuperUser" class="form-group required col-md-6 pull-right">
-            <label class='control-label col-md-4'>Space</label>
-            <div class="users-search-panel-select col-md-6" ng-dropdown-multiselect="" options="spaceData" selected-model="spaceModel" extra-settings="selectSettings" translation-texts="spaceCustomTexts"></div>
         </div>
     </div>
     <div ng-hide="chkSuperUser" class="row users-register-panel-row">

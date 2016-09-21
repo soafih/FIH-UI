@@ -145,9 +145,13 @@ div.modal-footer button.btn.btn-info{
 }
 
 .btn.btn-info.btn-md {
- 
   background-color: #455A64;
   color: #ECEFF1;
+}
+
+.dropdown-multiselect ul.dropdown-menu.dropdown-menu-form li.dropdown-header.ng-binding.ng-scope{
+  margin-left: -10px;
+  font-weight: 600;
 }
 
 .modal-dialog.modal-sm{
