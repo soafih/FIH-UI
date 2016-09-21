@@ -12,7 +12,7 @@
                 <div class="form-group required col-md-8">
                     <label class='control-label col-md-3'>Username</label>
                     <div class='col-md-6'>
-                        <input ng-disabled="true" name="username" required ng-model="selectedUser.username" placeholder="Select user from table below" class="form-control" />
+                        <input name="username" required ng-model="selectedUser.username" placeholder="Select user from table below" class="form-control" />
                     </div>
                 </div>
             </div>
@@ -35,12 +35,13 @@
                     <span ng-show="modalForm.email.$error.email">Invalid email address.</span>
                     </span>
                 </div>
-                <div class="col-md-2 pull-right">
-                    <button class="btn btn-default btn-warning" type="button" ng-click="resetModal()">Reset</button>
-                </div>
             </div>
             <div class="row users-register-panel-row">
-                <div class="col-md-11">
+                <button class="btn btn-info btn-md" type="button" ng-click="searchModal()">Search</button>
+                <button class="btn btn-default" type="button" ng-click="resetModal()">Reset</button>
+            </div>
+            <div class="row users-register-panel-row">
+                <div ng-show="!noUserDataFound" class="col-md-11">
                     <table ng-table="adUserTable" class="table table-bordered table-striped table-hover table-condensed">
                         <colgroup>
                             <col width="10%" />
@@ -52,17 +53,21 @@
                             <td data-title="'Select'">
                                 <input type="radio" ng-change="rdbChanged(userConfig)" name="optradio" ng-model="$parent.rdbSelectedUser" ng-value="userConfig">
                             </td>
-                            <td data-title="'UserName'" sortable="'username'" filter="{ 'username': 'text' }">
+                            <td class="left-align" data-title="'UserName'" sortable="'username'" filter="{ 'username': 'text' }">
                                 {{userConfig.username}}
                             </td>
-                            <td data-title="'Full Name'" sortable="'fullname'" filter="{ 'fullname': 'text' }">
+                            <td class="left-align" data-title="'Full Name'" sortable="'fullname'" filter="{ 'fullname': 'text' }">
                                 {{userConfig.fullname}}
                             </td>
-                            <td data-title="'Email'" sortable="'email'" filter="{ 'email': 'text' }">
+                            <td class="left-align" data-title="'Email'" sortable="'email'" filter="{ 'email': 'text' }">
                                 {{userConfig.email}}
                             </td>
                         </tr>
                     </table>
+                </div>
+                <div ng-show="noUserDataFound" class="col-md-11">
+                    <hr />
+                    <span class="red" style="padding-left:20px">No data found for searched username!</span>
                 </div>
             </div>
         </div>
@@ -125,15 +130,15 @@
         <div class="col-md-11">
             <table ng-table="roleTable" class="table table-bordered table-striped table-hover table-condensed">
                 <colgroup>
-                    <col width="30%" />
-                    <col width="60%" />
+                    <col width="20%" />
+                    <col width="70%" />
                     <col width="10%" />
                 </colgroup>
                 <tr ng-repeat="role in $data" ng-class="{ 'emphasis': role.superuser }">
-                    <td data-title="'Role'" sortable="'name'" filter="{ 'name': 'text' }">
+                    <td class="left-align" data-title="'Role'" sortable="'name'" filter="{ 'name': 'text' }">
                         {{role.name}}
                     </td>
-                    <td data-title="'Description'" sortable="'descr'" filter="{ 'descr': 'text' }">
+                    <td class="left-align" data-title="'Description'" sortable="'descr'" filter="{ 'descr': 'text' }">
                         {{role.descr}}
                     </td>
                     <td data-title="'Select'">

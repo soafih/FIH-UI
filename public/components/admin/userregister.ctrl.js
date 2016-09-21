@@ -149,9 +149,9 @@ angular.module('fihApp').controller('UserRegisterCtrl', function ($scope, $resou
                     },
                     adUsers : function () {
                         users = [
-                            {username: "testuser1", fullname:"testuser 1", email:"testuser1@fox.com"},
-                            {username: "testuser2", fullname:"testuser 2", email:"testuser2@fox.com"},
-                            {username: "testuser3", fullname:"testuser 3", email:"testuser3@fox.com"},
+                            {username: "testuser1", fullname:"test user1", email:"testuser1@fox.com"},
+                            {username: "testuser2", fullname:"test user2", email:"testuser2@fox.com"},
+                            {username: "testuser3", fullname:"test user3", email:"testuser3@fox.com"},
                         ];
                         return users;
                     }
@@ -238,71 +238,91 @@ angular.module('fihApp').controller('UserRegisterCtrl', function ($scope, $resou
 });
 
 fihApp.controller('ModalInstanceCtrl', function ($uibModalInstance, $scope, $filter, $window, usernameParam, adUsers, NgTableParams) {
-  console.log("Passed user name: "+usernameParam);
-  console.log("adUsers: "+JSON.stringify(adUsers));
-  $scope.selectedUser = {};
-  $scope.selectedUser.username = usernameParam;
-  
-  $scope.modalOk = function () {
-    if($scope.rdbSelectedUser)
-      $uibModalInstance.close($scope.rdbSelectedUser);
-    else{
-        $window.alert("Please select user from search table!");
+    console.log("Passed user name: " + usernameParam);
+    console.log("adUsers: " + JSON.stringify(adUsers));
+    $scope.selectedUser = {};
+    $scope.selectedUser.username = usernameParam;
+
+    $scope.noUserDataFound = false;
+    if (adUsers && adUsers.length > 0) {
+        $scope.noUserDataFound = false;
+    }
+    else {
+        $scope.noUserDataFound = true;
     }
 
-  };
+    $scope.searchModal = function () {
+        adUsers = [
+            { username: "testuser1", fullname: "test user1", email: "testuser1@fox.com" },
+            { username: "testuser2", fullname: "test user2", email: "testuser2@fox.com" },
+            { username: "testuser3", fullname: "test user3", email: "testuser3@fox.com" },
+        ];
 
-  $scope.modalCancel = function () {
-    $uibModalInstance.dismiss('cancel');
-  };
+        $scope.users = $filter('filter')(adUsers, { username: $scope.selectedUser.username });
+        $scope.adUserTable.total($scope.users);
+        $scope.adUserTable.settings().dataset = $scope.users;
+        $scope.adUserTable.reload();
+    };
 
-  $scope.pageLoaded = false;
-  if(!$scope.pageLoaded){
-      $scope.users = $filter('filter')(adUsers, {username:$scope.selectedUser.username});
-      if($scope.users.length === 1){
-        $scope.rdbSelectedUser = $scope.users[0];
-        $scope.selectedUser.username = $scope.users[0].username;
-        $scope.selectedUser.fullname = $scope.users[0].fullname;
-        $scope.selectedUser.email = $scope.users[0].email;
-      }
-      $scope.pageLoaded = true;
-  }
-  else{
-      $scope.users = adUsers;
-  }
+    $scope.modalOk = function () {
+        if ($scope.rdbSelectedUser)
+            $uibModalInstance.close($scope.rdbSelectedUser);
+        else {
+            $window.alert("Please select user from search table!");
+        }
+    };
 
-  $scope.resetModal = function(){
-      $scope.rdbSelectedUser = undefined;
-      $scope.selectedUser.username = usernameParam;
-      $scope.selectedUser.fullname = "";
-      $scope.selectedUser.email = "";
-      $scope.users = $filter('filter')(adUsers, {username:$scope.selectedUser.username});
-      $scope.adUserTable.total($scope.users);
-      $scope.adUserTable.settings().dataset = $scope.users;
-      $scope.adUserTable.reload();
-  };
+    $scope.modalCancel = function () {
+        $uibModalInstance.dismiss('cancel');
+    };
 
-  $scope.adUserTable = new NgTableParams(
-      {
-          page: 1,
-          count: 5
-      },
-      {
-          counts: [],
-          paginationMaxBlocks: 13,
-          paginationMinBlocks: 2,
-          total: $scope.users.length,
-          dataset: $scope.users,
-      }
-  );
-  $scope.rdbChanged = function (rdbSelectedUser) {
-      $scope.rdbSelectedUser = rdbSelectedUser;
-      $scope.selectedUser.username = rdbSelectedUser.username;
-      $scope.selectedUser.fullname = rdbSelectedUser.fullname;
-      $scope.selectedUser.email = rdbSelectedUser.email;
-  };
+    $scope.pageLoaded = false;
+    if (!$scope.pageLoaded) {
+        $scope.users = $filter('filter')(adUsers, { username: $scope.selectedUser.username });
+        if ($scope.users.length === 1) {
+            $scope.rdbSelectedUser = $scope.users[0];
+            $scope.selectedUser.username = $scope.users[0].username;
+            $scope.selectedUser.fullname = $scope.users[0].fullname;
+            $scope.selectedUser.email = $scope.users[0].email;
+        }
+        $scope.pageLoaded = true;
+    }
+    else {
+        $scope.users = adUsers;
+    }
 
-  $scope.openPromptFailure = function(message){
+    $scope.resetModal = function () {
+        $scope.rdbSelectedUser = undefined;
+        $scope.selectedUser.username = usernameParam;
+        $scope.selectedUser.fullname = "";
+        $scope.selectedUser.email = "";
+        $scope.users = $filter('filter')(adUsers, { username: $scope.selectedUser.username });
+        $scope.adUserTable.total($scope.users);
+        $scope.adUserTable.settings().dataset = $scope.users;
+        $scope.adUserTable.reload();
+    };
+
+    $scope.adUserTable = new NgTableParams(
+        {
+            page: 1,
+            count: 5
+        },
+        {
+            counts: [],
+            paginationMaxBlocks: 13,
+            paginationMinBlocks: 2,
+            total: $scope.users.length,
+            dataset: $scope.users,
+        }
+    );
+    $scope.rdbChanged = function (rdbSelectedUser) {
+        $scope.rdbSelectedUser = rdbSelectedUser;
+        $scope.selectedUser.username = rdbSelectedUser.username;
+        $scope.selectedUser.fullname = rdbSelectedUser.fullname;
+        $scope.selectedUser.email = rdbSelectedUser.email;
+    };
+
+    $scope.openPromptFailure = function (message) {
         prompt({
             title: 'Alert!',
             titleStyle: 'color: red;',
@@ -315,7 +335,7 @@ fihApp.controller('ModalInstanceCtrl', function ($uibModalInstance, $scope, $fil
                     "primary": false
                 }
             ]
-        }).then(function(){
+        }).then(function () {
             //he hit ok and not can,
         });
     };
