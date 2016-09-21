@@ -134,7 +134,15 @@ angular.module('fihApp').controller('UsersCtrl', function ($scope, $resource, $l
                 console.log("Deleted App: " + JSON.stringify(res));
                 if(res.success){
                     $scope.openPromptSuccess('User deleted successfully!');
-                    $location.path('/users');
+                    var UserAPI = $resource('/fih/users');
+                    UserAPI.query(function (users) {
+                        if (users) {
+                            $scope.users = users;
+                            $scope.userTable.total($scope.users.length);
+                            $scope.userTable.settings().dataset = $scope.users;
+                            $scope.userTable.reload();
+                        }
+                    });
                 }
                 else{
                     $scope.openPromptFailure('Error in user deletion!');
