@@ -85,6 +85,63 @@ angular.module('fihApp').controller('UsersCtrl', function ($scope, $resource, $l
             $scope.openPromptFailure("Please select exactly one user to update.!");
         }
     };
+
+    $scope.deleteUser = function(){
+        var userList = $scope.checkboxes.items;
+        console.log("All users items: "+JSON.stringify($scope.checkboxes.items));
+        if($scope.countChecked !== 1){
+            $scope.openPromptFailure("Please select exactly one user to update.!");
+            return;
+        }
+        var message = 'All user data will be deleted. This action cannot be undone!';
+        prompt({
+            title: 'Warning!',
+            titleStyle: 'color: red;',
+            containHtml: true,
+            message: message,
+            "buttons": [
+                {
+                    "label": "Confirm",
+                    "cancel": false,
+                    "primary": true
+                },
+                {
+                    "label": "Cancel",
+                    "cancel": true,
+                    "primary": false
+                }
+            ]
+        }).then(function(){
+            var selectedUserId = ""; 
+            for (var key in userList) {
+                if (userList.hasOwnProperty(key)) {
+                    if(userList[key]){
+                        selectedUserId = key;
+                        break;
+                    }
+                }
+            }
+            console.log("Updating user: "+selectedUserId);
+            var selectedUserGuid = "";
+            for(var i=0; i<$scope.users.length;i++){
+                if(selectedUserId === $scope.users[i]._id){
+                    selectedUserGuid = $scope.users[i].guid;
+                }
+            }
+            console.log("Selected User Guid: "+selectedUserGuid);
+            var AppService = $resource('/fih/users/' + selectedUserGuid);
+            AppService.delete(function (res) {
+                console.log("Deleted App: " + JSON.stringify(res));
+                if(res.success){
+                    $scope.openPromptSuccess('User deleted successfully!');
+                    $location.path('/users');
+                }
+                else{
+                    $scope.openPromptFailure('Error in user deletion!');
+                }
+            });
+        });
+    };
     
     $scope.searchUsers = function(){
         console.log("Applying filter..");
@@ -184,6 +241,24 @@ angular.module('fihApp').controller('UsersCtrl', function ($scope, $resource, $l
         prompt({
             title: 'Alert!',
             titleStyle: 'color: red;',
+            containHtml: true,
+            message: message,
+            "buttons": [
+                {
+                    "label": "Close",
+                    "cancel": false,
+                    "primary": false
+                }
+            ]
+        }).then(function(){
+            //he hit ok and not can,
+        });
+    };
+
+    $scope.openPromptSuccess = function(message){
+        prompt({
+            title: 'Message!',
+            titleStyle: 'color: green;',
             containHtml: true,
             message: message,
             "buttons": [

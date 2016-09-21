@@ -364,6 +364,104 @@ router.post('/', permCheck.checkPermission('user.create'), function (req, res) {
   });
 });
 
+router.delete('/:guid', permCheck.checkPermission('user.delete'), function(req, res){
+    console.log("Deleting data: "+req.params.guid);
+    var guid = req.params.guid;
+    var db = req.db;
+    async.waterfall([
+      // Generate guid for user creation input for stackato api
+      function (callback) {
+        console.log("Stackato UAA Delete user | Start.");
+
+        var fihToken = req.session.fih_token;
+        if (fihToken && fihToken.access_token) {
+
+          var options = {
+            url: HOST_API_URL + '/aok/uaa/Users/'+guid,
+            headers: {
+              'Authorization': 'Bearer ' + fihToken.access_token,
+            },
+            method: 'DELETE'
+          };
+
+          request(options, function resCallback(error, response, body) {
+            if (response)
+              console.log("Stackato UAA Delete user | Response code: " + response.statusCode);
+
+            if (!error) {
+              if (response.statusCode == 200) {
+                callback(null, "success");
+              }
+              if (response.statusCode == 404) {
+                callback("User Not Found", null);
+              }
+            }
+            else {
+              console.log("Stackato UAA Delete User | Generating error response: " + error);
+              if (response.statusCode == 404) {
+                callback("Error : User Not Found", null);
+              }
+              callback(error, null);
+            }
+          });
+        }
+      },
+
+      // Call stackato api to create user
+      function (msg, callback) {
+        console.log("Stackato Delete user | UAA Message: "+msg);
+        console.log("Deleting user with Guid: " + guid);
+        var fihToken = req.session.fih_token;
+        if (fihToken && fihToken.access_token) {
+
+          var options = {
+            url: HOST_API_URL + '/v2/users/'+guid+'?',
+            headers: {
+              'Authorization': 'Bearer ' + fihToken.access_token,
+            },
+            method: 'DELETE'
+          };
+
+          request(options, function resCallback(error, response, body) {
+            if (response)
+              console.log("Stackato Delete user | Response code: " + response.statusCode);
+
+            if (!error) {
+              if (response.statusCode == 204) {
+                console.log("Stackato Delete user | Response: " + body);
+                callback(null, "success");
+              }
+            }
+            else {
+              console.log("Stackato Deleting User | Generating error response: " + error);
+              callback(error, null);
+            }
+          });
+        }
+      },
+
+      // delete details from database
+      function (msg, callback) {
+        console.log("Deleting user from database | Stackato msg: "+msg);
+        var collection = db.get('coll_user');
+        collection.remove({ guid: req.params.guid });
+        callback(null, { success: "deleted" });
+      }
+    ],
+      // series callback
+      function (err, result) {
+        
+        if (err) {
+          console.log("Stackato Update User | Error: " + JSON.stringify(err));
+          res.status(409).send({ success: false, data: err });
+        }
+        else {
+          console.log("Stackato Update User | Result: " + JSON.stringify(result));
+          res.send({ success: true, data: result });
+        }
+      });
+});
+
 router.post('/update', permCheck.checkPermission('user.create'), function(req, res) {
     var user = req.body;
     console.log("Updating user data: "+JSON.stringify(user));
@@ -574,12 +672,13 @@ router.post('/update', permCheck.checkPermission('user.create'), function(req, r
     function (err, result) {
       console.log("Stackato Update User | Result: "+JSON.stringify(result));
       if(err){
-        res.status(401).send({success: false, data: err});
+        res.status(409).send({success: false, data: err});
       }
       else{
         res.send({success: true, data: result});
       }
     });
 });
+
 
 module.exports = router;
