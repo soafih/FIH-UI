@@ -50,6 +50,11 @@ body h4{
   font-weight: 600;
 }
 
+td.left-align{
+  text-align:left; 
+  padding-left:13px !important;
+}
+
 .header-userdetails {
   font-size: 12px;
   z-index: 9999;
@@ -122,14 +127,18 @@ div.modal-footer button.btn.btn-info{
   background-color: #546E7A;
   color: #ECEFF1;
 }
-.btn.btn-info.btn-md.col-md-1.pull-right {
+.btn.btn-info.btn-md.col-md-1 {
   margin-right: 10px;
   background-color: #455A64;
   color: #ECEFF1;
 }
 
+.users-register-panel-row button.btn.btn-info.btn-md{
+  margin-left: 27px;
+  margin-right: 13px;
+}
 
-.btn.btn-info.btn-md.col-md-2.pull-right {
+.btn.btn-info.btn-md.col-md-2 {
   margin-right: 10px;
   background-color: #455A64;
   color: #ECEFF1;
