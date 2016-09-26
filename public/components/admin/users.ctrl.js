@@ -89,8 +89,8 @@ angular.module('fihApp').controller('UsersCtrl', function ($scope, $resource, $l
     $scope.deleteUser = function(){
         var userList = $scope.checkboxes.items;
         console.log("All users items: "+JSON.stringify($scope.checkboxes.items));
-        if($scope.countChecked !== 1){
-            $scope.openPromptFailure("Please select exactly one user to update.!");
+        if($scope.countChecked < 1){
+            $scope.openPromptFailure("Please select atleast one user to delete.!");
             return;
         }
         var message = 'All user data will be deleted. This action cannot be undone!';
@@ -121,7 +121,7 @@ angular.module('fihApp').controller('UsersCtrl', function ($scope, $resource, $l
                     }
                 }
             }
-            console.log("Updating user: "+selectedUserId);
+            console.log("Deleting user: "+selectedUserId);
             var selectedUserGuid = "";
             for(var i=0; i<$scope.users.length;i++){
                 if(selectedUserId === $scope.users[i]._id){
@@ -131,7 +131,7 @@ angular.module('fihApp').controller('UsersCtrl', function ($scope, $resource, $l
             console.log("Selected User Guid: "+selectedUserGuid);
             var AppService = $resource('/fih/users/' + selectedUserGuid);
             AppService.delete(function (res) {
-                console.log("Deleted App: " + JSON.stringify(res));
+                console.log("Deleted user: " + JSON.stringify(res));
                 if(res.success){
                     $scope.openPromptSuccess('User deleted successfully!');
                     var UserAPI = $resource('/fih/users');
