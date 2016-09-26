@@ -60,6 +60,69 @@ router.get('/roles', permCheck.checkPermission('user.view'), function(req, res) 
     });
 });
 
+router.delete('/roles/:roles', permCheck.checkPermission('user.delete'), function(req, res){
+  console.log("Deleting role..");
+  
+  var roles = req.params.roles.split(",");
+  console.log("Roles: "+roles);
+  async.waterfall([
+        
+    function (callback) {
+      console.log("Deleting roles from users");
+      
+      async.each(roles, function (role, callback) {
+        console.log("Deleting role: "+role);
+        var collection = db.get('coll_user');
+        collection.find({roles: role}, function(err, users){
+            if (err) throw err;
+            async.each(users, function (user, callback) {
+              var currentRoles = user.roles;
+              
+
+            });
+        });
+        //collection.update({}, {$pull: {roles: "testrole3"}},  { multi: true });
+        callback();
+      }, function (err) {
+        if (err) {
+          console.log('Error in user roles deletion');
+          callback(err, null);
+        } else {
+          console.log('User roles deleted successfully');
+          callback(null, "success");
+        }
+      });
+    },
+    // Deleting role from coll_role
+    function (msg, callback) {
+      async.each(roles, function (role, callback) {
+
+        console.log("Deleting role:"+role);
+        var collectionRole = db.get('coll_role');
+        collectionRole.remove({ name: role });
+        callback();
+      }, function (err) {
+        if (err) {
+          console.log('Error in roles deletion');
+          callback(err, null);
+        } else {
+          console.log('Roles deleted successfully');
+          callback(null, "success");
+        }
+      });
+    }
+  ],
+    // waterfall callback
+    function (err, result) {
+      console.log("Delete role | Result: " + result);
+      if (err) {
+        res.status(500).send({ success: false, data: err });
+      }
+      else {
+        res.send({ success: true, data: result });
+      }
+    });
+});
 
 router.post('/roles', permCheck.checkPermission('user.create'), function (req, res) {
   console.log("Creating new role..");
@@ -159,7 +222,7 @@ router.post('/role/update', permCheck.checkPermission('user.create'), function (
         console.log("Updating User: " + userid+" with role:"+req.body.name);
         var collection = db.get('coll_user');
         collection.update({ _id: userid }, { $addToSet: { roles: req.body.name, 
-          last_updated_by: req.headers["x-authenticated-user-username"], last_update_date: new Date() } });
+          last_updated_by: req.headers["x-authenticated-user-username"], last_update_date: new Date() } }, {$pull: {roles: req.body.name}});
         callback();
       }, function (err) {
         if (err) {

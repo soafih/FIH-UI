@@ -50,7 +50,7 @@
     <div class="users-modify-btn">
         <div class="container-fluid">
             <div class="row">
-                <button class="btn btn-danger btn-md col-md-1 pull-right" ng-click="deleteRoles()">Delete</button>
+                <button ng-disabled="true" class="btn btn-danger btn-md col-md-1 pull-right" ng-click="deleteRoles()">Delete</button>
                 <div class="col-md-1 pull-right" style="margin-right:15px;" tooltip-enable="{{disableUpdateBtn}}" uib-tooltip="To enable update, select only one user">
                     <button class="btn btn-warning btn-md" ng-disabled="disableUpdateBtn" 
                      ng-click="updateRole()">Update</button>

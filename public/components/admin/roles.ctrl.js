@@ -1,13 +1,6 @@
 angular.module('fihApp').controller('RolesCtrl', function ($scope, $resource, $location, roleList, NgTableParams, $filter, prompt) {
     $scope.pageHeader = "Roles";
 
-    $scope.spaceModel = [];
-    $scope.spaceData = [];
-    $scope.spaceCustomTexts = { buttonDefaultText: 'Select Spaces' };
-
-    $scope.selectSettings = {
-        smartButtonMaxItems: 3
-    };
     $scope.roles = roleList.data;
     $scope.roleTable = new NgTableParams(
         {
@@ -146,13 +139,6 @@ angular.module('fihApp').controller('RolesCtrl', function ($scope, $resource, $l
         
         $scope.roles = $filter('filter')(roleList.data, {name:$scope.txtRoleName, descr: $scope.txtDescription});
         
-        /*if($scope.spaceModel.length > 0){
-            var selectedSpace = [];
-            for(var i=0; i<$scope.spaceModel.length;i++){
-                selectedSpace.push($scope.spaceModel[i].id);
-            }
-            $scope.roles = $filter('spaceFilter')($scope.users, selectedSpace);
-        }*/
         $scope.roleTable.total($scope.roles.length);
         $scope.roleTable.settings().dataset = $scope.roles;
         $scope.roleTable.reload();
@@ -161,17 +147,75 @@ angular.module('fihApp').controller('RolesCtrl', function ($scope, $resource, $l
     };
     
     $scope.reset = function(){
-        $scope.txtUserName = "";
-        $scope.txtEmail = "";
-        $scope.orgModel = [];
-        $scope.spaceModel = [];
-        $scope.rolesModel = [];
-        $scope.selectedSuperUser = 'Select';
+        $scope.txtRoleName = "";
+        $scope.txtDescription = "";
         $scope.checkboxes = { 'checked': false, items: {} };
-        $scope.users = roleList.data;
-        $scope.userTable.total($scope.users.length);
-        $scope.userTable.settings().dataset = $scope.users;
-        $scope.userTable.reload();
+        $scope.roles = roleList.data;
+        $scope.roleTable.total($scope.roles.length);
+        $scope.roleTable.settings().dataset = $scope.roles;
+        $scope.roleTable.reload();
+    };
+
+    $scope.deleteRoles = function(){
+        var rolesList = $scope.checkboxes.items;
+        console.log("All roles items: "+JSON.stringify($scope.checkboxes.items));
+        if($scope.countChecked < 1){
+            $scope.openPromptFailure("Please select atleast one role to delete.!");
+            return;
+        }
+        var message = 'All role data will be deleted. This action cannot be undone!';
+        prompt({
+            title: 'Warning!',
+            titleStyle: 'color: red;',
+            containHtml: true,
+            message: message,
+            "buttons": [
+                {
+                    "label": "Confirm",
+                    "cancel": false,
+                    "primary": true
+                },
+                {
+                    "label": "Cancel",
+                    "cancel": true,
+                    "primary": false
+                }
+            ]
+        }).then(function(){
+            var selectedRoleIds = [];
+            for (var key in rolesList) {
+                if (rolesList.hasOwnProperty(key)) {
+                    if(rolesList[key]){
+                        selectedRoleIds.push(key);
+                    }
+                }
+            }
+            console.log("Deleting role: "+selectedRoleIds);
+            var selectedNames = [];
+            for(var i=0; i< selectedRoleIds.length;i++){
+                var role = $filter('filter')($scope.roles, {_id: selectedRoleIds[i]});
+                selectedNames.push(role[0].name);
+            }
+            console.log("Selected Names:"+selectedNames);
+            var RolesAPI = $resource('/fih/users/roles/'+selectedNames);
+            RolesAPI.delete(function (res) {
+                console.log("Deleted role: " + JSON.stringify(res));
+                if(res.success){
+                    $scope.openPromptSuccess('Role deleted successfully!');
+                    RolesAPI.query(function (roles) {
+                        if (roles) {
+                            $scope.roles = roles;
+                            $scope.roleTable.total($scope.roles.length);
+                            $scope.roleTable.settings().dataset = $scope.roles;
+                            $scope.roleTable.reload();
+                        }
+                    });
+                }
+                else{
+                    $scope.openPromptFailure('Error in role deletion!');
+                }
+            });
+        });
     };
 
     $scope.openPromptFailure = function(message){
