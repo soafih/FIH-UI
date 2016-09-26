@@ -131,7 +131,44 @@ fihApp.config(['$routeProvider', '$httpProvider', function ($routeProvider, $htt
             controller: 'RolesCtrl',
             resolve: {
                 userProfile: "UserProfile",
-                access: ["Access", function (Access) { return Access.hasRole("fih_admin"); }]
+                access: ["Access", function (Access) { return Access.hasRole("fih_admin"); }],
+                roleList: function (roleListFactory) {
+                    return roleListFactory.getRoleList();
+                }
+            }
+        })
+        .when('/role-register', {
+            templateUrl: 'components/admin/roleregister.html',
+            controller: 'RoleRegisterCtrl',
+            resolve: {
+                userProfile: "UserProfile",
+                access: ["Access", function (Access) { return Access.hasRole("fih_admin"); }],
+                roleList: function (roleListFactory) {
+                    return roleListFactory.getRoleList();
+                },
+                permissionList: function (permissionListFactory) {
+                    return permissionListFactory.getPermissionList();
+                },
+                userList: function (userListFactory) {
+                    return userListFactory.getUserList();
+                }
+            }
+        })
+        .when('/role-update/:roleid', {
+            templateUrl: 'components/admin/roleupdate.html',
+            controller: 'RoleUpdateCtrl',
+            resolve: {
+                userProfile: "UserProfile",
+                access: ["Access", function (Access) { return Access.hasRole("fih_admin"); }],
+                roleList: function (roleListFactory) {
+                    return roleListFactory.getRoleList();
+                },
+                permissionList: function (permissionListFactory) {
+                    return permissionListFactory.getPermissionList();
+                },
+                userList: function (userListFactory) {
+                    return userListFactory.getUserList();
+                }
             }
         })
         .otherwise({
@@ -429,6 +466,3 @@ fihApp.service("Security", function ($http, $window) {
         return $http.get("/fih/security/user");
     };
 });
-
-
-    

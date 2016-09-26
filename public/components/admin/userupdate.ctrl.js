@@ -6,11 +6,8 @@ angular.module('fihApp').controller('UserUpdateCtrl', function ($scope, $resourc
 
     $scope.orgModel = [];
     $scope.orgData = [];
-    $scope.spaceModel = [];
-    $scope.spaceData = [];
 
-    $scope.orgCustomTexts = { buttonDefaultText: 'Select Organizations' };
-    $scope.spaceCustomTexts = { buttonDefaultText: 'Select Spaces' };
+    $scope.orgCustomTexts = { buttonDefaultText: 'Select Org/Spaces' };
 
     $scope.selectSettings = {
         smartButtonMaxItems: 3
@@ -63,62 +60,100 @@ angular.module('fihApp').controller('UserUpdateCtrl', function ($scope, $resourc
 
     var validateForm = function () {
         var isValid = true;
-        if (!$scope.txtUserName || $scope.txtUserName === '' || !$scope.txtEmail || $scope.txtEmail === '' || !$scope.txtFullName || $scope.txtFullName === '') {
-            isValid = false;
-            $scope.openPromptFailure("Please select user details by clicking search button adjacent to UserName field!");
-        }
-        else if ($scope.orgModel.length < 1) {
+        
+        if ($scope.orgModel.length < 1) {
             isValid = false;
             $scope.openPromptFailure("Please select user's organization from dropdown. You may select multiple organization!");
         }
-        else if ($scope.spaceModel.length < 1) {
-            isValid = false;
-            $scope.openPromptFailure("Please select user's space from dropdown. You may select multiple space!");
-        }
         return isValid;
     };
-    $scope.createUser = function(){
+    $scope.updateUser = function(){
         if(validateForm()){
             var selectedOrgs = [];
-            for(var i=0; i<$scope.orgModel.length;i++){
-                selectedOrgs.push($scope.orgModel[i].id);
+            var selectedSpaces = [];
+            var selectedOrgsGuid = [];
+            var selectedSpacesGuid = [];
+            var selectedRoles = [];
+            
+            var addedOrgs = [];
+            var addedSpaces = [];
+            var deletedOrgs = [];
+            var deletedSpaces = [];
+
+            if($scope.chkSuperUser){
+                selectedRoles = ["fih_admin"];
+                /*for(var i=0; i<$scope.orgData.length;i++){
+                    selectedOrgs.push($scope.orgData[i].id.org);
+                    selectedSpaces.push($scope.orgData[i].id);
+                }*/
             }
-            var selectedSpace = [];
-            for(var i=0; i<$scope.spaceModel.length;i++){
-                selectedSpace.push($scope.spaceModel[i].id);
+            else {
+                console.log("Current Org: "+$scope.userCurrentOrg);
+                console.log("Current Space: "+$scope.userCurrentSpace);
+                for(var i=0; i<$scope.orgModel.length;i++){
+                    //Identify added objects
+                    if($scope.userCurrentOrg.indexOf($scope.orgModel[i].id.org.guid) === -1){
+                        addedOrgs.push($scope.orgModel[i].id.org.guid);
+                    }
+                    if($scope.userCurrentSpace.indexOf($scope.orgModel[i].id.guid) === -1){
+                        addedSpaces.push($scope.orgModel[i].id.guid);
+                    }
+                    selectedOrgs.push($scope.orgModel[i].id.org);
+                    selectedSpaces.push($scope.orgModel[i].id);
+                    selectedOrgsGuid.push($scope.orgModel[i].id.org.guid);
+                    selectedSpacesGuid.push($scope.orgModel[i].id.guid);
+                }
+                for(var j=0; j<$scope.userCurrentOrg.length; j++){
+                    if(selectedOrgsGuid.indexOf($scope.userCurrentOrg[j]) === -1){
+                        deletedOrgs.push($scope.userCurrentOrg[j]);
+                    }
+                }
+                for(var j=0; j<$scope.userCurrentSpace.length; j++){
+                    if(selectedSpacesGuid.indexOf($scope.userCurrentSpace[j]) === -1){
+                        deletedSpaces.push($scope.userCurrentSpace[j]);
+                    }
+                }
+
+                console.log("deletedOrgs: "+JSON.stringify(deletedOrgs));
+                console.log("deletedSpaces: "+JSON.stringify(deletedSpaces));
+                console.log("addedOrgs: "+JSON.stringify(addedOrgs));
+                console.log("addedSpaces: "+JSON.stringify(addedSpaces));
+
+                selectedRoles = generateRolesArray($scope.checkboxes.items);
             }
-            var selectedRoles = generateRolesArray($scope.checkboxes.items);
             
             var user = {
-                username: $scope.txtUserName,
-                email: $scope.txtEmail,
-                fullname: $scope.txtFullName,
+                objectid: $scope.userDetails._id,
+                guid: $scope.userDetails.guid,
                 superuser: $scope.chkSuperUser,
-                spaces: selectedSpace,
+                spaces: selectedSpaces,
                 orgs: selectedOrgs,
-                roles: selectedRoles
+                roles: selectedRoles,
+                changeInOrgs: {added: addedOrgs, deleted: deletedOrgs},
+                changeInSpaces: {added: addedSpaces, deleted: deletedSpaces}
             };
-            console.log("Creating user with data: "+JSON.stringify(user));
-
-            var Apps = $resource('/fih/users');
+            console.log("Updating user with data: "+JSON.stringify(user));
+            
+            var Apps = $resource('/fih/users/update');
             Apps.save(user, function (res) {
                 if(res.success){
-                    console.log("User created successfully: "+JSON.stringify(res));
-                    $scope.openPromptSuccess("User created successfully");
+                    console.log("User data updated successfully: "+JSON.stringify(res));
+                    $scope.openPromptSuccess("User data updated successfully");
                     $scope.reset();
                 }
                 else{
-                    console.log("Error in User creation: "+JSON.stringify(res));
-                    $scope.openPromptFailure("Error in User creation");
+                    console.log("Error in User updation: "+JSON.stringify(res));
+                    $scope.openPromptFailure("Error in User updation");
                 }
             }, function (error) {
                 console.log("Error in User creation: "+error);
-                $scope.openPromptFailure("Error in User creation");
+                $scope.openPromptFailure("Error in User updation");
             });
         }
     };
     
     $scope.reset = function(){
+        $scope.checkboxes = { 'checked': false, items: {} };
         init();
     };
 
@@ -132,35 +167,41 @@ angular.module('fihApp').controller('UserUpdateCtrl', function ($scope, $resourc
 
                 var OrgAPI = $resource('/fih/stackatoapis/orgs');
                 OrgAPI.query(function (orgs) {
-                    $scope.orgData =[];
-                    $scope.orgModel =[];
+                    
+                    $scope.orgData = [];
+                    $scope.orgModel = [];
+                    
+                    console.log("Fetched orgs: " + JSON.stringify(orgs));
                     if (orgs) {
-                        
-                        $scope.orgs = orgs;
+                        var spaceData = [];
+                        var spaceModel =[];
                         for (var i = 0; i < orgs.length; i++) {
-                            $scope.orgData.push({ id: orgs[i].guid, label: orgs[i].name });
+                            var spaces = orgs[i].spaces;
+                            for (var j = 0; j < spaces.length; j++) {
+                                spaces[j].org = {name: orgs[i].name, guid: orgs[i].guid};
+                                spaceData.push({ id: spaces[j], label: spaces[j].name, orgName: orgs[i].name });
+                            }
                         }
-                        for(var i=0; i<user.orgs.length;i++){
-                            $scope.orgModel.push({"id": user.orgs[i].guid});
+                        $scope.orgData = spaceData;
+                        console.log("Org/Spaces:"+JSON.stringify($scope.orgData));
+
+                        for (var j = 0; j < user.spaces.length; j++) {
+                            spaceModel.push({ id: user.spaces[j]});
                         }
+                        $scope.orgModel = spaceModel;
+                        console.log("Selected Org/Spaces:"+JSON.stringify($scope.orgModel));
+                        
+                        var userCurrentSpace = [];
+                        var userCurrentOrg = [];
+                        for (var j = 0; j < user.spaces.length; j++) {
+                            userCurrentSpace.push(user.spaces[j].guid);
+                            userCurrentOrg.push(user.spaces[j].org.guid);
+                        }
+                        $scope.userCurrentSpace = userCurrentSpace;
+                        $scope.userCurrentOrg = userCurrentOrg;
                     }
                 });
 
-                var SpaceAPI = $resource('/fih/stackatoapis/spaces');
-                SpaceAPI.query(function (spaces) {
-                    $scope.spaceData = [];
-                    $scope.spaceModel = [];
-                    if (spaces) {
-                        $scope.spaces = spaces;
-                        for (var i = 0; i < spaces.length; i++) {
-                            $scope.spaceData.push({ id: spaces[i].guid, label: spaces[i].name });
-                        }
-                        for (var i = 0; i < user.spaces.length; i++) {
-                            $scope.spaceModel.push({"id": user.spaces[i].guid});
-                        }
-                    }
-                });
-                
                 $scope.pageHeader = 'Edit '+user.username;
                 $scope.txtUserName = user.username;
                 $scope.txtFullName = user.first_name ? user.first_name : '' + ' ' + user.last_name ? user.last_name : '';
@@ -170,8 +211,7 @@ angular.module('fihApp').controller('UserUpdateCtrl', function ($scope, $resourc
                 for(var i=0;i<user.roles.length;i++){
                     $scope.checkboxes.items[user.roles[i]] = true;
                 }
-                //$scope.checkboxes.items = {"api_developer":true,"api_operator":true} ;
-                //{"api_developer":true,"api_operator":true}
+                
             }
             else{
                 $scope.openPromptFailure("Selected user not found. Please make sure you select user from user table.!");
@@ -219,23 +259,5 @@ angular.module('fihApp').controller('UserUpdateCtrl', function ($scope, $resourc
         });
     };
 
-});
-
-
-fihApp.factory('roleListFactory', function ($http) {
-    var factoryResult = {
-        getRoleList: function () {
-            var promise = $http({
-                method: 'GET',
-                url: '/fih/users/roles'
-            }).success(function (data, status, headers, config) {
-                return data;
-            });
-
-            return promise;
-        }
-    };
-
-    return factoryResult;
 });
 

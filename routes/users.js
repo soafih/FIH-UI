@@ -28,6 +28,260 @@ router.get('/objectid/:objectid',  function(req, res) {
     });
 });
 
+router.get('/roles/objectid/:objectid',  function(req, res) {
+    var db = req.db;
+    var collection = db.get('coll_role');
+    console.log("Fetching role data with object id: "+req.params.objectid);
+    collection.findOne(req.params.objectid, function(err, role){
+        if (err) throw err;
+      	res.json(role);
+    });
+});
+
+
+router.get('/role/name/:name', permCheck.checkPermission('user.view'), function(req, res) {
+    console.log("Fetching users for role: "+req.params.name);
+    var db = req.db;
+    var collection = db.get('coll_user');
+    collection.find({roles: req.params.name}, {_id:1, username: 1}, function(err, users){
+        if (err) throw err;
+        console.log("User for role: "+JSON.stringify(users));
+      	res.json(users);
+    });
+});
+
+
+router.get('/roles', permCheck.checkPermission('user.view'), function(req, res) {
+    var db = req.db;
+    var collection = db.get('coll_role');
+    collection.find({}, function(err, roles){
+        if (err) throw err;
+      	res.json(roles);
+    });
+});
+
+router.delete('/roles/:roles', permCheck.checkPermission('user.delete'), function(req, res){
+  console.log("Deleting role..");
+  
+  var roles = req.params.roles.split(",");
+  console.log("Roles: "+roles);
+  async.waterfall([
+        
+    function (callback) {
+      console.log("Deleting roles from users");
+      
+      async.each(roles, function (role, callback) {
+        console.log("Deleting role: "+role);
+        var collection = db.get('coll_user');
+        collection.find({roles: role}, function(err, users){
+            if (err) throw err;
+            async.each(users, function (user, callback) {
+              var currentRoles = user.roles;
+              
+
+            });
+        });
+        //collection.update({}, {$pull: {roles: "testrole3"}},  { multi: true });
+        callback();
+      }, function (err) {
+        if (err) {
+          console.log('Error in user roles deletion');
+          callback(err, null);
+        } else {
+          console.log('User roles deleted successfully');
+          callback(null, "success");
+        }
+      });
+    },
+    // Deleting role from coll_role
+    function (msg, callback) {
+      async.each(roles, function (role, callback) {
+
+        console.log("Deleting role:"+role);
+        var collectionRole = db.get('coll_role');
+        collectionRole.remove({ name: role });
+        callback();
+      }, function (err) {
+        if (err) {
+          console.log('Error in roles deletion');
+          callback(err, null);
+        } else {
+          console.log('Roles deleted successfully');
+          callback(null, "success");
+        }
+      });
+    }
+  ],
+    // waterfall callback
+    function (err, result) {
+      console.log("Delete role | Result: " + result);
+      if (err) {
+        res.status(500).send({ success: false, data: err });
+      }
+      else {
+        res.send({ success: true, data: result });
+      }
+    });
+});
+
+router.post('/roles', permCheck.checkPermission('user.create'), function (req, res) {
+  console.log("Creating new role..");
+  var db = req.db;
+
+  var selectedUsers = req.body.users;
+  delete req.body.users;
+  async.waterfall([
+    // Check whether role already exist in database.
+    function (callback) {
+      console.log("Checking whether role already exist in database");
+      var collection = db.get('coll_role');
+      collection.find({ name: req.body.name }, function (err, roles) {
+        console.log("Roles: "+roles);
+        
+        if (err) {
+          callback(err, null);
+        }
+        else if (roles && roles.length > 0) {
+          console.log("Role length:"+roles.length);
+          callback({ success: false, status_code: 409, data: "Role with same name already exist!" }, null);
+        }
+        else {
+          callback(null, "success");
+        }
+      });
+    },
+    // Save details in database
+    function (msg, callback) {
+      console.log("Inserting role data");
+      var newrole = req.body;
+      newrole.creation_date = new Date();
+      newrole.created_by = req.headers["x-authenticated-user-username"];
+      newrole.last_updated_by = req.headers["x-authenticated-user-username"];
+      newrole.last_update_date = new Date();
+      
+      var collection = db.get('coll_role');
+      collection.insert(newrole, function (err, role) {
+        if (err) {
+          console.log("Error in saving role" + err);
+          callback(err, null);
+        }
+        else {
+          console.log("Received response:");
+          if (role) {
+            console.log("Inserted Data: " + JSON.stringify(role));
+            callback(null, role);
+          }
+        }
+      });
+    },
+
+    // Update user state in database
+    function (role, callback) {
+      console.log("Updating roles of users: "+selectedUsers);
+      async.each(selectedUsers, function (userid, callback) {
+
+        console.log("Updating User: " + userid+" with role:"+role.name);
+        var collection = db.get('coll_user');
+        collection.update({ _id: userid }, { $addToSet: { roles: role.name } });
+        callback();
+      }, function (err) {
+        if (err) {
+          console.log('Error in user`s role updation');
+          callback(err, null);
+        } else {
+          console.log('Roles added to users successfully');
+          callback(null, "success");
+        }
+      });
+    }
+  ],
+    // waterfall callback
+    function (err, result) {
+      console.log("Create role | Result: " + result);
+      if (err) {
+        res.status(500).send({ success: false, data: err });
+      }
+      else {
+        res.send({ success: true, data: result });
+      }
+    });
+});
+
+
+router.post('/role/update', permCheck.checkPermission('user.create'), function (req, res) {
+  console.log("Updating role..");
+  var db = req.db;
+  console.log("Request: "+JSON.stringify(req.body));
+  var changeInUsers = req.body.changeInUsers;
+  async.waterfall([
+    // Update user state in database
+    function (callback) {
+      console.log("Updating roles of users: "+changeInUsers.added);
+      async.each(changeInUsers.added, function (userid, callback) {
+
+        console.log("Updating User: " + userid+" with role:"+req.body.name);
+        var collection = db.get('coll_user');
+        collection.update({ _id: userid }, { $addToSet: { roles: req.body.name, 
+          last_updated_by: req.headers["x-authenticated-user-username"], last_update_date: new Date() } }, {$pull: {roles: req.body.name}});
+        callback();
+      }, function (err) {
+        if (err) {
+          console.log('Error in user`s role updation');
+          callback(err, null);
+        } else {
+          console.log('Roles added to users successfully');
+          callback(null, "success");
+        }
+      });
+    },
+    // Save details in database
+    function (msg, callback) {
+      console.log("Updating role data");
+      delete req.body.changeInUsers;
+      
+      var roleid = req.body.objectid;
+      delete req.body.objectid;
+      var newrole = req.body;
+      newrole.last_updated_by = req.headers["x-authenticated-user-username"];
+      newrole.last_update_date = new Date();
+      var collection = db.get('coll_role');
+      collection.update({_id: roleid}, {$set: newrole}, function (err, role) {
+        if (err) {
+          console.log("Error in saving role" + err);
+          callback(err, null);
+        }
+        else {
+          console.log("Received response:");
+          if (role) {
+            console.log("Updated Data: " + JSON.stringify(role));
+            callback(null, role);
+          }
+        }
+      });
+    },
+
+  ],
+    // waterfall callback
+    function (err, result) {
+      console.log("Updated role | Result: " + result);
+      if (err) {
+        res.status(500).send({ success: false, data: err });
+      }
+      else {
+        res.send({ success: true, data: result });
+      }
+    });
+});
+
+router.get('/permissions', permCheck.checkPermission('user.view'), function(req, res) {
+    var db = req.db;
+    var collection = db.get('coll_permission');
+    collection.find({}, function(err, permissions){
+        if (err) throw err;
+      	res.json(permissions);
+    });
+});
+
 router.get('/', permCheck.checkPermission('user.view'), function(req, res) {
     db = req.db;
     var collection = db.get('coll_user');
@@ -90,14 +344,6 @@ function getInheritedRoles(role, callback){
     });
 }
 
-router.get('/roles', permCheck.checkPermission('user.view'), function(req, res) {
-    var db = req.db;
-    var collection = db.get('coll_role');
-    collection.find({}, function(err, roles){
-        if (err) throw err;
-      	res.json(roles);
-    });
-});
 
 router.post('/', permCheck.checkPermission('user.create'), function (req, res) {
   console.log("Creating user..");
@@ -351,7 +597,9 @@ router.post('/', permCheck.checkPermission('user.create'), function (req, res) {
       });
     }
     
-  ], function (err, result) {
+  ],
+  // waterfall callback
+  function (err, result) {
     console.log("Stackato Create User | Result: "+result);
     if(err){
       res.status(401).send({success: false, data: err});
@@ -360,8 +608,323 @@ router.post('/', permCheck.checkPermission('user.create'), function (req, res) {
       res.send({success: true, data: result});
     }
   });
-
-  
 });
+
+router.delete('/:guid', permCheck.checkPermission('user.delete'), function(req, res){
+    console.log("Deleting data: "+req.params.guid);
+    var guid = req.params.guid;
+    var db = req.db;
+    async.waterfall([
+      // Generate guid for user creation input for stackato api
+      function (callback) {
+        console.log("Stackato UAA Delete user | Start.");
+
+        var fihToken = req.session.fih_token;
+        if (fihToken && fihToken.access_token) {
+
+          var options = {
+            url: HOST_API_URL + '/aok/uaa/Users/'+guid,
+            headers: {
+              'Authorization': 'Bearer ' + fihToken.access_token,
+            },
+            method: 'DELETE'
+          };
+
+          request(options, function resCallback(error, response, body) {
+            if (response)
+              console.log("Stackato UAA Delete user | Response code: " + response.statusCode);
+
+            if (!error) {
+              if (response.statusCode == 200) {
+                callback(null, "success");
+              }
+              if (response.statusCode == 404) {
+                callback("User Not Found", null);
+              }
+            }
+            else {
+              console.log("Stackato UAA Delete User | Generating error response: " + error);
+              if (response.statusCode == 404) {
+                callback("Error : User Not Found", null);
+              }
+              callback(error, null);
+            }
+          });
+        }
+      },
+
+      // Call stackato api to create user
+      function (msg, callback) {
+        console.log("Stackato Delete user | UAA Message: "+msg);
+        console.log("Deleting user with Guid: " + guid);
+        var fihToken = req.session.fih_token;
+        if (fihToken && fihToken.access_token) {
+
+          var options = {
+            url: HOST_API_URL + '/v2/users/'+guid+'?',
+            headers: {
+              'Authorization': 'Bearer ' + fihToken.access_token,
+            },
+            method: 'DELETE'
+          };
+
+          request(options, function resCallback(error, response, body) {
+            if (response)
+              console.log("Stackato Delete user | Response code: " + response.statusCode);
+
+            if (!error) {
+              if (response.statusCode == 204) {
+                console.log("Stackato Delete user | Response: " + body);
+                callback(null, "success");
+              }
+            }
+            else {
+              console.log("Stackato Deleting User | Generating error response: " + error);
+              callback(error, null);
+            }
+          });
+        }
+      },
+
+      // delete details from database
+      function (msg, callback) {
+        console.log("Deleting user from database | Stackato msg: "+msg);
+        var collection = db.get('coll_user');
+        collection.remove({ guid: req.params.guid });
+        callback(null, { success: "deleted" });
+      }
+    ],
+      // series callback
+      function (err, result) {
+        
+        if (err) {
+          console.log("Stackato Update User | Error: " + JSON.stringify(err));
+          res.status(409).send({ success: false, data: err });
+        }
+        else {
+          console.log("Stackato Update User | Result: " + JSON.stringify(result));
+          res.send({ success: true, data: result });
+        }
+      });
+});
+
+router.post('/update', permCheck.checkPermission('user.create'), function(req, res) {
+    var user = req.body;
+    console.log("Updating user data: "+JSON.stringify(user));
+
+    var objectid = req.body.objectid;
+    var changeInOrgs = req.body.changeInOrgs;
+    var changeInSpaces = req.body.changeInSpaces;
+
+    delete req.body.objectid;
+    delete req.body.changeInOrgs;
+    delete req.body.changeInSpaces;
+    
+    var db = req.db;
+    async.series([
+      // Save details in database
+      function (callback) {
+        var collection = db.get('coll_user');
+        req.body.last_updated_by = req.headers["x-authenticated-user-username"];
+        collection.update({ _id: objectid }, { $set: req.body },
+          function (err, response) {
+            if (err) callback(err, null);
+            console.log("Successfully updated app status: " + JSON.stringify(response));
+            callback(null, {success: "updatedb"});
+          });
+      },
+
+      // Associate added Organization with user
+      function (callback) {
+      console.log("Stackato Associate Organizations | Orgs: "+changeInOrgs.added);
+      async.eachSeries(changeInOrgs.added, function (org, callbackOrg) {
+        var fihToken = req.session.fih_token;
+        if (fihToken && fihToken.access_token) {
+          var options = {
+            url: HOST_API_URL + '/v2/organizations/'+ org +'/users/'+user.guid,
+            headers: {
+              'Authorization': 'Bearer ' + fihToken.access_token,
+            },
+            method: 'PUT'
+          };
+
+          request(options, function resCallback(error, response, body) {
+            console.log("Response from Stackato Associate Org service: " + response);
+            if (response)
+              console.log("Stackato | Response code: " + response.statusCode);
+
+            if (!error) {
+              if (response.statusCode == 201) {
+                console.log("Body: " + JSON.stringify(body));
+                console.log("Stackato | Response: " + body);
+                callbackOrg(null);
+              }
+            }
+            else {
+              console.log("Stackato | Generating error response: " + error);
+              callbackOrg("Cannot associate user with the Organization");
+            }
+          });
+        }
+
+      }, function (err) {
+        if (err) {
+          console.log('Failed to associate user with the Organization');
+          callback(err, null);
+        } else {
+          console.log('Successfully associated user with all organizations');
+          callback(null,  {success: "addedOrg"});
+        }
+      });
+
+    },
+
+    // Associate Space with the User
+    function (callback) {
+      console.log("Stackato Associate Spaces | Spaces: "+changeInSpaces.added);
+      async.each(changeInSpaces.added, function (space, callback) {
+        var fihToken = req.session.fih_token;
+        if (fihToken && fihToken.access_token) {
+          console.log("Calling service: "+HOST_API_URL + '/v2/users/'+user.guid+'/spaces/'+space);
+          var options = {
+            url: HOST_API_URL + '/v2/users/'+user.guid+'/spaces/'+space,
+            headers: {
+              'Authorization': 'Bearer ' + fihToken.access_token,
+            },
+            method: 'PUT'
+          };
+
+          request(options, function resCallback(error, response, body) {
+            console.log("Response from Stackato Associate Space service: " + response);
+            if (response)
+              console.log("Stackato | Response code: " + response.statusCode);
+
+            if (!error) {
+              if (response.statusCode == 201) {
+                console.log("Body: " + JSON.stringify(body));
+                console.log("Stackato | Response: " + body);
+                callback(null);
+              }
+            }
+            else {
+              console.log("Stackato | Generating error response: " + error);
+              callback("Cannot associate user with the Spaces");
+            }
+          });
+        }
+
+      }, function (err) {
+        if (err) {
+          console.log('Failed to associate user with the Spaces');
+          callback(err, null);
+        } else {
+          console.log('Successfully associated user with all spaces');
+          callback(null, {success: "addedSpaces"});
+        }
+      });
+    },
+    // Delete User from Organization
+    function (callback) {
+      console.log("Stackato Delete Organizations | Orgs: "+changeInOrgs.deleted);
+      async.eachSeries(changeInOrgs.deleted, function (org, callback) {
+        var fihToken = req.session.fih_token;
+        if (fihToken && fihToken.access_token) {
+          console.log("Calling service: "+HOST_API_URL + '/v2/users/'+user.guid+'/organizations/'+org);
+          var options = {
+            url: HOST_API_URL + '/v2/users/'+user.guid+'/organizations/'+org,
+            headers: {
+              'Authorization': 'Bearer ' + fihToken.access_token,
+            },
+            method: 'DELETE'
+          };
+
+          request(options, function resCallback(error, response, body) {
+            console.log("Response from Stackato Associate Org service: " + response);
+            if (response)
+              console.log("Stackato | Response code: " + response.statusCode);
+
+            if (!error) {
+              if (response.statusCode == 201) {
+                console.log("Body: " + JSON.stringify(body));
+                console.log("Stackato | Response: " + body);
+                callback(null);
+              }
+            }
+            else {
+              console.log("Stackato | Generating error response: " + error);
+              callback("Cannot associate user with the Organization");
+            }
+          });
+        }
+
+      }, function (err) {
+        if (err) {
+          console.log('Failed to associate user with the Organization');
+          callback(err, null);
+        } else {
+          console.log('Successfully associated user with all organizations');
+          callback(null, {success: "deleteOrgs"});
+        }
+      });
+
+    },
+
+    // Delete Space for User
+    function (callback) {
+      console.log("Stackato Associate Spaces | Space:"+changeInSpaces.deleted);
+      async.each(changeInSpaces.deleted, function (space, callback) {
+        var fihToken = req.session.fih_token;
+        if (fihToken && fihToken.access_token) {
+          console.log("Calling service: "+HOST_API_URL + '/v2/users/'+user.guid+'/spaces/'+space);
+          var options = {
+            url: HOST_API_URL + '/v2/users/'+user.guid+'/spaces/'+space,
+            headers: {
+              'Authorization': 'Bearer ' + fihToken.access_token,
+            },
+            method: 'DELETE'
+          };
+
+          request(options, function resCallback(error, response, body) {
+            console.log("Response from Stackato Delete Space service: " + response);
+            if (response)
+              console.log("Stackato | Response code: " + response.statusCode);
+
+            if (!error) {
+              if (response.statusCode == 201) {
+                console.log("Body: " + JSON.stringify(body));
+                console.log("Stackato | Response: " + body);
+                callback(null);
+              }
+            }
+            else {
+              console.log("Stackato | Generating error response: " + error);
+              callback("Cannot delete user with the Spaces");
+            }
+          });
+        }
+
+      }, function (err) {
+        if (err) {
+          console.log('Failed to delete user with the Spaces');
+          callback(err, null);
+        } else {
+          console.log('Successfully delete user with all spaces');
+          callback(null, {success: "deleteSpaces"});
+        }
+      });
+    }
+    ],
+    // series callback
+    function (err, result) {
+      console.log("Stackato Update User | Result: "+JSON.stringify(result));
+      if(err){
+        res.status(409).send({success: false, data: err});
+      }
+      else{
+        res.send({success: true, data: result});
+      }
+    });
+});
+
 
 module.exports = router;

@@ -37,7 +37,7 @@ body h4{
   color: green;
 }
 .amber {
-  color: 	#FFBF00;
+  color: 	#FEBC14;
 }
 .blue {
   color: 	blue;
@@ -48,6 +48,11 @@ body h4{
 
 .emphasis{
   font-weight: 600;
+}
+
+td.left-align{
+  text-align:left; 
+  padding-left:13px !important;
 }
 
 .header-userdetails {
@@ -122,23 +127,31 @@ div.modal-footer button.btn.btn-info{
   background-color: #546E7A;
   color: #ECEFF1;
 }
-.btn.btn-info.btn-md.col-md-1.pull-right {
+.btn.btn-info.btn-md.col-md-1 {
   margin-right: 10px;
   background-color: #455A64;
   color: #ECEFF1;
 }
 
+.users-register-panel-row button.btn.btn-info.btn-md{
+  margin-left: 27px;
+  margin-right: 13px;
+}
 
-.btn.btn-info.btn-md.col-md-2.pull-right {
+.btn.btn-info.btn-md.col-md-2 {
   margin-right: 10px;
   background-color: #455A64;
   color: #ECEFF1;
 }
 
 .btn.btn-info.btn-md {
- 
   background-color: #455A64;
   color: #ECEFF1;
+}
+
+.dropdown-multiselect ul.dropdown-menu.dropdown-menu-form li.dropdown-header.ng-binding.ng-scope{
+  margin-left: -10px;
+  font-weight: 600;
 }
 
 .modal-dialog.modal-sm{
@@ -248,6 +261,38 @@ body .modal-header{
   font-size: 12px;
 }
 
+.roles-search-panel-row{
+  margin-top: 10px;
+}
+
+.row.roles-search-panel-row .table {
+  margin: 15px 15px;
+  font-size: 12px !important;
+}
+
+.row.roles-register-panel-row {
+  font-size: 12px !important;
+  margin-bottom: 10px;
+  padding-right: 15px;
+}
+
+.row.roles-register-panel-row input{
+  font-size: 12px !important;
+  padding: 10px 5px;
+}
+.row.roles-register-panel-row label{
+  margin-top: 5px;
+}
+
+.role-register-tab-permissions{
+  margin-top: 20px;
+}
+.role-register-tab-roles{
+  margin-top: 20px;
+}
+.role-register-tab-users{
+  margin-top: 20px;
+}
 /*
  * Global add-ons
  */

@@ -1,7 +1,89 @@
-<div>
-    <h2>{{pageHeader}}</h2>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-6"><h3>{{pageHeader}}</h3></div>
+        <div class="col-md-6"><button style="margin: 10px 30px 0 0;" 
+        class="btn btn-info btn-md btn-md-2 pull-right" ng-click="roleRegister()">Register new</button></div>
+    </div>
 </div>
 <hr />
-<img src="assets/images/work_in_progress.png" alt="Work in Progress">
-
-<h3>Sorry, Please visit again...</h3>
+<div class="tab-content">
+    
+    <!--<div class="col-md-12">
+        <div class="users-search-panel">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <p class="panel-title">
+                        <a class="accordion-toggle" ng-click="isSearchCollapsed = !isSearchCollapsed">Search Roles</a>
+                    </p>
+                </div>
+                <div uib-collapse="isSearchCollapsed">
+                    <div class="panel-body">
+                        <div class="row roles-search-panel-row">
+                            <div class="col-md-4">
+                                <label class='control-label col-md-4'>Role Name</label>
+                                <div  class='col-md-7'>
+                                    <input ng-model="txtUserName" placeholder="Enter role name" class="form-control" />
+                                </div>
+                            </div>
+                            <div class="col-md-8 pull-right">
+                                <label class='control-label col-md-3'>Role Descr</label>
+                                <div  class='col-md-8'>
+                                    <input ng-model="txtDescription" placeholder="Enter role description" class="form-control" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row roles-search-panel-row">
+                            <div class="col-md-8">
+                                <label class='control-label col-md-3'>Permission</label>
+                                <div class="users-search-panel-select col-md-6" ng-dropdown-multiselect="" options="spaceData" selected-model="spaceModel" extra-settings="selectSettings" translation-texts="spaceCustomTexts"></div>
+                            </div>
+                        </div>
+                        <div class="row roles-search-panel-row" style="margin: 10px; 40px 0px 0px" >
+                            <button style="margin-left: 10px;" class="btn btn-default btn-md col-md-1 pull-right" ng-click="reset()">Reset</button>
+                            <button class="btn btn-info btn-md col-md-1 pull-right" ng-click="searchRoles()">Search</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>-->
+    <div class="users-modify-btn">
+        <div class="container-fluid">
+            <div class="row">
+                <button ng-disabled="true" class="btn btn-danger btn-md col-md-1 pull-right" ng-click="deleteRoles()">Delete</button>
+                <div class="col-md-1 pull-right" style="margin-right:15px;" tooltip-enable="{{disableUpdateBtn}}" uib-tooltip="To enable update, select only one user">
+                    <button class="btn btn-warning btn-md" ng-disabled="disableUpdateBtn" 
+                     ng-click="updateRole()">Update</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row roles-search-panel-row">
+        <div class="col-md-12">
+            <table ng-table="roleTable" class="table table-bordered table-striped table-hover table-condensed">
+                <colgroup>
+                    <col width="12%" />
+                    <col width="40%" />
+                    <col width="40%" />
+                    <col width="8%" />
+                </colgroup>
+                <tr ng-repeat="role in $data">
+                    <td class="left-align"  data-title="'Role'" sortable="'name'" filter="{ 'name': 'text' }">
+                        {{role.name}}
+                    </td>
+                    <td class="left-align" data-title="'Description'" sortable="'descr'" filter="{ 'descr': 'text' }">
+                        {{role.descr}}
+                    </td>
+                    <td class="left-align" data-title="'Permissions'" sortable="'can'" filter="{ 'can': 'text' }">
+                        <span ng-repeat="perm in role.can">
+                            {{perm}} {{$last ? '' : ', '}}
+                        </span>
+                    </td>
+                    <td data-title="'Select'">
+                        <input type="checkbox" ng-change="countCheckedBox(role._id)" ng-model="checkboxes.items[role._id]">
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>
