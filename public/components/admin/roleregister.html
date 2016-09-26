@@ -25,9 +25,10 @@
                 <div class="role-register-tab-roles">
                     <table ng-table="roleTable" class="table table-bordered table-striped table-hover table-condensed">
                         <colgroup>
-                            <col width="15%" />
-                            <col width="75%" />
-                            <col width="10%" />
+                            <col width="12%" />
+                            <col width="40%" />
+                            <col width="40%" />
+                            <col width="8%" />
                         </colgroup>
                         <tr ng-repeat="role in $data">
                             <td class="left-align" data-title="'Role'" sortable="'name'" filter="{ 'name': 'text' }">
@@ -35,6 +36,11 @@
                             </td>
                             <td class="left-align" data-title="'Description'" sortable="'descr'" filter="{ 'descr': 'text' }">
                                 {{role.descr}}
+                            </td>
+                            <td class="left-align" data-title="'Permissions'" sortable="'can'" filter="{ 'can': 'text' }">
+                                <span ng-repeat="perm in role.can">
+                                    {{perm}} {{$last ? '' : ', '}}
+                                </span>
                             </td>
                             <td data-title="'Select'">
                                 <input type="checkbox" ng-change="chkRoleChanged(role)" ng-model="checkboxesRoles.items[role.name]">
