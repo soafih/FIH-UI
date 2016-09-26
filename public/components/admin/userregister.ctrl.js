@@ -323,20 +323,3 @@ fihApp.controller('ModalInstanceCtrl', function ($uibModalInstance, $scope, $fil
     };
 });
 
-fihApp.factory('roleListFactory', function ($http) {
-    var factoryResult = {
-        getRoleList: function () {
-            var promise = $http({
-                method: 'GET',
-                url: '/fih/users/roles'
-            }).success(function (data, status, headers, config) {
-                return data;
-            });
-
-            return promise;
-        }
-    };
-
-    return factoryResult;
-});
-

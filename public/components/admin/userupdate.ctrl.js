@@ -261,21 +261,3 @@ angular.module('fihApp').controller('UserUpdateCtrl', function ($scope, $resourc
 
 });
 
-
-fihApp.factory('roleListFactory', function ($http) {
-    var factoryResult = {
-        getRoleList: function () {
-            var promise = $http({
-                method: 'GET',
-                url: '/fih/users/roles'
-            }).success(function (data, status, headers, config) {
-                return data;
-            });
-
-            return promise;
-        }
-    };
-
-    return factoryResult;
-});
-

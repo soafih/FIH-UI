@@ -37,7 +37,7 @@ body h4{
   color: green;
 }
 .amber {
-  color: 	#FFBF00;
+  color: 	#FEBC14;
 }
 .blue {
   color: 	blue;
@@ -261,6 +261,28 @@ body .modal-header{
   font-size: 12px;
 }
 
+.row.roles-register-panel-row {
+  font-size: 12px !important;
+  margin-bottom: 0px;
+  padding-right: 15px;
+}
+.row.roles-register-panel-row input{
+  font-size: 12px !important;
+  padding: 10px 5px;
+}
+.row.roles-register-panel-row label{
+  margin-top: 5px;
+}
+
+.role-register-tab-permissions{
+  margin-top: 20px;
+}
+.role-register-tab-roles{
+  margin-top: 20px;
+}
+.role-register-tab-users{
+  margin-top: 20px;
+}
 /*
  * Global add-ons
  */

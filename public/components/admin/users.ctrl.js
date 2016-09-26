@@ -337,19 +337,3 @@ function removeArrayDuplicate(output){
         return output;
 }
 
-fihApp.factory('userListFactory', function ($http) {
-    var factoryResult = {
-        getUserList: function () {
-            var promise = $http({
-                method: 'GET',
-                url: '/fih/users'
-            }).success(function (data, status, headers, config) {
-                return data;
-            });
-
-            return promise;
-        }
-    };
-
-    return factoryResult;
-});

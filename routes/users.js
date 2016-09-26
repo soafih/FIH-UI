@@ -28,6 +28,110 @@ router.get('/objectid/:objectid',  function(req, res) {
     });
 });
 
+
+router.get('/roles', permCheck.checkPermission('user.view'), function(req, res) {
+    var db = req.db;
+    var collection = db.get('coll_role');
+    collection.find({}, function(err, roles){
+        if (err) throw err;
+      	res.json(roles);
+    });
+});
+
+
+router.post('/roles', permCheck.checkPermission('user.create'), function (req, res) {
+  console.log("Creating new role..");
+  var db = req.db;
+
+  var selectedUsers = req.body.users;
+  delete req.body.users;
+  async.waterfall([
+    // Check whether role already exist in database.
+    function (callback) {
+      console.log("Checking whether role already exist in database");
+      var collection = db.get('coll_role');
+      collection.find({ name: req.body.name }, function (err, roles) {
+        console.log("Roles: "+roles);
+        
+        if (err) {
+          callback(err, null);
+        }
+        else if (roles && roles.length > 0) {
+          console.log("Role length:"+roles.length);
+          callback({ success: false, status_code: 409, data: "Role with same name already exist!" }, null);
+        }
+        else {
+          callback(null, "success");
+        }
+      });
+    },
+    // Save details in database
+    function (msg, callback) {
+      console.log("Inserting role data");
+      var newrole = req.body;
+      newrole.creation_date = new Date();
+      newrole.created_by = req.headers["x-authenticated-user-username"];
+      newrole.last_updated_by = req.headers["x-authenticated-user-username"];
+      newrole.last_update_date = new Date();
+      
+      var collection = db.get('coll_role');
+      collection.insert(newrole, function (err, role) {
+        if (err) {
+          console.log("Error in saving role" + err);
+          callback(err, null);
+        }
+        else {
+          console.log("Received response:");
+          if (role) {
+            console.log("Inserted Data: " + JSON.stringify(role));
+            callback(null, role);
+          }
+        }
+      });
+    },
+
+    // Update user state in database
+    function (role, callback) {
+      console.log("Updating roles of users: "+selectedUsers);
+      async.each(selectedUsers, function (userid, callback) {
+
+        console.log("Updating User: " + userid+" with role:"+role.name);
+        var collection = db.get('coll_user');
+        collection.update({ _id: userid }, { $addToSet: { roles: role.name } });
+        callback();
+      }, function (err) {
+        if (err) {
+          console.log('Error in user`s role updation');
+          callback(err, null);
+        } else {
+          console.log('Roles added to users successfully');
+          callback(null, "success");
+        }
+      });
+    }
+  ],
+    // waterfall callback
+    function (err, result) {
+      console.log("Create role | Result: " + result);
+      if (err) {
+        res.status(500).send({ success: false, data: err });
+      }
+      else {
+        res.send({ success: true, data: result });
+      }
+    });
+});
+
+
+router.get('/permissions', permCheck.checkPermission('user.view'), function(req, res) {
+    var db = req.db;
+    var collection = db.get('coll_permission');
+    collection.find({}, function(err, permissions){
+        if (err) throw err;
+      	res.json(permissions);
+    });
+});
+
 router.get('/', permCheck.checkPermission('user.view'), function(req, res) {
     db = req.db;
     var collection = db.get('coll_user');
@@ -90,14 +194,6 @@ function getInheritedRoles(role, callback){
     });
 }
 
-router.get('/roles', permCheck.checkPermission('user.view'), function(req, res) {
-    var db = req.db;
-    var collection = db.get('coll_role');
-    collection.find({}, function(err, roles){
-        if (err) throw err;
-      	res.json(roles);
-    });
-});
 
 router.post('/', permCheck.checkPermission('user.create'), function (req, res) {
   console.log("Creating user..");
