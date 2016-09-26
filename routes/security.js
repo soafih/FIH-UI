@@ -7,24 +7,6 @@ var permCheck = require('./mod/permission-check');
 
 var db = {};
 
-router.get('/users', function(req, res) {
-    var db = req.db;
-    var collection = db.get('coll_user');
-    collection.find({}, function(err, users){
-        if (err) throw err;
-      	res.json(users);
-    });
-});
-
-router.get('/roles', function(req, res) {
-    var db = req.db;
-    var collection = db.get('coll_role');
-    collection.find({}, function(err, roles){
-        if (err) throw err;
-      	res.json(roles);
-    });
-});
-
 router.get('/userdetail/:username/:guid', function(req, res) {
     console.log('Getting details for: '+req.params.username);
     db = req.db;
@@ -57,10 +39,18 @@ router.get('/user', function(req, res) {
                         message: 'User Not Found!'
                     });
                 }
-                res.status(503).send({
-                    success: false,
-                    message: 'Service Unavailable!'
-                });
+                else if(err.status_code == 401){
+                    res.status(err.status_code).send({
+                        success: false,
+                        message: 'Unauthorized access attempted!'
+                    });
+                }
+                else {
+                    res.status(503).send({
+                        success: false,
+                        message: 'Service Unavailable!'
+                    });
+                }
             }
             else {
                 if (userguid) {

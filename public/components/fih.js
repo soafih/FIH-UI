@@ -97,11 +97,33 @@ fihApp.config(['$routeProvider', '$httpProvider', function ($routeProvider, $htt
             templateUrl: 'components/admin/users.html',
             controller: 'UsersCtrl',
             resolve: {
+                userProfile: "UserProfile",
+                access: ["Access", function (Access) { return Access.hasRole("fih_admin"); }],
                 userList: function (userListFactory) {
                     return userListFactory.getUserList();
-                },
+                }
+            }
+        })
+        .when('/user-register', {
+            templateUrl: 'components/admin/userregister.html',
+            controller: 'UserRegisterCtrl',
+            resolve: {
                 userProfile: "UserProfile",
-                access: ["Access", function (Access) { return Access.hasRole("fih_admin"); }]
+                access: ["Access", function (Access) { return Access.hasRole("fih_admin"); }],
+                roleList: function (roleListFactory) {
+                    return roleListFactory.getRoleList();
+                }
+            }
+        })
+        .when('/user-update/:userid', {
+            templateUrl: 'components/admin/userupdate.html',
+            controller: 'UserUpdateCtrl',
+            resolve: {
+                userProfile: "UserProfile",
+                access: ["Access", function (Access) { return Access.hasRole("fih_admin"); }],
+                roleList: function (roleListFactory) {
+                    return roleListFactory.getRoleList();
+                }
             }
         })
         .when('/roles', {
@@ -109,7 +131,44 @@ fihApp.config(['$routeProvider', '$httpProvider', function ($routeProvider, $htt
             controller: 'RolesCtrl',
             resolve: {
                 userProfile: "UserProfile",
-                access: ["Access", function (Access) { return Access.hasRole("fih_admin"); }]
+                access: ["Access", function (Access) { return Access.hasRole("fih_admin"); }],
+                roleList: function (roleListFactory) {
+                    return roleListFactory.getRoleList();
+                }
+            }
+        })
+        .when('/role-register', {
+            templateUrl: 'components/admin/roleregister.html',
+            controller: 'RoleRegisterCtrl',
+            resolve: {
+                userProfile: "UserProfile",
+                access: ["Access", function (Access) { return Access.hasRole("fih_admin"); }],
+                roleList: function (roleListFactory) {
+                    return roleListFactory.getRoleList();
+                },
+                permissionList: function (permissionListFactory) {
+                    return permissionListFactory.getPermissionList();
+                },
+                userList: function (userListFactory) {
+                    return userListFactory.getUserList();
+                }
+            }
+        })
+        .when('/role-update/:roleid', {
+            templateUrl: 'components/admin/roleupdate.html',
+            controller: 'RoleUpdateCtrl',
+            resolve: {
+                userProfile: "UserProfile",
+                access: ["Access", function (Access) { return Access.hasRole("fih_admin"); }],
+                roleList: function (roleListFactory) {
+                    return roleListFactory.getRoleList();
+                },
+                permissionList: function (permissionListFactory) {
+                    return permissionListFactory.getPermissionList();
+                },
+                userList: function (userListFactory) {
+                    return userListFactory.getUserList();
+                }
             }
         })
         .otherwise({
@@ -127,19 +186,25 @@ fihApp.service('APIInterceptor', function ($rootScope) {
         return config;
     };
     service.response = function (response) {
-        if (response.status === 401 || response.status === 403) {
+        if (response.status === 401) {
             $rootScope.$broadcast('unauthorized');
+        }
+        else if ( response.status === 403){
+            $rootScope.$broadcast('forbidden');
         }
         return response;
     };
     service.responseError = function (response) {
-         if (response.status === 400) {
+        if (response.status === 400) {
             $rootScope.$broadcast('usernotfound');
         }
-        if (response.status === 401 || response.status === 403) {
+        else if (response.status === 401 ) {
             $rootScope.$broadcast('unauthorized');
         }
-        if (response.status === 503) {
+        else if ( response.status === 403){
+            $rootScope.$broadcast('forbidden');
+        }
+        else if (response.status === 503) {
             $rootScope.$broadcast('serviceunavailable');
         }
         return response;
@@ -157,7 +222,7 @@ fihApp.factory('RedirectInterceptor', function($window, $location, $q) {
                     //&& response.data.indexOf('<html id="ng-app" ng-app="loginApp">') != -1) {
                         //$location.path("/logout");
                         console.log("RedirectInterceptor | Redirecting to logout");
-                        $window.location.href = "/auth/logout"; 
+                        $window.location.href = "/auth/logout";
                     }
                 }
                 return response;
@@ -183,6 +248,10 @@ fihApp.controller('SidebarCtrl', function ($scope, $resource, $location) {
             return res;
         }
         return route === $location.path();
+    };
+
+    $scope.isAuthorized = function(route){
+
     };
 });
 
@@ -217,7 +286,7 @@ fihApp.controller('MainCtrl', function ($rootScope, $scope, $window, $location, 
         });
     };
 
-    $scope.logout = function(message){
+    $scope.logout = function(){
         console.log("Logging out..");
         $window.location.href = '/auth/logout';
     };
@@ -243,7 +312,17 @@ fihApp.controller('MainCtrl', function ($rootScope, $scope, $window, $location, 
         $location.path('/');
     });
     $rootScope.$on('unauthorized', function () {
-        $location.path('/forbidden');
+        if($location.path() === '/'){
+            $scope.openDialog("User details not found. Only API Market place will be visible to you. In case you need further access, please contact System Administrator.");
+        }
+        else{
+            $scope.logout();
+        }
+    });
+    $rootScope.$on('unauthorized', function () {
+        if ($location.path() !== '/') {
+            $location.path('/forbidden');
+        }
     });
     $rootScope.$on('serviceunavailable', function () {
         $scope.openDialog("System seems to be responding slow. Please try after sometime.");
@@ -256,7 +335,7 @@ fihApp.run(function ($rootScope, $location, Access) {
         if (rejection == Access.UNAUTHORIZED) {
             $rootScope.$broadcast('unauthorized');
         } else if (rejection == Access.FORBIDDEN) {
-            $rootScope.$broadcast('unauthorized');
+            $rootScope.$broadcast('forbidden');
         }
     });
 
@@ -387,6 +466,3 @@ fihApp.service("Security", function ($http, $window) {
         return $http.get("/fih/security/user");
     };
 });
-
-
-    

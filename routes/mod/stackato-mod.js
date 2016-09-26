@@ -31,7 +31,11 @@ module.exports = {
                     if (error && error.code === 'ETIMEDOUT') {
                         console.log("Cannot establish connection with stackato. Connection timeout: " + error.connect === true);
                     }
-                    if (!error && (response.statusCode == 200)) {
+                    
+                    if(response && response.statusCode == 401){
+                        callbackOrg(generateErrorResponse(response, "Unauthorized. Access Token has expired"), null, null);
+                    }
+                    else if (!error && (response.statusCode == 200)) {
                         var data = JSON.parse(body);
                         console.log("getUsersOrganizations | body: "+data)
                         var resources = data.resources;
@@ -59,11 +63,53 @@ module.exports = {
             console.log("###### Sending response back: " + JSON.stringify(result));
             callback(err, result);
         });
+    },
+    getOrgsSpaces: function (accessToken, orgsArr, callbackOrgs) {
+        async.map(orgsArr, getOrgSpaces, function (err, results) {
+            console.log("getOrgsSpaces | Map completed. Error: ", err, " | result: ", JSON.stringify(results));
+            callbackOrgs(err, results);
+        });
+
+        function getOrgSpaces(org, callback) {
+            var headers = {
+                'Authorization': 'Bearer ' + accessToken
+            };
+            console.log('getOrgSpaces | Getting details for org: ' + JSON.stringify(org));
+
+            var optionSpaces = {
+                headers: headers,
+                url: HOST_API_URL + org.spaces_url,
+                timeout: STACKATO_API_TIMEOUT
+            };
+
+            var spacesArr = [];
+            request(optionSpaces, function (error, response, body) {
+                if (error && error.code === 'ETIMEDOUT') {
+                    console.log("Cannot establish connection with stackato. Connection timeout: " + error.connect === true);
+                }
+
+                if (response && response.statusCode == 401) {
+                    callback(generateErrorResponse(response, "Unauthorized. Access Token has expired"), null);
+                }
+                else if (!error && (response.statusCode == 200)) {
+                    var data = JSON.parse(body);
+                    var resources = data.resources;
+
+                    for (var i = 0; i < resources.length; i++) {
+                        spacesArr.push({name: resources[i].entity.name, guid: resources[i].metadata.guid});
+                    }
+                    console.log('Retrived Spaces for org ' + org.name + ': ' + JSON.stringify(spacesArr));
+                    org.spaces = spacesArr;
+                    delete org.spaces_url;
+                    callback(null, org);
+                }
+                else {
+                    console.log("Generating error response: " + error);
+                    callback(error, null);
+                }
+            });
+        }
     }
-    /*,
-    getStackatoAccessTokenAsync: function(callback){
-        getStackatoAccessTokenAsync(callback);
-    } */
 };
 
 function getOrgDetails(accessToken, orgsArr, callbackOrgs) {
@@ -89,7 +135,11 @@ function getOrgDetails(accessToken, orgsArr, callbackOrgs) {
             if (error && error.code === 'ETIMEDOUT') {
                 console.log("Cannot establish connection with stackato. Connection timeout: " + error.connect === true);
             }
-            if (!error && (response.statusCode == 200)) {
+            
+            if(response && response.statusCode == 401){
+                callback(generateErrorResponse(response, "Unauthorized. Access Token has expired"), null);
+            }
+            else if (!error && (response.statusCode == 200)) {
                 var data = JSON.parse(body);
                 var resources = data.resources;
 
@@ -131,6 +181,16 @@ function getOrgDetails(accessToken, orgsArr, callbackOrgs) {
             }
         });
     }
+}
+
+function generateSuccessResponse(response, resData){
+
+    return {success: true, data: resData}; 
+}
+
+function generateErrorResponse(response, resData){
+
+    return {success: false, status_code: response.statusCode, data: resData}; 
 }
 
 function getStackatoAccessTokenAsync(req, res, next) {

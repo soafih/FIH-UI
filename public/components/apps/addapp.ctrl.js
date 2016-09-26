@@ -231,7 +231,6 @@ fihApp.controller('AddAppCtrl', function ($scope, $window, $http, $resource, $lo
         $scope.loader.loading = true;
         $scope.hidePanel = true;
         $scope.app.name = $scope.app.name.replace("_", "-");
-        var formattedDate = new Date();
         var maxActive = ($scope.app.dbconfig.max_active === undefined ? '50' : $scope.app.dbconfig.max_active);
         var maxIdle = ($scope.app.dbconfig.max_idle === undefined ? '30' : $scope.app.dbconfig.max_idle);
         var maxWait = ($scope.app.dbconfig.max_wait === undefined ? '10000' : $scope.app.dbconfig.max_wait);
@@ -246,9 +245,9 @@ fihApp.controller('AddAppCtrl', function ($scope, $window, $http, $resource, $lo
 			visibility: $scope.app.visibility,
             expose_to_apigee: $scope.app.exposeToApigee,
             created_by: userProfile.username,
-            created_date: formattedDate,
+            created_date: new Date(),
             last_updated_by: userProfile.username,
-            last_updated_date: formattedDate,
+            last_updated_date: new Date(),
             messages: [{ message: 'First Version' }],
             stackato_config: {
                 org: $scope.app.selectedOrg.name,
@@ -332,7 +331,8 @@ fihApp.controller('AddAppCtrl', function ($scope, $window, $http, $resource, $lo
                             status: buildApiResponseStatus,
                             stage: response.response.stage,
                             build_number: response.response.buildNumber,
-                            build_identifier: response.response.buildIdentifier
+                            build_identifier: response.response.buildIdentifier,
+                            last_updated_date: new Date()
                         };
 
                         console.log("Updating app status with request: " + JSON.stringify(updateObj));
@@ -389,6 +389,7 @@ fihApp.controller('AddAppCtrl', function ($scope, $window, $http, $resource, $lo
             var updateObj = {
                 appObjectId: appObjectId,
                 status: appStatus,
+                last_updated_date: new Date()
             };
             var AppUpdate = $resource('/fih/apps/updateStatus');
             AppUpdate.save(updateObj, function (res) {
