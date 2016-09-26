@@ -261,11 +261,21 @@ body .modal-header{
   font-size: 12px;
 }
 
+.roles-search-panel-row{
+  margin-top: 10px;
+}
+
+.row.roles-search-panel-row .table {
+  margin: 15px 15px;
+  font-size: 12px !important;
+}
+
 .row.roles-register-panel-row {
   font-size: 12px !important;
-  margin-bottom: 0px;
+  margin-bottom: 10px;
   padding-right: 15px;
 }
+
 .row.roles-register-panel-row input{
   font-size: 12px !important;
   padding: 10px 5px;
