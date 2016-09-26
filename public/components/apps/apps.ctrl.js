@@ -1,5 +1,5 @@
 
-fihApp.controller('AppsCtrl', function($scope, $resource, $location, userProfile, $filter, $uibModal){
+fihApp.controller('AppsCtrl', function($scope, $resource, $location, userProfile, $filter, $uibModal, prompt){
     $scope.pageHeader = "Applications / Integration Services";
     $scope.isActive = function(route) {
         return route === $location.path();

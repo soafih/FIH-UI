@@ -193,6 +193,20 @@
                                             </div>
                                         </div>
                                     </div>
+									 <div class="row" >
+                                        <div class="form-group">
+                                            <label class='control-label col-md-3' style="padding-top: 10px">ResultCaching</label>
+                                            <div class="checkbox checkbox-success col-md-2" style="margin-left:10px">
+                                                <input  ng-disabled="!showEditableImplFields" id="checkbox2" type="checkbox" ng-checked="appDetails.db_config.result_caching" ng-model="appDetails.db_config.result_caching">
+                                                <label for="checkbox1"></label>
+                                            </div>
+                                       <div ng-show='appDetails.db_config.result_caching' style="padding-top: 10px">
+                                       <label class='control-label col-md-3'>CacheExpiry(sec)</label>
+                                        <label ng-show="!showEditableImplFields" class='control-label col-md-2' style="font-weight:500">{{appDetails.db_config.cache_expiry}}</label>
+                                        <input ng-show="showEditableImplFields" class="control-labe col-md-2" ng-model="cacheExpiry" placeholder="{{appDetails.db_config.cache_expiry}}"></input>
+                                       </div>
+                                        </div>
+                                    </div>
 									  <div class="row app-details">
                                         <label class='control-label col-md-3'>Query</label>
                                         <label ng-show="!showEditableImplFields" class='control-label col-md-9' style="font-weight:500">{{appDetails.db_config.query}}</label>
