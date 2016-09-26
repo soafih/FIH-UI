@@ -1,0 +1,133 @@
+<div>
+    <h3>{{pageHeader}}</h3>
+</div>
+<hr />
+<div class="container-fluid">
+    <div class="row roles-register-panel-row">
+        <div class="form-group required col-md-6">
+            <label class='control-label col-md-3'>Role Name</label>
+            <div class='col-md-6'>
+                 <input required ng-disabled="true" ng-model="txtRoleName" placeholder="Enter role name" class="form-control" />
+            </div>
+        </div>
+    </div>
+    <div class="row roles-register-panel-row">
+        <div class="form-group required col-md-12">
+            <label class='control-label col-md-1' style="margin-right:37px">Description</label>
+            <div class='col-md-9'>
+                <input ng-model="txtDescription" required placeholder="Role description" class="form-control" />
+            </div>
+        </div>
+    </div>
+    <div ng-hide="chkAdminUser" style="margin-top: 20px;" class="row roles-register-panel-row">
+        <uib-tabset active="activeTab">
+            <uib-tab index="0" heading="Select Inherit Roles" select="changeActiveTab(0)">
+                <div class="role-register-tab-roles">
+                    <table ng-table="roleTable" class="table table-bordered table-striped table-hover table-condensed">
+                        <colgroup>
+                            <col width="12%" />
+                            <col width="40%" />
+                            <col width="40%" />
+                            <col width="8%" />
+                        </colgroup>
+                        <tr ng-repeat="role in $data">
+                            <td class="left-align" data-title="'Role'" sortable="'name'" filter="{ 'name': 'text' }">
+                                {{role.name}}
+                            </td>
+                            <td class="left-align" data-title="'Description'" sortable="'descr'" filter="{ 'descr': 'text' }">
+                                {{role.descr}}
+                            </td>
+                            <td class="left-align" data-title="'Permissions'" sortable="'can'" filter="{ 'can': 'text' }">
+                                <span ng-repeat="perm in role.can">
+                                    {{perm}} {{$last ? '' : ', '}}
+                                </span>
+                            </td>
+                            <td data-title="'Select'">
+                                <input type="checkbox" ng-change="chkRoleChanged(role)" ng-model="checkboxesRoles.items[role.name]">
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </uib-tab>
+            <uib-tab index="1" heading="Select Permissions" select="changeActiveTab(1)">
+                <div class="role-register-tab-permissions">
+                    <div ng-repeat="uniqueResource in resources">
+                        <div class="users-search-panel col-md-3">
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    <p class="panel-title">
+                                        <a class="accordion-toggle" ng-click="isSearchCollapsed = !isSearchCollapsed">
+                                            <strong>{{uniqueResource}}</strong></a>
+                                    </p>
+                                </div>
+                                <div uib-collapse="isSearchCollapsed">
+                                    <div class="panel-body">
+                                        <div ng-repeat="permission in permissions | filter:{resource: uniqueResource}">
+                                            <input type="checkbox" ng-change="chkPermissionChanged(permission)" ng-model="checkboxesPermissions.items[permission.resource+'.'+permission.operation]"> {{permission.resource+'.'+permission.operation}}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </uib-tab>
+            <uib-tab index="2" heading="Select Users" select="changeActiveTab(2)">
+                <div class="role-register-tab-users">
+                    <table ng-table="userTable" class="table table-bordered table-striped table-hover table-condensed">
+                        <colgroup>
+                            <col width="12%" />
+                            <col width="17%" />
+                            <col width="15%" />
+                            <col width="15%" />
+                            <col width="25%" />
+                            <col width="10%" />
+                            <col width="7%" />
+                        </colgroup>
+                        <tr ng-repeat="userinfo in $data" ng-class="{ 'emphasis': userinfo.superuser }">
+                            <td class="left-align"  data-title="'Username'" sortable="'username'" filter="{ 'username': 'text' }">
+                                {{userinfo.username}}
+                            </td>
+                            <td class="left-align" data-title="'Email Id'" sortable="'email'" filter="{ 'email': 'text' }">
+                                {{userinfo.email}}
+                            </td>    
+                            <td class="left-align" data-title="'Organization'">
+                                <span ng-repeat="org in userinfo.orgs">
+                                    {{org.name}} {{$last ? '' : ', '}}
+                                </span>
+                            </td>   
+                            <td class="left-align" data-title="'Space'">
+                                <span ng-repeat="space in userinfo.spaces">
+                                    {{space.name}} {{$last ? '' : ', '}}
+                                </span>
+                            </td>   
+                            <td class="left-align" data-title="'Roles'">
+                                <span ng-if="userinfo.superuser">fih_admin</span>
+                                <span ng-if="!userinfo.superuser" ng-repeat="role in userinfo.roles">
+                                    {{role}} {{$last ? '' : ', '}}
+                                </span>
+                            </td>
+                            <td data-title="'SuperUser'" sortable="'superuser'" filter="{ 'superuser': 'text' }">
+                                {{userinfo.superuser ? 'Y' : 'N'}}
+                            </td> 
+                            <td data-title="'Select'">
+                                <input type="checkbox" ng-model="checkboxesUsers.items[userinfo._id]">
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </uib-tab>
+        </uib-tabset>
+    </div>
+    <hr/>
+    <div class="row">
+        <div class="users-modify-btn">
+            <div class="container-fluid">
+                <div class="row">
+                    <button class="btn btn-success btn-md col-md-1" ng-click="updateRole()">Update</button>
+                    <button class="btn btn-default btn-md col-md-1" ng-click="reset()">Reset</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

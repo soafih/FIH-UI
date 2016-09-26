@@ -28,6 +28,28 @@ router.get('/objectid/:objectid',  function(req, res) {
     });
 });
 
+router.get('/roles/objectid/:objectid',  function(req, res) {
+    var db = req.db;
+    var collection = db.get('coll_role');
+    console.log("Fetching role data with object id: "+req.params.objectid);
+    collection.findOne(req.params.objectid, function(err, role){
+        if (err) throw err;
+      	res.json(role);
+    });
+});
+
+
+router.get('/role/name/:name', permCheck.checkPermission('user.view'), function(req, res) {
+    console.log("Fetching users for role: "+req.params.name);
+    var db = req.db;
+    var collection = db.get('coll_user');
+    collection.find({roles: req.params.name}, {_id:1, username: 1}, function(err, users){
+        if (err) throw err;
+        console.log("User for role: "+JSON.stringify(users));
+      	res.json(users);
+    });
+});
+
 
 router.get('/roles', permCheck.checkPermission('user.view'), function(req, res) {
     var db = req.db;
@@ -122,6 +144,71 @@ router.post('/roles', permCheck.checkPermission('user.create'), function (req, r
     });
 });
 
+
+router.post('/role/update', permCheck.checkPermission('user.create'), function (req, res) {
+  console.log("Updating role..");
+  var db = req.db;
+  console.log("Request: "+JSON.stringify(req.body));
+  var changeInUsers = req.body.changeInUsers;
+  async.waterfall([
+    // Update user state in database
+    function (callback) {
+      console.log("Updating roles of users: "+changeInUsers.added);
+      async.each(changeInUsers.added, function (userid, callback) {
+
+        console.log("Updating User: " + userid+" with role:"+req.body.name);
+        var collection = db.get('coll_user');
+        collection.update({ _id: userid }, { $addToSet: { roles: req.body.name, 
+          last_updated_by: req.headers["x-authenticated-user-username"], last_update_date: new Date() } });
+        callback();
+      }, function (err) {
+        if (err) {
+          console.log('Error in user`s role updation');
+          callback(err, null);
+        } else {
+          console.log('Roles added to users successfully');
+          callback(null, "success");
+        }
+      });
+    },
+    // Save details in database
+    function (msg, callback) {
+      console.log("Updating role data");
+      delete req.body.changeInUsers;
+      
+      var roleid = req.body.objectid;
+      delete req.body.objectid;
+      var newrole = req.body;
+      newrole.last_updated_by = req.headers["x-authenticated-user-username"];
+      newrole.last_update_date = new Date();
+      var collection = db.get('coll_role');
+      collection.update({_id: roleid}, {$set: newrole}, function (err, role) {
+        if (err) {
+          console.log("Error in saving role" + err);
+          callback(err, null);
+        }
+        else {
+          console.log("Received response:");
+          if (role) {
+            console.log("Updated Data: " + JSON.stringify(role));
+            callback(null, role);
+          }
+        }
+      });
+    },
+
+  ],
+    // waterfall callback
+    function (err, result) {
+      console.log("Updated role | Result: " + result);
+      if (err) {
+        res.status(500).send({ success: false, data: err });
+      }
+      else {
+        res.send({ success: true, data: result });
+      }
+    });
+});
 
 router.get('/permissions', permCheck.checkPermission('user.view'), function(req, res) {
     var db = req.db;
